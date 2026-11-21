@@ -122,3 +122,18 @@ comparação; pode ser removido com `ollama rm qwen2.5:3b` (libera 1,9 GB).
 
 Plano completo em [planejamento.md](planejamento.md): 8 etapas, subtarefas com
 critério de pronto, árvore de prioridade, riscos e questões em aberto.
+
+---
+
+## 2026-11-21 – Etapa 0 (branch `etapa-0-preparacao`)
+
+### 0.1 Importação do PolyTalk com histórico
+
+- `git remote add upstream https://github.com/PolyTalkIO/polytalk.git`, com a URL de
+  push trocada para `DISABLED_no_push_to_upstream` (garante a regra da disciplina:
+  um `git push upstream` acidental falha).
+- `git merge --allow-unrelated-histories 2aeadfd` (v0.4.0-ce). Único conflito: o
+  `README.md`. Resolvido mantendo o README original do PolyTalk com um bloco no topo
+  explicando o fork.
+- A pasta `docs/` do PolyTalk (`benchmarking.md`, `production-deployment.md`,
+  `provider-extension.md`) conviveu sem conflito com a nossa documentação.
