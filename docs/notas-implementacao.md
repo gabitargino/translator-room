@@ -142,3 +142,15 @@ critério de pronto, árvore de prioridade, riscos e questões em aberto.
 
 - Regra resumida no bloco do fork no `README.md`; branch `etapa-0-preparacao` já
   existia (criada junto com o planejamento, commit `365d5bf`).
+
+### 0.3 Configuração local (`.env` e `config.yaml`)
+
+- `.env` e `config/config.yaml` **já estavam** no `.gitignore` do PolyTalk; nada a
+  acrescentar. Confirmado com `git check-ignore -v`.
+- `.env.example`: seção de tradução aponta para o Ollama
+  (`http://host.docker.internal:11434`, `translategemma:4b`, chave vazia) nos dois
+  provedores (`TRANSLATION_*` e `TRANSLATEGAMMA_*`), com o aviso sobre `localhost`.
+- Chave vazia funciona: `_bearer_headers` em `app/services/translation_service.py`
+  só envia `Authorization` quando há chave.
+- `config/config.yaml.example`: só um comentário explicando os `mock_mode`.
+- Locais criados por cópia dos exemplos (mock ligado por padrão, para a 0.4).
