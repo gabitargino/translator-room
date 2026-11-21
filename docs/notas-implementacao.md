@@ -410,3 +410,110 @@ Tempo desde o fim da fala (s), mediana / p95:
   perdeu "caro") e 三→散 (zh-05, a tradução perdeu "quarta-feira"). No PT, a
   transcrição saiu certa, mas `pt-07` virou "a que distância fica" na tradução
   (erro do tradutor). A pontuação do STT em ZH às vezes cai no meio da frase.
+
+### 1.3 Precisão do STT: modelos em CPU e GPU
+
+- Script: `bench/medir_stt.py`, direto no WebSocket do STT, uma conexão por frase,
+  `emit_policy=pause` como no modo conversation. Mede nos dois modos de idioma:
+  **fixo** (o idioma é informado) e **auto** (detecção restrita a pt/zh, que é o
+  que o modo conversation faz).
+- Métrica: CER em ZH e WER em PT, depois de normalizar (tradicional→simplificado
+  com `opencc-python-reimplemented`, instalado só na `.venv`; algarismos→numerais;
+  两→二; sem pontuação). O tempo é medido do envio do silêncio final até o texto;
+  como o áudio vai sem esperar o tempo real, o tempo é quase só inferência.
+- **GPU no Docker:** a imagem do STT (`nvidia/cuda:12.2.2-cudnn8`) tem cuDNN 8 e o
+  `ctranslate2` instalado é o 4.9. Eu esperava que isso falhasse na GPU, mas um
+  teste com `small` em `cuda` funcionou. Não foi preciso mudar a imagem.
+- Os modelos foram testados num container temporário (`stt-gpu-teste`, porta 8001,
+  mesmas variáveis do STT atual), com o tradutor carregado na GPU ao mesmo tempo.
+
+Resultados (1 rodada, 10 frases por idioma e modo; tempo = mediana em s):
+
+| Modelo | ZH exatas (fixo / auto) | Erro ZH | PT exatas | Tempo | Erros em ZH |
+|---|---|---|---|---|---|
+| `small` CPU int8 (padrão) | 8 / 8 | 1,5% | 10 / 10 | 1,55–1,80 | 贵→规, 三→散 (+ tradicional) |
+| `small` GPU fp16 | 8 / 8 | 1,5% | 10 / 10 | 0,43 | os mesmos |
+| **`medium` GPU fp16** | **9 / 9** | **0,8%** | 10 / 10 | **0,68** | 贵→归 |
+| `medium` GPU int8_float16 | 8 / 9 | 0,8–2,0% | 9 / 10 | 0,65 | 贵→归, 洗→吸; PT: metrô→metro |
+| `large-v3-turbo` GPU int8_float16 | 7 / 7 | 2,7–4,0% | 10 / 10 | 0,58 | 洗手间→携手间/键, 贵→归, 下个→下隔 |
+
+- **Primeira escolha (revista abaixo): `medium` fp16 na GPU.** Foi o que mais acertou em chinês e corta
+  ~1 s por frase em relação ao padrão. O `small` na GPU seria ainda mais rápido
+  (0,43 s), mas mantém o erro 三→散, que mudou o sentido de uma tradução na 1.2.
+  O turbo em int8 foi rápido, mas errou palavras comuns (洗手间).
+- O erro 贵→归/规 aparece em **todos** os modelos. Provavelmente é a pronúncia da
+  voz sintética do Piper, não do STT. Confirmar com gravação real.
+- O `small` em CPU deu 1,55 s numa medição e 1,7–1,8 s noutra; o processador é
+  compartilhado com os outros containers do notebook. Uma medição feita enquanto
+  o turbo era baixado (1,9–2,0 s) foi descartada.
+- **Idioma: manter a detecção automática (pt/zh).** Ela acertou 100% em todos os
+  modelos, inclusive em frases de 1,3 s, e a diferença de tempo para o modo fixo é
+  desprezível. Isso preserva o sinal de idioma para o filtro da 2.7. Fixar o idioma
+  por participante continua como plano B, caso a fala real dê erros de detecção.
+- A primeira frase depois de carregar o modelo na GPU demora mais (1,9–3,6 s,
+  aquecimento). Isso aparece no p95 do modo fixo, que é medido primeiro.
+- **Aplicado na pilha** (o modelo foi trocado depois para `small`, ver a revisão):
+  - `.env.example` (e `.env` local): `STT_MODEL=medium`, `STT_DEVICE=cuda`,
+    `STT_COMPUTE_TYPE=float16`, `STT_MODEL_WORKERS=1` (uma cópia do modelo na GPU de
+    6 GB, que é dividida com o tradutor);
+  - `COMPOSE_FILE=docker-compose.yml;docker-compose.gpu.yml`, para que o
+    `docker compose up` simples já use a GPU;
+  - `docker-compose.gpu.yml`: volume `stt_models` para o cache do Hugging Face. Sem
+    ele, o `medium` seria baixado de novo a cada recriação do container, porque o
+    build da imagem não tem GPU e só embute o `small`.
+- Quanto de VRAM sobra com os dois modelos carregados: o `nvidia-smi` no WSL não
+  mostra o uso por processo, e o total varia com os programas abertos no Windows
+  (4,1 a 5,7 GB de 6,1 GB durante os testes). O tradutor continuou 100% na GPU
+  (`size_vram` = `size` no `/api/ps`).
+
+#### 1.3 – revisão da escolha: `small` fp16 na GPU
+
+Com o `medium` fp16 aplicado, a medição de ponta a ponta
+(`bench/resultados/1.3-medium-gpu.json`) **não melhorou**: PT→ZH 3,44 s, ZH→PT
+4,67 s. A transcrição ficou ~0,6 s mais rápida, mas a tradução passou de 0,52 s
+para 0,94–1,0 s, e a voz em PT de 1,06 s para 1,48 s.
+
+Investigação:
+
+1. Disputa de CPU? Não: `docker stats` durante a conversa mostrou os containers
+   ociosos entre as frases.
+2. Tradução sozinha com o STT carregado, mas parado: 0,22 s, igual a antes.
+3. Tradução logo depois de uma inferência do STT: lenta tanto com o STT na GPU
+   quanto em CPU (0,44–0,66 s). Um teste só com o Ollama mostrou o motivo: depois
+   de 4 s parada, a GPU reduz o clock, e a mesma frase leva 0,42 s, contra 0,2 s
+   em sequência. Isso explica os 0,52 s da 1.2, mas não os 0,95 s.
+4. O log do Ollama (`server.log`, uma linha por pedido) confirmou que o próprio
+   Ollama ficou 2× mais lento: **0,40–0,72 s por pedido na 1.2 contra 0,86–1,32 s
+   com o `medium` na GPU**, mesmo com as 35/35 camadas na GPU.
+5. Com modelos menores na GPU, o Ollama voltou a **0,20–0,48 s**:
+
+| STT na GPU | PT→ZH (mediana / p95) | ZH→PT (mediana / p95) | Ollama por pedido |
+|---|---|---|---|
+| `small` CPU int8 (1.2, referência) | 3,46 / 3,84 | 4,38 / 5,06 | 0,40–0,72 s |
+| `medium` fp16 | 3,44 / 3,89 | 4,67 / 5,71 | 0,86–1,32 s |
+| `medium` int8_float16 | 2,47 / 5,76* | 3,65 / 4,18 | 0,20–0,65 s |
+| **`small` fp16** | **2,20 / 2,32** | **3,49 / 4,28** | 0,20–0,42 s |
+
+\* a primeira frase depois de recriar o container (aquecimento).
+
+Conclusão: com o `medium` fp16 (~1,5 GB), a VRAM de 6 GB fica no limite junto com
+o tradutor (2,9 GB) e com o Windows. O driver (WDDM) passa a mover memória entre a
+GPU e a RAM, e o tradutor sofre. Isso não aparece no `size_vram` do Ollama.
+
+Precisão **dentro do app** (transcrições das medições de ponta a ponta, mesmo
+normalizador): todos os modelos erram **as mesmas duas frases em ZH** (zh-03
+贵→归/规, zh-05 三→散). Em PT, todos acertam tudo, exceto o `medium` int8 (pt-07
+metrô→metro). A vantagem do `medium` no teste direto do STT (9/10) não se repete no
+app. A diferença provável está no áudio: no app há 0,2 s de silêncio antes da fala
+e o envio é em tempo real. Para a escolha, vale o caminho real.
+
+**Escolha final: `small` fp16 na GPU** (`STT_MODEL=small`, `STT_DEVICE=cuda`,
+`STT_COMPUTE_TYPE=float16`, `STT_MODEL_WORKERS=1`). Tem a mesma precisão do padrão
+no app, inferência de 0,43 s e pouca VRAM, e o tradutor fica rápido.
+**PT→ZH já cumpre a meta (2,20 s); ZH→PT não (3,49 s)**, porque a voz em PT
+(Supertonic, ~1,3 s) é o que mais pesa agora (1.6). A espera de silêncio (1,2 s) é
+a outra parte grande (1.4).
+
+Lições para o relatório: medir cada peça isolada não bastou. O `medium` parecia
+melhor nas duas métricas isoladas (precisão no STT, tradução sozinha) e piorou o
+sistema. Foi a medição de ponta a ponta que mostrou o problema.
