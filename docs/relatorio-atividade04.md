@@ -218,7 +218,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | Etapa | Descrição | Status |
 |---|---|---|
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
-| 1 | Linha de base e viabilidade da latência (portão de 3 s) | Pendente (tradução já medida) |
+| 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Pendente |
 | 3 | Interface web para celular | Pendente |
 | 4 | Rede local e HTTPS | Pendente |
@@ -233,6 +233,9 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 0 | Opção `translation.keep_alive` (`TRANSLATION_KEEP_ALIVE`), enviada ao Ollama só quando configurada, para manter o modelo na GPU entre falas. Inclui 4 testes | `app/services/translation_service.py`, `config/config.yaml.example`, `.env.example`, `docker-compose.yml`, `tests/test_translation_detailed.py` |
 | 0 | Configuração de exemplo apontando a tradução para o Ollama local (`translategemma:4b`, sem chave) | `.env.example`, `config/config.yaml.example` |
 | 0 | `.gitattributes` forçando LF em scripts e Dockerfiles (correção para Windows) | `.gitattributes` |
+| 1 | Correção no STT: pausas dentro da frase se somavam como silêncio final, fechando a frase cedo e cortando o fim da fala. Inclui teste | `stt/app/main.py`, `tests/test_app.py` |
+| 1 | STT na GPU (`small` fp16), espera de silêncio de 0,8 s e Supertonic com 4 passos; volume para o cache dos modelos | `.env.example`, `docker-compose.gpu.yml` |
+| 1 | Conjunto de frases PT/ZH e scripts de medição (latência, STT, voz, concorrência) | `bench/` |
 
 ### 5.4 Dificuldades encontradas
 
@@ -247,6 +250,12 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
   alterados.
 - **Recarga do modelo de tradução (Etapa 0).** O Ollama descarrega o modelo após
   5 min parado; a recarga custava de 4 a 16 s na primeira fala depois de uma pausa.
+- **GPU de 6 GB compartilhada (Etapa 1).** Com o Whisper `medium` na GPU, o
+  tradutor ficou 2× mais lento, mesmo com todas as camadas na GPU. O motivo provável
+  é a pressão de VRAM no driver do Windows. A troca do STT para a GPU só compensou
+  com o `small`.
+- **Ruído de fundo (Etapa 1).** O STT detecta o fim da frase por energia (RMS). Com
+  ruído de −45 dBFS, nenhuma frase foi fechada. Fica para os testes com celular.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -260,7 +269,8 @@ Seção central do relatório, segundo o enunciado.
 | Viabilidade da tradução | Instalou o Ollama, escreveu e rodou o teste PT↔ZH com o prompt do PolyTalk e avaliou a qualidade das traduções | O grupo escolheu o modelo (`translategemma:4b`) |
 | Planejamento | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa |
 | Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
-| Etapas 1 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
+| Etapas 2 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -273,6 +283,14 @@ Seção central do relatório, segundo o enunciado.
   imagens eram construídas (~12 min), o agente adiantou a linha de base dos testes
   e a solução do `keep_alive`.
 
+- **Medição de ponta a ponta como critério (Etapa 1).** Em cada mudança de
+  configuração, o agente mediu a conversa inteira, além da peça isolada. Foi isso
+  que mostrou que o `medium` piorava o sistema e que revelou o bug do silêncio: a
+  latência *caía* quando se inseria uma pausa na frase, o que não fazia sentido.
+- **Inteligibilidade medida pelo próprio STT (Etapa 1).** Sem poder ouvir, o
+  agente transcreveu a voz sintetizada para comparar 8, 4 e 2 passos. É uma
+  estimativa; a naturalidade ainda depende de uma pessoa ouvir.
+
 ### 6.3 O que não funcionou
 
 - **Checagem de CRLF enganosa (Etapa 0).** O agente verificou as quebras de linha
@@ -284,6 +302,15 @@ Seção central do relatório, segundo o enunciado.
   percebido ao preparar as instruções do teste visual e corrigido nas notas.
 - **Sem acesso ao navegador (Etapa 0).** A extensão do Chrome não estava conectada,
   então a interface só pôde ser conferida por um integrante.
+
+- **Escolha com base em medições isoladas (Etapa 1).** O agente escolheu o Whisper
+  `medium` na GPU porque ele acertou mais no teste do STT e era mais rápido que o
+  `small` em CPU. Já com ele aplicado, a medição de ponta a ponta mostrou que ele
+  deixava o tradutor 2× mais lento, e dentro do app ele não acertava mais que o
+  `small`. A escolha foi revista.
+- **Erros nos próprios scripts (Etapa 1).** Um tempo de download medido no lugar
+  errado (1,5 s em vez de 0,02 s) e um caractere nulo inserido por escape errado
+  no shell. Os dois foram percebidos porque o resultado não fazia sentido.
 
 ### 6.4 Imprevistos
 
@@ -303,6 +330,13 @@ Seção central do relatório, segundo o enunciado.
   outro caminho, o agente descobriu que o endpoint OpenAI do Ollama aceita
   `keep_alive` por requisição. A solução foi para o código, versionada e testada, e
   não depende da configuração da máquina.
+- **Bug no PolyTalk revelado pela medição (Etapa 1).** O contador de silêncio do
+  STT não zerava quando a fala voltava. Uma hesitação no meio da frase fazia o
+  STT fechar cedo e cortar o fim ("o prazo está muito curto" → "o prazo está
+  morto"). Corrigido em uma linha, com teste.
+- **No modo conversa, só a espera de silêncio importa (Etapa 1).** O plano previa
+  ajustar também o tamanho da janela do STT, mas o código mostrou que, nesse modo,
+  a janela só fecha por pausa.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente

@@ -10,6 +10,12 @@ mesmo áudio, os resultados de configurações diferentes ficam comparáveis. Pl
 | `audio/<id>.wav` | Uma frase por arquivo: 16 kHz, mono, 16 bits, sem silêncio nas pontas |
 | `gerar_audios.py` | Gera os áudios com as vozes da própria pilha |
 | `comum.py` | Funções compartilhadas (leitura, reamostragem, percentis). Só usa a biblioteca padrão |
+| `medir_conversa.py` | Latência de ponta a ponta no modo conversation, por parte (1.2, 1.4) |
+| `medir_stt.py` | Precisão e tempo do STT, idioma fixo ou automático (1.3) |
+| `medir_concorrencia.py` | Duas sessões falando ao mesmo tempo (1.5) |
+| `medir_tts.py` | Tempo de síntese das vozes; passos do Supertonic (1.6) |
+| `inteligibilidade_tts.py` | Transcreve a voz gerada para estimar se é inteligível (1.6) |
+| `resultados/` | Resultados brutos (JSON) de cada medição citada nas notas |
 
 ## Frases
 
@@ -44,3 +50,17 @@ Para trocar por gravações reais, grave com o mesmo `id` (16 kHz, mono, WAV 16 
 com pouco silêncio no início e no fim) e substitua o arquivo em `audio/`. O gerador
 não sobrescreve arquivos existentes sem `--sobrescrever`. Registre a troca nas notas
 de implementação.
+
+## Como medir
+
+Com a pilha de pé (`docker compose up -d`) e o modo real ligado em
+`config/config.yaml`:
+
+```bash
+.venv/Scripts/python -m pip install websockets opencc-python-reimplemented
+PYTHONUTF8=1 .venv/Scripts/python bench/medir_conversa.py --rotulo teste --rodadas 1
+```
+
+Cada script explica as opções com `--help`. Os resultados e as conclusões de cada
+medição estão em [docs/notas-implementacao.md](../docs/notas-implementacao.md),
+entrada "Etapa 1".

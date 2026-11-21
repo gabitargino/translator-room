@@ -677,3 +677,73 @@ cada parte é traduzida sem a outra.
   em ZH levaram 2,1 s e 1,3 s, contra 0,1 s nas demais (provavelmente a busca da
   lista de vozes do Piper, que o app guarda por 1 h, e as conexões novas). Fica
   para a Etapa 5: aquecer os serviços ao iniciar.
+
+### Portão da Etapa 1: decisão
+
+Medição com a configuração final (`bench/resultados/1.6-final.json`, 2 rodadas, 20
+medidas por direção, uma sessão; `1.6-final-2-falas.json`, duas falas
+simultâneas, 1 rodada):
+
+| Configuração | PT→ZH mediana / p95 | ZH→PT mediana / p95 |
+|---|---|---|
+| Padrão (1.2): `small` CPU, espera 1,2 s, Supertonic 8 passos | 3,46 / 3,84 | 4,38 / 5,06 |
+| **Final, uma fala** | **1,85 / 2,96** | **2,45 / 2,94** |
+| Final, duas falas simultâneas | 2,01 / 2,54 | 2,64 / 3,53 |
+
+Para onde foi o tempo (final, uma fala, medianas):
+
+| Parte | PT→ZH | ZH→PT |
+|---|---|---|
+| Espera de silêncio (0,8 s) + STT `small` na GPU | 1,42 | 1,40 |
+| Tradução | 0,24 | 0,29 |
+| Voz | 0,14 (Piper) | 0,75 (Supertonic, 4 passos) |
+| Download do áudio | 0,02 | 0,02 |
+
+**Decisão: o portão passou.** A mediana fica abaixo de 3 s nas duas direções, com
+folga (1,85 e 2,45 s), e o p95 também. A Etapa 2 está liberada.
+
+Configuração adotada (`.env.example`):
+
+- `STT_MODEL=small`, `STT_DEVICE=cuda`, `STT_COMPUTE_TYPE=float16`,
+  `STT_MODEL_WORKERS=1`, com `COMPOSE_FILE` incluindo `docker-compose.gpu.yml`;
+- `STT_PAUSE_FLUSH_SECONDS=0.8`;
+- `SUPERTONIC_TTS_STEPS=4`;
+- correção do contador de silêncio do STT (`stt/app/main.py`).
+
+Ressalvas que seguem para as próximas etapas:
+
+1. **Fala sintética e silêncio digital.** A precisão e o fechamento das frases
+   foram medidos em condições ideais. Com ruído de fundo de −45 dBFS, o STT não
+   fecha nenhuma frase (1.4). Medir com os celulares (Etapas 3 e 6).
+2. **Ouvir a voz em PT com 4 passos** (1.6), antes de considerar a escolha final.
+3. **Chinês:** o STT ainda erra zh-03 (贵) e zh-05 (三→散) e devolve caracteres
+   tradicionais em parte das frases. Isso não afeta a latência, mas afeta a
+   tradução (1.2). Avaliar na 6.7 com gravações reais.
+4. **Aquecimento:** a primeira fala depois de reiniciar o STT ou o app é mais lenta
+   (1,3–3,6 s a mais). Tratar na Etapa 5.
+5. **Rede:** tudo foi medido no próprio notebook. O Wi-Fi até os celulares entra na
+   Etapa 4/5.
+6. **VRAM:** o `medium` mostrou que STT e tradutor disputam a GPU de 6 GB. Qualquer
+   modelo novo na GPU precisa de uma medição de ponta a ponta, não só isolada.
+
+### Etapa 1 – uso do agente
+
+- **Executado pelo agente:**
+  - as 6 subtarefas, com um commit cada, mais o commit da correção do STT;
+  - 6 scripts de medição em `bench/` (só biblioteca padrão, mais `websockets` e
+    `opencc` opcional);
+  - todas as medições, com os resultados brutos versionados em
+    `bench/resultados/`;
+  - o diagnóstico da lentidão com o `medium` (log do Ollama);
+  - a descoberta e a correção do bug do contador de silêncio, com teste.
+- **Erros do agente corrigidos no caminho:**
+  - o script de latência media o download depois de uma espera (deu 1,5 s em vez de
+    0,02 s);
+  - a hipótese de que o cuDNN 8 impediria a GPU estava errada;
+  - a primeira escolha do `medium` foi feita com medições isoladas e revista com a
+    de ponta a ponta;
+  - um caractere nulo entrou num script por escape errado no shell;
+  - a medição do `small` em CPU foi repetida porque rodou junto com um download.
+- **Pendências humanas:** ouvir a voz com 4 passos (1.6); gravar frases reais, se
+  o grupo quiser medir a precisão fora do caso ideal; revisar o PR, em especial a
+  mudança em `stt/app/main.py`.
