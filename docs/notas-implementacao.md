@@ -303,3 +303,26 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
 - **Pendente:** teste com uma pessoa falando PT e ZH no navegador do notebook
   (`http://127.0.0.1:9000`, modo conversa). A interface não tem chinês na lista de
   idiomas (achado já registrado), então o teste pela UI pode depender da Etapa 3.
+
+### Etapa 0 – uso do agente e pendências
+
+- **Como o agente foi usado:** Claude Code executou a etapa inteira a partir do
+  arquivo da etapa (importação, configuração, builds, testes e diagnóstico), com um
+  commit por subtarefa. Ordem real: 0.1 → 0.2 → 0.3 → 0.4 → 0.8 → 0.7 → 0.5 → 0.6.
+  A 0.8 e a 0.7 foram adiantadas enquanto o Docker Desktop iniciava e as imagens
+  eram construídas.
+- **O que exigiu atenção / correção:**
+  - O controle de permissões bloqueou a alteração persistente do sistema
+    (`OLLAMA_KEEP_ALIVE` + reiniciar o Ollama). O agente trocou por uma solução no
+    código (0.7), que ficou mais portátil e testável.
+  - O agente fez uma checagem de CRLF que deu resultado errado e só percebeu quando
+    o container quebrou (0.5).
+  - A extensão do navegador não estava conectada; a 0.4 foi verificada por HTTP e
+    WebSocket, não visualmente.
+- **Pendências para fechar a etapa** (antes do PR para a `main` e da tag
+  `etapa-0-concluida`):
+  1. Abrir `http://127.0.0.1:9000` no navegador e conferir a interface (0.4).
+  2. Teste falado PT↔ZH por uma pessoa (0.6).
+  3. Revisão das mudanças de código por um integrante:
+     `app/services/translation_service.py`, `tests/test_translation_detailed.py`,
+     `docker-compose.yml`, `.gitattributes`.
