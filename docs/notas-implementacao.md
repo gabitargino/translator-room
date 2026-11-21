@@ -1128,3 +1128,100 @@ Etapa 4. A página avisa isso (`room.mic_unsupported`) em vez de falhar calada.
 - **Pendências humanas:** a tabela "Conferência humana pendente" da
   [Etapa 3](etapas/etapa-3-interface-celular.md); revisar os textos em chinês;
   revisar o PR.
+
+## 2026-11-21 – Etapa 4 (branch `etapa-4-rede-https`)
+
+Feita depois da Etapa 3 (ordem trocada, ver acima). Objetivo: os celulares
+abrirem a sala pela Wi-Fi com o microfone liberado, o que exige HTTPS.
+
+### 4.1 Decisão
+
+- Proxy Caddy no Docker (`docker-compose.https.yml`), com a autoridade local do
+  próprio Caddy (`local_certs`). Prós e contras na
+  [Etapa 4](etapas/etapa-4-rede-https.md#decisão-da-41). Em resumo: sem alertas
+  nos celulares depois de instalar a raiz uma vez, e o app original não muda.
+- O HTTPS liga pelo `COMPOSE_FILE`; sem ele, tudo continua como antes na porta 9000.
+
+### 4.2 Certificado no IP da Wi-Fi
+
+- Site em `https://{$ROOM_LAN_IP}` e `https://localhost`. A raiz e os
+  certificados ficam no volume `caddy_data`: a raiz (10 anos) sobrevive à
+  recriação do contêiner; o certificado do site (12 h) é renovado pelo Caddy.
+- **Achado: sem SNI.** Navegadores não mandam SNI quando o endereço é um IP, e
+  dentro do contêiner o IP local é o da rede Docker, não o da Wi-Fi. Sem
+  `default_sni {$ROOM_LAN_IP}`, o Caddy não saberia qual certificado entregar.
+  Consequência: `https://127.0.0.1:9443` recebe o certificado da Wi-Fi e falha;
+  o site em `127.0.0.1` foi retirado, e no notebook usa-se `https://localhost:9443`.
+- A raiz é servida por HTTP na porta 9080 (`/certificado.crt`, só o `root.crt`,
+  nunca a chave), com uma página de instruções em PT e ZH: o celular precisa da
+  raiz antes de confiar no HTTPS.
+- O curl do Git Bash (Schannel) recusou o HTTPS mesmo com `--cacert` por não
+  conseguir checar revogação (a autoridade local não publica CRL); com
+  `--ssl-no-revoke` passou. Isso não afeta os celulares, mas confunde o teste.
+
+### 4.3 Firewall e porta
+
+- O Docker Desktop publica as portas em `0.0.0.0` do Windows e já tem a regra
+  "Docker Desktop Backend" no perfil Público, que é o perfil da Wi-Fi deste
+  notebook. Talvez nem seja preciso regra nova.
+- `tools/rede-local.ps1 -Firewall` (como administrador) cria a regra para 9443 e
+  9080, perfis Privado e Público, só para `LocalSubnet`. O agente não tem
+  permissão de administrador; não foi executado.
+- O script também descobre o IP pela interface com gateway, preferindo a Wi-Fi e
+  ignorando Tailscale, WSL e Docker (o notebook tem Tailscale com perfil Privado).
+- Problema do PowerShell 5.1: `$PSScriptRoot` está vazio no valor padrão do
+  `param()`; corrigido calculando o caminho do `.env` no corpo. O script tem BOM
+  UTF-8 (`*.ps1 text eol=crlf`), senão o 5.1 lê os acentos como ANSI.
+
+### 4.4 Origens
+
+- `ALLOWED_ORIGINS` só alimenta o CORS. A página e os WebSockets da sala são da
+  mesma origem, e o PolyTalk não confere `Origin` nos WebSockets: o celular não
+  seria bloqueado. Mesmo assim o script põe as origens HTTPS na lista, para
+  chamadas entre origens (ex.: tela original aberta por outro endereço).
+- O problema real era outro: atrás do proxy, o app via `http` e o link do QR
+  code sairia `http://IP:9443`. O gunicorn/uvicorn só confia em
+  `X-Forwarded-Proto` vindo de `127.0.0.1`; `FORWARDED_ALLOW_IPS=*` no override
+  resolve sem mudar código. Conferido com `ROOM_PUBLIC_BASE_URL` vazio: o link
+  sai `https://192.168.1.16:9443/sala?code=...`. A porta 9000 também passa a
+  confiar nesses cabeçalhos; aceitável numa rede local.
+
+### 4.5 Microfone
+
+- Não verificável pelo agente (sem celular). Do lado do servidor, a sala inteira
+  pelo proxy funcionou: `bench/testar_sala.py --ca` ganhou `https`/`wss` com
+  validação do certificado (como o celular). 20/20 frases, 0 vazamentos, 20/20
+  cruzadas descartadas; mediana até o áudio PT→ZH 2,05 s e ZH→PT 2,73 s, contra
+  2,03 s e 2,76 s direto na porta 9000 (Etapa 2). O proxy não acrescenta tempo
+  mensurável.
+
+### 4.6 Guia
+
+- README, seção "translator-room: usar a sala pelos celulares": preparar o
+  notebook, instalar o certificado (Android e iPhone, incluindo a "confiança
+  total" do iOS, que é o passo mais esquecido) e tabela de sintomas de fora para
+  dentro. A mesma instrução, resumida e em chinês, está em `http://<IP>:9080`.
+
+### Testes
+
+- `tests/test_https_proxy.py`: 8 testes da configuração (portas, volume da
+  autoridade, `FORWARDED_ALLOW_IPS`, `default_sni`, só a raiz no download, página
+  do certificado, `.env.example`, LF no `caddy/`).
+- Suíte inteira no Windows: 519 passam; as 4 falhas são as da linha de base.
+
+### Etapa 4 – uso do agente
+
+- **Executado pelo agente:** escolha e registro da 4.1, Caddyfile, override do
+  compose, página do certificado, script do `.env` e do firewall, guia, testes,
+  subida do proxy e todas as verificações pelo IP da Wi-Fi, incluindo a sala
+  real por `wss://`.
+- **Achados do agente:** falta de SNI com IP (e o efeito no `127.0.0.1`); o link
+  do QR sairia `http` atrás do proxy; `ALLOWED_ORIGINS` não bloquearia o celular
+  (o plano supunha que sim); a regra do Docker Desktop já existente.
+- **Erros do agente corrigidos no caminho:** `$PSScriptRoot` no `param()`; o
+  primeiro teste com curl falhou pela checagem de revogação do Schannel, não pelo
+  certificado.
+- **Pendências humanas:** a tabela "Conferência humana pendente" da
+  [Etapa 4](etapas/etapa-4-rede-https.md#conferência-humana-pendente) e, em
+  seguida, a da Etapa 3; rodar `-Firewall` como administrador se o celular não
+  alcançar o notebook; revisar o PR.
