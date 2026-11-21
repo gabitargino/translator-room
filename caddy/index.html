@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>translator-room – certificado</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 34rem; margin: 0 auto; padding: 1rem; line-height: 1.5; color: #111827; background: #fff; }
+  h1 { font-size: 1.3rem; }
+  h2 { font-size: 1.05rem; margin-top: 1.5rem; }
+  a.btn { display: block; text-align: center; padding: .9rem; margin: .6rem 0; border-radius: .6rem; background: #2563eb; color: #fff; text-decoration: none; font-weight: 600; }
+  a.btn.alt { background: #059669; }
+  code { background: #f3f4f6; padding: 0 .25rem; border-radius: .25rem; }
+  small { color: #4b5563; }
+</style>
+</head>
+<body>
+<h1>translator-room · 同传房间</h1>
+<p>Para usar o microfone, o celular precisa confiar no certificado deste notebook.
+Faça isto <strong>uma vez</strong> em cada celular.<br>
+<small>手机需要先安装并信任本电脑的证书（每部手机只需一次）。</small></p>
+
+<a class="btn" href="/certificado.crt">1. Baixar o certificado · 下载证书</a>
+
+<h2>Android (Chrome)</h2>
+<ol>
+  <li>Toque no botão acima e baixe <code>translator-room-ca.crt</code>.</li>
+  <li>Configurações → Segurança → Mais configurações de segurança → Criptografia e
+    credenciais → Instalar um certificado → <strong>Certificado de CA</strong>.</li>
+  <li>Confirme (“Instalar mesmo assim”) e escolha o arquivo baixado.</li>
+</ol>
+<small>设置 → 安全 → 加密与凭据 → 安装证书 → CA 证书 → 选择下载的文件。</small>
+
+<h2>iPhone (Safari)</h2>
+<ol>
+  <li>Abra esta página no <strong>Safari</strong> e toque no botão acima → Permitir.</li>
+  <li>Ajustes → Perfil Transferido → Instalar.</li>
+  <li>Ajustes → Geral → Sobre → <strong>Ajustes de Confiança de Certificados</strong> →
+    ative a confiança total no certificado “Caddy Local Authority”.</li>
+</ol>
+<small>设置 → 已下载描述文件 → 安装；然后 通用 → 关于本机 → 证书信任设置 → 开启完全信任。</small>
+
+<a class="btn alt" href="https://{{.Host}}:{{env "ROOM_HTTPS_PORT"}}/sala">2. Abrir a sala · 打开房间</a>
+<p><small>Se o navegador ainda avisar que a conexão não é segura, o certificado não foi
+instalado ou não recebeu confiança total. O certificado só vale para este notebook.</small></p>
+</body>
+</html>
