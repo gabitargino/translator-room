@@ -1,0 +1,337 @@
+{
+ "rotulo": "1.6-final-2-falas",
+ "config_stt": {
+  "STT_MAX_CROSS_DELTA_WORD_REPEATS": "6",
+  "STT_TRANSCRIBE_WORKERS": "2",
+  "STT_EMIT_INTERVAL_SECONDS": "4.5",
+  "STT_COMPUTE_TYPE": "float16",
+  "STT_INITIAL_PROMPT": "",
+  "STT_NO_SPEECH_PROB_THRESHOLD": "0.50",
+  "STT_EMIT_MIN_CHARS": "120",
+  "STT_WORKERS": "1",
+  "STT_STREAM_CHUNK_SECONDS": "3.0",
+  "STT_LOG_PROB_THRESHOLD": "-1.0",
+  "STT_CHUNK_OVERLAP_SECONDS": "0.25",
+  "STT_IDLE_FLUSH_SECONDS": "3.0",
+  "STT_MODEL": "small",
+  "STT_TEMPERATURE": "0.0",
+  "STT_PRELOAD_MODEL": "true",
+  "STT_DEVICE": "cuda",
+  "STT_VAD_FILTER": "true",
+  "STT_LEADING_SILENCE_PREROLL_SECONDS": "0.2",
+  "STT_MODEL_WORKERS": "1",
+  "STT_SILENCE_RMS_THRESHOLD": "0.003",
+  "STT_TRANSCRIBE_QUEUE_SIZE": "8",
+  "STT_CONDITION_ON_PREVIOUS_TEXT": "false",
+  "STT_WORD_TIMESTAMPS": "true",
+  "STT_PAUSE_FLUSH_SECONDS": "0.8",
+  "STT_VAD_MIN_SILENCE_MS": "500",
+  "STT_VAD_SPEECH_PAD_MS": "200"
+ },
+ "resumo": {
+  "pt→zh": {
+   "transcricao": {
+    "n": 10,
+    "mediana": 1.4660000000000002,
+    "p95": 1.734,
+    "min": 1.218,
+    "max": 1.734
+   },
+   "traducao": {
+    "n": 10,
+    "mediana": 1.7725,
+    "p95": 2.127,
+    "min": 1.578,
+    "max": 2.127
+   },
+   "voz": {
+    "n": 10,
+    "mediana": 2.0015,
+    "p95": 2.533,
+    "min": 1.735,
+    "max": 2.533
+   },
+   "audio": {
+    "n": 10,
+    "mediana": 2.0125,
+    "p95": 2.545,
+    "min": 1.743,
+    "max": 2.545
+   },
+   "falhas": 0
+  },
+  "zh→pt": {
+   "transcricao": {
+    "n": 10,
+    "mediana": 1.3864999999999998,
+    "p95": 1.583,
+    "min": 1.204,
+    "max": 1.583
+   },
+   "traducao": {
+    "n": 10,
+    "mediana": 1.7055,
+    "p95": 1.953,
+    "min": 1.432,
+    "max": 1.953
+   },
+   "voz": {
+    "n": 10,
+    "mediana": 2.614,
+    "p95": 3.498,
+    "min": 2.11,
+    "max": 3.498
+   },
+   "audio": {
+    "n": 10,
+    "mediana": 2.6390000000000002,
+    "p95": 3.526,
+    "min": 2.121,
+    "max": 3.526
+   },
+   "falhas": 0
+  }
+ },
+ "medidas": [
+  {
+   "sessao": "A",
+   "id": "pt-01",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.43,
+   "traducao": 1.671,
+   "voz": 1.792,
+   "audio": 1.814,
+   "transcrito": "Bom dia, obrigado por virem à reunião de hoje.",
+   "traduzido": "早上好，感谢大家参加今天的会议。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-02",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.342,
+   "traducao": 1.578,
+   "voz": 1.735,
+   "audio": 1.743,
+   "transcrito": "Vocês conseguem me ouvir bem.",
+   "traduzido": "您能听清楚我吗？"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-03",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.576,
+   "traducao": 1.779,
+   "voz": 1.955,
+   "audio": 1.97,
+   "transcrito": "Podemos começar pela apresentação do novo produto.",
+   "traduzido": "我们可以先介绍一下新产品。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-04",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.734,
+   "traducao": 2.127,
+   "voz": 2.416,
+   "audio": 2.443,
+   "transcrito": "O preço por unidade é de R$ 12,50.",
+   "traduzido": "单价为 12.50 巴西雷亚尔。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-05",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.435,
+   "traducao": 1.789,
+   "voz": 2.533,
+   "audio": 2.545,
+   "transcrito": "Precisamos entregar a primeira remessa até o dia 15 de março.",
+   "traduzido": "我们需要在3月15日之前交付第一批货物。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-06",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.497,
+   "traducao": 1.766,
+   "voz": 1.866,
+   "audio": 1.875,
+   "transcrito": "Você pode repetir mais devagar, por favor.",
+   "traduzido": "请您再说一遍，慢一点。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-07",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.633,
+   "traducao": 1.873,
+   "voz": 2.051,
+   "audio": 2.074,
+   "transcrito": "Onde fica a estação de metrô mais próxima?",
+   "traduzido": "最近的地铁站距离我有多远？"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-08",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.218,
+   "traducao": 1.589,
+   "voz": 2.011,
+   "audio": 2.022,
+   "transcrito": "Eu concordo com a proposta, mas o prazo está muito curto.",
+   "traduzido": "我赞同这个方案，但时间安排太紧凑了。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-09",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.338,
+   "traducao": 1.614,
+   "voz": 1.992,
+   "audio": 2.003,
+   "transcrito": "Vamos almoçar juntos depois da reunião.",
+   "traduzido": "我们会在会议结束后一起吃午饭。"
+  },
+  {
+   "sessao": "A",
+   "id": "pt-10",
+   "idioma": "pt",
+   "rodada": 1,
+   "transcricao": 1.603,
+   "traducao": 1.86,
+   "voz": 2.127,
+   "audio": 2.143,
+   "transcrito": "Muito obrigado, foi um prazer conhecer vocês.",
+   "traduzido": "非常感谢，很高兴认识你们。"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-01",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.204,
+   "traducao": 1.432,
+   "voz": 2.324,
+   "audio": 2.368,
+   "transcrito": "你好很高興認識你",
+   "traduzido": "Olá, é um prazer conhecer-te."
+  },
+  {
+   "sessao": "B",
+   "id": "zh-02",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.438,
+   "traducao": 1.665,
+   "voz": 2.11,
+   "audio": 2.121,
+   "transcrito": "请问洗手间在哪里?",
+   "traduzido": "Onde é que fica o banheiro?"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-03",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.464,
+   "traducao": 1.953,
+   "voz": 2.669,
+   "audio": 2.693,
+   "transcrito": "这个价格有点归能便宜一点吗?",
+   "traduzido": "Será que este preço poderia ser um pouco mais baixo?"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-04",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.583,
+   "traducao": 1.951,
+   "voz": 3.134,
+   "audio": 3.145,
+   "transcrito": "我们公司在上海有200多名员工。",
+   "traduzido": "Nossa empresa tem mais de 200 funcionários em Xangai."
+  },
+  {
+   "sessao": "B",
+   "id": "zh-05",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.322,
+   "traducao": 1.733,
+   "voz": 3.498,
+   "audio": 3.526,
+   "transcrito": "下個星期散下午3點,可以開會嗎?",
+   "traduzido": "Seria possível marcar uma reunião para a próxima semana, por volta das 15h?"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-06",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.222,
+   "traducao": 1.572,
+   "voz": 2.559,
+   "audio": 2.585,
+   "transcrito": "对不起,我没听懂请再说,一遍。",
+   "traduzido": "Desculpe, não entendi. Poderia repetir, por favor?"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-07",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.393,
+   "traducao": 1.861,
+   "voz": 2.55,
+   "audio": 2.575,
+   "transcrito": "我们需要先看一下合同的细节。",
+   "traduzido": "Precisamos primeiro analisar os detalhes do contrato."
+  },
+  {
+   "sessao": "B",
+   "id": "zh-08",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.31,
+   "traducao": 1.678,
+   "voz": 2.996,
+   "audio": 3.011,
+   "transcrito": "样品已经寄出了大概五天能到。",
+   "traduzido": "A amostra já foi enviada e deve chegar em cerca de cinco dias."
+  },
+  {
+   "sessao": "B",
+   "id": "zh-09",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.38,
+   "traducao": 1.672,
+   "voz": 2.44,
+   "audio": 2.469,
+   "transcrito": "你喜歡吃中國菜嗎?",
+   "traduzido": "Você gosta de comer comida chinesa?"
+  },
+  {
+   "sessao": "B",
+   "id": "zh-10",
+   "idioma": "zh",
+   "rodada": 1,
+   "transcricao": 1.549,
+   "traducao": 1.844,
+   "voz": 2.841,
+   "audio": 2.856,
+   "transcrito": "谢谢你的帮助,我们保持联系。",
+   "traduzido": "Obrigado pela sua ajuda, mantemos contacto."
+  }
+ ]
+}

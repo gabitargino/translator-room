@@ -9,7 +9,7 @@
 | **Libera** | Etapa 2 (só depois do portão) |
 | **Branch** | `etapa-1-viabilidade` (a partir da `main`, após o merge da Etapa 0) |
 | **Esforço** | 3P · 3M |
-| **Status** | Em andamento desde 2026-11-21. A etapa de tradução já foi medida: 0,28–0,35 s por frase |
+| **Status** | Concluída em 2026-11-21 (aguardando PR para a `main`). Portão aprovado: PT→ZH 1,85 s, ZH→PT 2,45 s (mediana) |
 
 ## Subtarefas
 
@@ -21,7 +21,7 @@
 | 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Concluída: espera de 0,8 s → PT→ZH 1,67 s, ZH→PT 2,75 s (mediana). Corrigido bug do STT (pausas internas somavam) |
 | 1.5 | Medir duas falas simultâneas (dois fluxos de STT ao mesmo tempo) | P | Importante | Latência sob concorrência registrada | Concluída: PT→ZH 2,14 s, ZH→PT 3,32 s (mediana). O gargalo é a voz em CPU, não o STT |
 | 1.6 | Medir o tempo de síntese de voz em PT e ZH | P | Importante | Tempo por frase registrado | Concluída: Piper ZH 0,15 s; Supertonic PT 1,48 s → 0,83 s com 4 passos (falta ouvir) |
-| **Portão** | **A mediana estimada fica abaixo de 3 s?** Se não, rever os modelos ou os parâmetros antes de seguir | — | Obrigatório | Decisão anotada nas notas | Pendente |
+| **Portão** | **A mediana estimada fica abaixo de 3 s?** Se não, rever os modelos ou os parâmetros antes de seguir | — | Obrigatório | Decisão anotada nas notas | **Aprovado**: 1,85 s e 2,45 s (p95 2,96 e 2,94 s). Ressalvas nas notas |
 
 ## Orçamento de latência (3 s)
 
