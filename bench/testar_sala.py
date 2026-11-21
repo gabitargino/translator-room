@@ -318,7 +318,7 @@ def main() -> int:
     }
     destino = BENCH / "resultados" / f"{args.rotulo}.json"
     destino.write_text(
-        json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(saida, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     print(json.dumps(saida["resumo"], ensure_ascii=False, indent=2))
     print(f"-> {destino}")
