@@ -608,3 +608,33 @@ cada parte é traduzida sem a outra.
   fundo real dos celulares. Se passar de −50 dBFS, subir
   `STT_SILENCE_RMS_THRESHOLD` ou trocar a detecção por RMS pelo VAD (Silero),
   que o faster-whisper já tem.
+
+### 1.5 Duas falas simultâneas
+
+- Script: `bench/medir_concorrencia.py`. Abre duas sessões conversation
+  independentes (A e B), como dois participantes. Em cada passo, as duas começam a
+  falar no mesmo instante: A fala pt-N e B fala zh-N. As frases têm tamanhos
+  diferentes, então terminam em momentos diferentes, mas o processamento se
+  sobrepõe. Configuração final da 1.4 (`small` fp16 GPU, `STT_MODEL_WORKERS=1`,
+  `STT_TRANSCRIBE_WORKERS=2`, espera de 0,8 s). 2 rodadas, 20 medidas por direção.
+  Resultado: `bench/resultados/1.5-2-falas-mw1.json`.
+
+| Parte (mediana / p95, s) | PT→ZH 1 sessão | PT→ZH 2 sessões | ZH→PT 1 sessão | ZH→PT 2 sessões |
+|---|---|---|---|---|
+| Até a transcrição | 1,35 / 1,50 | 1,47 / 1,69 | 1,37 / 1,49 | 1,36 / 1,50 |
+| Tradução | 0,22 / 0,31 | 0,27 / 0,38 | 0,26 / 0,37 | 0,35 / 0,50 |
+| Voz | 0,10 / 0,13 | 0,23 / 0,62 | 1,04 / 1,53 | 1,56 / 2,68 |
+| **Total até o áudio** | **1,67 / 1,89** | **2,14 / 2,46** | **2,75 / 3,27** | **3,32 / 4,34** |
+
+- Nenhuma falha: as duas sessões receberam tudo, na direção certa.
+- **O gargalo sob concorrência é a voz, não o STT.** O Supertonic (PT) e o Piper
+  (ZH) rodam em CPU e usam vários núcleos cada um (o `docker stats` mostrou 240–
+  335% numa síntese). Quando os dois sintetizam ao mesmo tempo, a voz em PT
+  ganha +0,5 s na mediana e +1,1 s no p95.
+- O STT com um modelo só (`STT_MODEL_WORKERS=1`) quase não sofreu (+0,0–0,1 s):
+  a inferência na GPU leva ~0,4 s, então a segunda fala espera pouco. Não vale
+  subir para 2 modelos e gastar mais VRAM. O tradutor (fila do Ollama) também
+  sofreu pouco (+0,05–0,1 s).
+- Com duas falas simultâneas, **ZH→PT passa da meta (mediana 3,32 s)**. Na sala,
+  falas simultâneas devem ser exceção (as pessoas se revezam), mas o p95 de 4,3 s
+  mostra que a voz em PT é o próximo ponto a atacar (1.6).
