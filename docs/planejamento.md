@@ -132,7 +132,7 @@ Os IDs das subtarefas começam pelo número da etapa (ex.: 2.5 é a 5ª subtaref
 | # | Etapa | Branch | Objetivo | Subtarefas | Esforço | Status |
 |---|---|---|---|---|---|---|
 | 0 | [Preparação do ambiente](etapas/etapa-0-preparacao.md) | `etapa-0-preparacao` | Fork importado e PolyTalk rodando no notebook com Ollama | 8 | 7P · 1M | Concluída |
-| 1 | [Linha de base e viabilidade](etapas/etapa-1-viabilidade.md) | `etapa-1-viabilidade` | Provar que a meta de 3 s é alcançável antes de construir as salas | 6 + portão | 3P · 3M | Pendente (tradução já medida) |
+| 1 | [Linha de base e viabilidade](etapas/etapa-1-viabilidade.md) | `etapa-1-viabilidade` | Provar que a meta de 3 s é alcançável antes de construir as salas | 6 + portão | 3P · 3M | Concluída (portão aprovado: 1,85 s / 2,45 s) |
 | 2 | [Salas e participantes no servidor](etapas/etapa-2-salas-servidor.md) | `etapa-2-salas-servidor` | Salas, um STT por participante e roteamento para o ouvinte certo | 11 | 6P · 4M · 1G | Pendente |
 | 3 | [Interface web para celular](etapas/etapa-3-interface-celular.md) | `etapa-3-interface-celular` | Telas para criar/entrar na sala e ouvir as traduções | 10 | 7P · 3M | Pendente |
 | 4 | [Rede local e HTTPS](etapas/etapa-4-rede-https.md) | `etapa-4-rede-https` | Celulares acessando o notebook pela Wi-Fi com microfone liberado | 6 | 5P · 1M | Pendente |

@@ -340,3 +340,410 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
 - Com isso, 0.4 e 0.6 estão concluídas, e a **Etapa 0 está concluída**. Falta o PR
   `etapa-0-preparacao` → `main`, com revisão do outro integrante, e a tag
   `etapa-0-concluida`.
+
+## 2026-11-21 – Etapa 1 (branch `etapa-1-viabilidade`)
+
+### 1.1 Conjunto de frases de teste
+
+- Pasta nova [`bench/`](../bench/README.md), separada de `tools/benchmarks/` (que é
+  do PolyTalk), para não misturar código nosso com o original.
+- `bench/frases.tsv`: 10 frases em PT e 10 em ZH (reunião de negócios e viagem),
+  com a tradução de referência de cada uma, para reaproveitar na 6.7. Incluem
+  números, datas, preço e nome de cidade.
+- `bench/audio/*.wav`: 16 kHz, mono, 16 bits, de 1,3 a 4,1 s, sem silêncio nas pontas;
+  1,6 MB no total.
+- **Desvio do plano:** o plano dizia "gravadas"; os áudios foram **sintetizados**
+  com as vozes da própria pilha (Supertonic em PT, com 10 vozes alternadas; Piper
+  `zh_CN-huayan-medium` em ZH, uma voz só). Isso permite regerar o conjunto e medir
+  sem depender de alguém gravar. Em troca, a precisão medida é otimista. O README
+  explica como trocar por gravações reais com o mesmo `id`.
+- Conferência rápida pelo WebSocket do STT (Whisper `small`, CPU):
+  - PT saiu correto (`pt-01` exato; `pt-04` escreveu "R$ 12,50" por extenso→número).
+  - ZH errou de novo, como na 0.6: `zh-03` 贵→规; `zh-05` 三→散, em caracteres
+    tradicionais (下個星期散下午3點).
+  - A comparação da 1.3 precisa normalizar números e tradicional→simplificado
+    antes de contar erros.
+- O `tools/benchmarks/benchmark_stt.py` do PolyTalk não devolve texto com esses
+  áudios: ele não manda silêncio depois da fala, e o STT só fecha a janela por
+  pausa (`STT_PAUSE_FLUSH_SECONDS`) ou por tamanho. Os scripts de `bench/` mandam
+  silêncio depois da fala, como o navegador faz.
+
+### 1.2 Latência da configuração padrão (modo conversation)
+
+- Script: `bench/medir_conversa.py`. Uma sessão `mode=conversation` pt↔zh recebe o
+  áudio como o navegador manda (blocos de 2048 amostras, 128 ms, em tempo real),
+  com as frases alternadas pt-01, zh-01, pt-02... O relógio parte do último bloco
+  com fala. Resultado bruto: `bench/resultados/1.2-padrao.json`.
+- Configuração: a do `.env.example` (`STT_PAUSE_FLUSH_SECONDS=1.2`, Whisper `small`
+  CPU int8, Supertonic com 8 passos, `translategemma:4b` com `keep_alive`).
+- 2 rodadas × 20 frases = 20 medidas por direção. Nenhuma falha, frase dividida ou
+  direção errada (a detecção pt/zh acertou as 40).
+
+Tempo desde o fim da fala (s), mediana / p95:
+
+| Parte | PT→ZH | ZH→PT |
+|---|---|---|
+| Até a transcrição (espera de silêncio + STT) | 2,79 / 3,05 | 2,74 / 2,95 |
+| Tradução (isolada) | 0,52 / 0,57 | 0,52 / 0,69 |
+| Voz (isolada) | 0,12 / 0,31 (Piper zh) | 1,06 / 1,63 (Supertonic pt) |
+| Download do áudio (isolado) | 0,02 / 0,02 | 0,01 / 0,03 |
+| **Total até o áudio** | **3,46 / 3,84** | **4,38 / 5,06** |
+
+- **Nenhuma direção cumpre a meta de 3 s.** A transcrição sozinha leva ~2,75 s,
+  dos quais 1,2 s são espera de silêncio. Os ~1,5 s restantes são STT (a 1.3 vai
+  separar inferência de fila).
+- A voz em PT (Supertonic) custa ~1 s a mais que a voz em ZH (Piper): é a diferença
+  entre as direções (1.6).
+- A tradução dentro do app leva 0,52 s, contra 0,28–0,35 s medidos isoladamente no
+  Ollama. A diferença é o prompt do PolyTalk e o processamento do app; não é a
+  maior parte do problema.
+- O tempo de transcrição quase não depende do tamanho da frase (1,4 s a 4,1 s de
+  fala dão 2,65 a 3,24 s): o custo é a espera fixa mais o processamento.
+- **Correção no script durante a medição:** a primeira versão media o download
+  depois de esperar 1,5 s sem mensagens e deu "envio = 1,5 s". O download real
+  leva 0,01–0,03 s; o script agora soma só o tempo do download à chegada da
+  mensagem `tts`.
+- **Limitações:** silêncio digital (o microfone real tem ruído; o script aceita
+  `--ruido-dbfs`), servidor e cliente no mesmo computador (sem Wi-Fi) e o início
+  da reprodução no navegador não entra na conta.
+- Qualidade observada (para a 1.3): no ZH, o STT trocou 贵→规 (zh-03, a tradução
+  perdeu "caro") e 三→散 (zh-05, a tradução perdeu "quarta-feira"). No PT, a
+  transcrição saiu certa, mas `pt-07` virou "a que distância fica" na tradução
+  (erro do tradutor). A pontuação do STT em ZH às vezes cai no meio da frase.
+
+### 1.3 Precisão do STT: modelos em CPU e GPU
+
+- Script: `bench/medir_stt.py`, direto no WebSocket do STT, uma conexão por frase,
+  `emit_policy=pause` como no modo conversation. Mede nos dois modos de idioma:
+  **fixo** (o idioma é informado) e **auto** (detecção restrita a pt/zh, que é o
+  que o modo conversation faz).
+- Métrica: CER em ZH e WER em PT, depois de normalizar (tradicional→simplificado
+  com `opencc-python-reimplemented`, instalado só na `.venv`; algarismos→numerais;
+  两→二; sem pontuação). O tempo é medido do envio do silêncio final até o texto;
+  como o áudio vai sem esperar o tempo real, o tempo é quase só inferência.
+- **GPU no Docker:** a imagem do STT (`nvidia/cuda:12.2.2-cudnn8`) tem cuDNN 8 e o
+  `ctranslate2` instalado é o 4.9. Eu esperava que isso falhasse na GPU, mas um
+  teste com `small` em `cuda` funcionou. Não foi preciso mudar a imagem.
+- Os modelos foram testados num container temporário (`stt-gpu-teste`, porta 8001,
+  mesmas variáveis do STT atual), com o tradutor carregado na GPU ao mesmo tempo.
+
+Resultados (1 rodada, 10 frases por idioma e modo; tempo = mediana em s):
+
+| Modelo | ZH exatas (fixo / auto) | Erro ZH | PT exatas | Tempo | Erros em ZH |
+|---|---|---|---|---|---|
+| `small` CPU int8 (padrão) | 8 / 8 | 1,5% | 10 / 10 | 1,55–1,80 | 贵→规, 三→散 (+ tradicional) |
+| `small` GPU fp16 | 8 / 8 | 1,5% | 10 / 10 | 0,43 | os mesmos |
+| **`medium` GPU fp16** | **9 / 9** | **0,8%** | 10 / 10 | **0,68** | 贵→归 |
+| `medium` GPU int8_float16 | 8 / 9 | 0,8–2,0% | 9 / 10 | 0,65 | 贵→归, 洗→吸; PT: metrô→metro |
+| `large-v3-turbo` GPU int8_float16 | 7 / 7 | 2,7–4,0% | 10 / 10 | 0,58 | 洗手间→携手间/键, 贵→归, 下个→下隔 |
+
+- **Primeira escolha (revista abaixo): `medium` fp16 na GPU.** Foi o que mais acertou em chinês e corta
+  ~1 s por frase em relação ao padrão. O `small` na GPU seria ainda mais rápido
+  (0,43 s), mas mantém o erro 三→散, que mudou o sentido de uma tradução na 1.2.
+  O turbo em int8 foi rápido, mas errou palavras comuns (洗手间).
+- O erro 贵→归/规 aparece em **todos** os modelos. Provavelmente é a pronúncia da
+  voz sintética do Piper, não do STT. Confirmar com gravação real.
+- O `small` em CPU deu 1,55 s numa medição e 1,7–1,8 s noutra; o processador é
+  compartilhado com os outros containers do notebook. Uma medição feita enquanto
+  o turbo era baixado (1,9–2,0 s) foi descartada.
+- **Idioma: manter a detecção automática (pt/zh).** Ela acertou 100% em todos os
+  modelos, inclusive em frases de 1,3 s, e a diferença de tempo para o modo fixo é
+  desprezível. Isso preserva o sinal de idioma para o filtro da 2.7. Fixar o idioma
+  por participante continua como plano B, caso a fala real dê erros de detecção.
+- A primeira frase depois de carregar o modelo na GPU demora mais (1,9–3,6 s,
+  aquecimento). Isso aparece no p95 do modo fixo, que é medido primeiro.
+- **Aplicado na pilha** (o modelo foi trocado depois para `small`, ver a revisão):
+  - `.env.example` (e `.env` local): `STT_MODEL=medium`, `STT_DEVICE=cuda`,
+    `STT_COMPUTE_TYPE=float16`, `STT_MODEL_WORKERS=1` (uma cópia do modelo na GPU de
+    6 GB, que é dividida com o tradutor);
+  - `COMPOSE_FILE=docker-compose.yml;docker-compose.gpu.yml`, para que o
+    `docker compose up` simples já use a GPU;
+  - `docker-compose.gpu.yml`: volume `stt_models` para o cache do Hugging Face. Sem
+    ele, o `medium` seria baixado de novo a cada recriação do container, porque o
+    build da imagem não tem GPU e só embute o `small`.
+- Quanto de VRAM sobra com os dois modelos carregados: o `nvidia-smi` no WSL não
+  mostra o uso por processo, e o total varia com os programas abertos no Windows
+  (4,1 a 5,7 GB de 6,1 GB durante os testes). O tradutor continuou 100% na GPU
+  (`size_vram` = `size` no `/api/ps`).
+
+#### 1.3 – revisão da escolha: `small` fp16 na GPU
+
+Com o `medium` fp16 aplicado, a medição de ponta a ponta
+(`bench/resultados/1.3-medium-gpu.json`) **não melhorou**: PT→ZH 3,44 s, ZH→PT
+4,67 s. A transcrição ficou ~0,6 s mais rápida, mas a tradução passou de 0,52 s
+para 0,94–1,0 s, e a voz em PT de 1,06 s para 1,48 s.
+
+Investigação:
+
+1. Disputa de CPU? Não: `docker stats` durante a conversa mostrou os containers
+   ociosos entre as frases.
+2. Tradução sozinha com o STT carregado, mas parado: 0,22 s, igual a antes.
+3. Tradução logo depois de uma inferência do STT: lenta tanto com o STT na GPU
+   quanto em CPU (0,44–0,66 s). Um teste só com o Ollama mostrou o motivo: depois
+   de 4 s parada, a GPU reduz o clock, e a mesma frase leva 0,42 s, contra 0,2 s
+   em sequência. Isso explica os 0,52 s da 1.2, mas não os 0,95 s.
+4. O log do Ollama (`server.log`, uma linha por pedido) confirmou que o próprio
+   Ollama ficou 2× mais lento: **0,40–0,72 s por pedido na 1.2 contra 0,86–1,32 s
+   com o `medium` na GPU**, mesmo com as 35/35 camadas na GPU.
+5. Com modelos menores na GPU, o Ollama voltou a **0,20–0,48 s**:
+
+| STT na GPU | PT→ZH (mediana / p95) | ZH→PT (mediana / p95) | Ollama por pedido |
+|---|---|---|---|
+| `small` CPU int8 (1.2, referência) | 3,46 / 3,84 | 4,38 / 5,06 | 0,40–0,72 s |
+| `medium` fp16 | 3,44 / 3,89 | 4,67 / 5,71 | 0,86–1,32 s |
+| `medium` int8_float16 | 2,47 / 5,76* | 3,65 / 4,18 | 0,20–0,65 s |
+| **`small` fp16** | **2,20 / 2,32** | **3,49 / 4,28** | 0,20–0,42 s |
+
+\* a primeira frase depois de recriar o container (aquecimento).
+
+Conclusão: com o `medium` fp16 (~1,5 GB), a VRAM de 6 GB fica no limite junto com
+o tradutor (2,9 GB) e com o Windows. O driver (WDDM) passa a mover memória entre a
+GPU e a RAM, e o tradutor sofre. Isso não aparece no `size_vram` do Ollama.
+
+Precisão **dentro do app** (transcrições das medições de ponta a ponta, mesmo
+normalizador): todos os modelos erram **as mesmas duas frases em ZH** (zh-03
+贵→归/规, zh-05 三→散). Em PT, todos acertam tudo, exceto o `medium` int8 (pt-07
+metrô→metro). A vantagem do `medium` no teste direto do STT (9/10) não se repete no
+app. A diferença provável está no áudio: no app há 0,2 s de silêncio antes da fala
+e o envio é em tempo real. Para a escolha, vale o caminho real.
+
+**Escolha final: `small` fp16 na GPU** (`STT_MODEL=small`, `STT_DEVICE=cuda`,
+`STT_COMPUTE_TYPE=float16`, `STT_MODEL_WORKERS=1`). Tem a mesma precisão do padrão
+no app, inferência de 0,43 s e pouca VRAM, e o tradutor fica rápido.
+**PT→ZH já cumpre a meta (2,20 s); ZH→PT não (3,49 s)**, porque a voz em PT
+(Supertonic, ~1,3 s) é o que mais pesa agora (1.6). A espera de silêncio (1,2 s) é
+a outra parte grande (1.4).
+
+Lições para o relatório: medir cada peça isolada não bastou. O `medium` parecia
+melhor nas duas métricas isoladas (precisão no STT, tradução sozinha) e piorou o
+sistema. Foi a medição de ponta a ponta que mostrou o problema.
+
+### 1.4 Espera de silêncio e janelas do STT
+
+- **Janelas:** no modo conversation, o PolyTalk usa `emit_policy=pause`, e o STT
+  só fecha a frase por pausa (`STT_PAUSE_FLUSH_SECONDS`) ou por falta de áudio
+  (`STT_IDLE_FLUSH_SECONDS`, que não ocorre com o microfone aberto). O tamanho da
+  janela (`STT_STREAM_CHUNK_SECONDS`) e as regras de emissão (`STT_EMIT_*`) só
+  valem no modo live. **O único ajuste que importa aqui é a espera de silêncio.**
+- **Bug encontrado e corrigido** (commit `2ec42ed`):
+  - Em `stt/app/main.py`, o contador `trailing_silence_bytes` não zerava quando a
+    fala voltava, então pausas internas se somavam. Uma frase com hesitação de
+    0,9 s (abaixo da espera de 1,2 s) fechava cedo, e o corte do silêncio final
+    apagava o fim: "o prazo está muito curto" virou "o prazo está morto".
+  - O que revelou o bug foi a primeira varredura: com hesitação, a latência
+    ficava *menor*, o que não faz sentido.
+  - Correção de uma linha (zerar o contador quando a voz volta) e teste novo
+    (`test_stt_stream_internal_pause_does_not_count_as_trailing_silence`), que
+    falhava antes da correção. Suíte: 459 passam; as 4 falhas são as mesmas da
+    0.8, só no Windows.
+  - A primeira varredura foi descartada e refeita.
+- Script: `bench/medir_conversa.py` ganhou `--pausa-interna`. A opção estica a
+  maior pausa dentro da frase (entre 15% e 85% dela, normalmente a vírgula) para
+  simular hesitação. 15 das 20 frases têm onde esticar.
+
+Varredura com o STT `small` fp16 na GPU (1 rodada, 10 frases por direção; tempo
+até o áudio, mediana / p95 em s):
+
+| Espera | Áudio | PT→ZH | ZH→PT | Divididas | Erro PT | Erro ZH |
+|---|---|---|---|---|---|---|
+| 1,2 s | original | 2,12 / 2,23 | 3,08 / 3,71 | 0 | 0% | 1,5% |
+| 1,2 s | hesitação 0,5 s | 2,15 / 2,28 | 3,11 / 3,65 | 0 | 0% | 1,5% |
+| 0,8 s | original | 1,70 / 1,93 | 2,72 / 3,17 | 0 | 0% | 1,5% |
+| 0,8 s | hesitação 0,5 s | 1,75 / 1,85 | 2,64 / 3,34 | 0 | 0% | 1,5% |
+| 0,6 s | original | 1,42 / 1,55 | 2,42 / 2,99 | 0 | 0% | 1,5% |
+| 0,6 s | hesitação 0,5 s | 1,46 / 1,64 | 2,45 / 3,24 | 0 | 0% | 1,5% |
+| 0,4 s | original | 1,31 / 1,46 | 2,23 / 3,17 | 0 | 0% | 1,5% |
+| 0,4 s | hesitação 0,5 s | 1,35 / 1,42 | 2,40 / 3,00 | 0 | 0% | 1,5% |
+
+- Cada 0,1 s a menos de espera tira ~0,1 s da latência, até 0,6 s. De 0,6 para
+  0,4 s, o ganho cai (o bloco de áudio tem 128 ms).
+- Os erros são sempre zh-03 e zh-05 (os mesmos da 1.3). Com hesitação, aparece
+  zh-08 (样品→央品), porque o script inseriu a pausa no meio da palavra. É um
+  efeito do script, não da espera.
+- **A hesitação de 0,5 s não dividiu frases nem com espera de 0,4 s.** A pausa
+  inserida fica, na prática, com ~0,4 s abaixo do limiar do STT
+  (`STT_SILENCE_RMS_THRESHOLD=0.003`), contados em blocos de 128 ms. Teste direto
+  no STT com espera de 0,8 s (`pt-08`): pausa interna de 0,7 s mantém a frase
+  inteira; de 1,0 s ou 1,3 s, divide em duas falas ("Eu concordo com a proposta." e
+  depois a frase toda). A primeira metade sai enquanto a pessoa ainda fala.
+- **Escolha: `STT_PAUSE_FLUSH_SECONDS=0.8`** (em `.env.example` e no `.env`). Fica
+  abaixo de 3 s nas duas direções e tolera hesitações de até ~0,7 s. A 0,6 s
+  ganharia mais 0,3 s, mas a fala real tem pausas de 0,5–1 s entre trechos da
+  frase, e cada divisão vira uma tradução separada, sem o contexto da outra
+  metade. Fica como opção se a voz em PT (1.6) não melhorar.
+
+Medição final com a configuração escolhida (`small` fp16 GPU, espera 0,8 s;
+`bench/resultados/1.4-final.json`, 2 rodadas, 20 medidas por direção):
+
+| Parte (mediana / p95, s) | PT→ZH | ZH→PT |
+|---|---|---|
+| Até a transcrição (espera + STT) | 1,35 / 1,50 | 1,37 / 1,49 |
+| Tradução (isolada) | 0,22 / 0,31 | 0,26 / 0,37 |
+| Voz (isolada) | 0,10 / 0,13 (Piper) | 1,04 / 1,53 (Supertonic) |
+| Download do áudio | 0,02 / 0,02 | 0,02 / 0,03 |
+| **Total até o áudio** | **1,67 / 1,89** | **2,75 / 3,27** |
+
+Em relação à 1.2 (padrão): PT→ZH 3,46 → 1,67 s e ZH→PT 4,38 → 2,75 s. Nenhuma
+falha nem direção errada.
+
+Com hesitação de 1,0 s (`1.4-final-hesitacao-1.0.json`), 12 das 20 frases foram
+divididas, como esperado: pausa maior que a espera. A latência até o áudio da
+última parte ficou em 1,41 s (PT→ZH) e 2,47 s (ZH→PT). Dividir não atrasa, mas
+cada parte é traduzida sem a outra.
+
+**Risco descoberto: ruído de fundo.**
+
+- O STT considera silêncio o bloco de 128 ms com RMS abaixo de 0,003
+  (`STT_SILENCE_RMS_THRESHOLD`, ≈ −50 dBFS). Medi com ruído gaussiano no lugar do
+  silêncio digital (`--ruido-dbfs`, 4 frases):
+  - **−60 dBFS:** normal (1,85–3,24 s até o áudio).
+  - **−45 dBFS:** **nenhuma frase transcrita.** O silêncio nunca é detectado, a
+    pausa nunca fecha a frase e, com o microfone aberto, a espera por
+    inatividade (3 s) também nunca dispara.
+- O navegador pede `noiseSuppression` e `echoCancellation` ao abrir o microfone
+  (`app/static/js/audio-recorder.js`), e o teste humano da 0.6 funcionou com o
+  microfone do notebook. Então, na prática, o fundo ficou abaixo do limiar. Mas
+  celulares e salas variam.
+- **Pendência para a Etapa 3 (celulares) e a Etapa 6 (testes):** medir o nível de
+  fundo real dos celulares. Se passar de −50 dBFS, subir
+  `STT_SILENCE_RMS_THRESHOLD` ou trocar a detecção por RMS pelo VAD (Silero),
+  que o faster-whisper já tem.
+
+### 1.5 Duas falas simultâneas
+
+- Script: `bench/medir_concorrencia.py`. Abre duas sessões conversation
+  independentes (A e B), como dois participantes. Em cada passo, as duas começam a
+  falar no mesmo instante: A fala pt-N e B fala zh-N. As frases têm tamanhos
+  diferentes, então terminam em momentos diferentes, mas o processamento se
+  sobrepõe. Configuração final da 1.4 (`small` fp16 GPU, `STT_MODEL_WORKERS=1`,
+  `STT_TRANSCRIBE_WORKERS=2`, espera de 0,8 s). 2 rodadas, 20 medidas por direção.
+  Resultado: `bench/resultados/1.5-2-falas-mw1.json`.
+
+| Parte (mediana / p95, s) | PT→ZH 1 sessão | PT→ZH 2 sessões | ZH→PT 1 sessão | ZH→PT 2 sessões |
+|---|---|---|---|---|
+| Até a transcrição | 1,35 / 1,50 | 1,47 / 1,69 | 1,37 / 1,49 | 1,36 / 1,50 |
+| Tradução | 0,22 / 0,31 | 0,27 / 0,38 | 0,26 / 0,37 | 0,35 / 0,50 |
+| Voz | 0,10 / 0,13 | 0,23 / 0,62 | 1,04 / 1,53 | 1,56 / 2,68 |
+| **Total até o áudio** | **1,67 / 1,89** | **2,14 / 2,46** | **2,75 / 3,27** | **3,32 / 4,34** |
+
+- Nenhuma falha: as duas sessões receberam tudo, na direção certa.
+- **O gargalo sob concorrência é a voz, não o STT.** O Supertonic (PT) e o Piper
+  (ZH) rodam em CPU e usam vários núcleos cada um (o `docker stats` mostrou 240–
+  335% numa síntese). Quando os dois sintetizam ao mesmo tempo, a voz em PT
+  ganha +0,5 s na mediana e +1,1 s no p95.
+- O STT com um modelo só (`STT_MODEL_WORKERS=1`) quase não sofreu (+0,0–0,1 s):
+  a inferência na GPU leva ~0,4 s, então a segunda fala espera pouco. Não vale
+  subir para 2 modelos e gastar mais VRAM. O tradutor (fila do Ollama) também
+  sofreu pouco (+0,05–0,1 s).
+- Com duas falas simultâneas, **ZH→PT passa da meta (mediana 3,32 s)**. Na sala,
+  falas simultâneas devem ser exceção (as pessoas se revezam), mas o p95 de 4,3 s
+  mostra que a voz em PT é o próximo ponto a atacar (1.6).
+
+### 1.6 Tempo de síntese de voz
+
+- Script: `bench/medir_tts.py`, direto nos serviços. Sintetiza a coluna
+  `referencia` (o texto que o TTS recebe numa conversa) com os parâmetros do app:
+  ZH no Piper (`zh_CN-huayan-medium`) e PT no Supertonic (voz F1). Para o
+  Supertonic, testa 8 (padrão), 4 e 2 passos. 3 rodadas × 10 frases. Resultado:
+  `bench/resultados/tts-1.6.json`. Os áudios ficam em `bench/resultados/tts-1.6/`,
+  fora do git, para serem ouvidos.
+- Inteligibilidade estimada com `bench/inteligibilidade_tts.py`: transcreve a voz
+  gerada com o STT e calcula o WER contra o texto. Isso mede se o Whisper entende,
+  não se a voz soa natural.
+
+| Voz | Tempo (mediana / p95, s) | Tempo / duração do áudio | WER pelo STT | Frases exatas |
+|---|---|---|---|---|
+| Piper ZH | 0,15 / 0,23 | 0,06 | — | — |
+| Supertonic PT, 8 passos (padrão) | 1,48 / 1,90 | 0,37 | 3,8% | 8/10 |
+| **Supertonic PT, 4 passos** | **0,83 / 1,10** | 0,20 | 3,5% | 8/10 |
+| Supertonic PT, 2 passos | 0,51 / 0,63 | 0,13 | 40,7% | 5/10 |
+
+- O Piper é 10× mais rápido que o Supertonic. Por isso ZH→PT (voz em PT) é sempre
+  a direção mais lenta.
+- Com 4 passos, a voz é tão inteligível quanto com 8 e leva quase metade do tempo.
+  Com 2, várias frases ficaram ininteligíveis ("Com licença, onde fica o
+  banheiro?" virou "Conheça em Sanchiko Banyu").
+- Os erros com 8 e 4 passos são de nome e número ("Sangai/Shanghai" por Xangai,
+  "200" por "duzentos", porque o normalizador só escreve por extenso até 99), não
+  de pronúncia.
+- **Escolha: `SUPERTONIC_TTS_STEPS=4`** (em `.env.example` e no `.env`).
+  **Pendente: um integrante ouvir** `bench/resultados/tts-1.6/*-pt-8p.wav` contra
+  `*-pt-4p.wav` e confirmar que a voz continua natural. Para gerar os arquivos:
+  `python bench/medir_tts.py --rotulo 1.6 --passos 8,4,2`.
+- Dentro do app, a voz em PT passou de 1,04 para 0,75 s na mediana (`1.6-final`).
+  O ganho é menor que no teste direto, porque as traduções reais são mais curtas
+  que as referências.
+- Aquecimento: depois de reiniciar o container `polytalk`, as duas primeiras vozes
+  em ZH levaram 2,1 s e 1,3 s, contra 0,1 s nas demais (provavelmente a busca da
+  lista de vozes do Piper, que o app guarda por 1 h, e as conexões novas). Fica
+  para a Etapa 5: aquecer os serviços ao iniciar.
+
+### Portão da Etapa 1: decisão
+
+Medição com a configuração final (`bench/resultados/1.6-final.json`, 2 rodadas, 20
+medidas por direção, uma sessão; `1.6-final-2-falas.json`, duas falas
+simultâneas, 1 rodada):
+
+| Configuração | PT→ZH mediana / p95 | ZH→PT mediana / p95 |
+|---|---|---|
+| Padrão (1.2): `small` CPU, espera 1,2 s, Supertonic 8 passos | 3,46 / 3,84 | 4,38 / 5,06 |
+| **Final, uma fala** | **1,85 / 2,96** | **2,45 / 2,94** |
+| Final, duas falas simultâneas | 2,01 / 2,54 | 2,64 / 3,53 |
+
+Para onde foi o tempo (final, uma fala, medianas):
+
+| Parte | PT→ZH | ZH→PT |
+|---|---|---|
+| Espera de silêncio (0,8 s) + STT `small` na GPU | 1,42 | 1,40 |
+| Tradução | 0,24 | 0,29 |
+| Voz | 0,14 (Piper) | 0,75 (Supertonic, 4 passos) |
+| Download do áudio | 0,02 | 0,02 |
+
+**Decisão: o portão passou.** A mediana fica abaixo de 3 s nas duas direções, com
+folga (1,85 e 2,45 s), e o p95 também. A Etapa 2 está liberada.
+
+Configuração adotada (`.env.example`):
+
+- `STT_MODEL=small`, `STT_DEVICE=cuda`, `STT_COMPUTE_TYPE=float16`,
+  `STT_MODEL_WORKERS=1`, com `COMPOSE_FILE` incluindo `docker-compose.gpu.yml`;
+- `STT_PAUSE_FLUSH_SECONDS=0.8`;
+- `SUPERTONIC_TTS_STEPS=4`;
+- correção do contador de silêncio do STT (`stt/app/main.py`).
+
+Ressalvas que seguem para as próximas etapas:
+
+1. **Fala sintética e silêncio digital.** A precisão e o fechamento das frases
+   foram medidos em condições ideais. Com ruído de fundo de −45 dBFS, o STT não
+   fecha nenhuma frase (1.4). Medir com os celulares (Etapas 3 e 6).
+2. **Ouvir a voz em PT com 4 passos** (1.6), antes de considerar a escolha final.
+3. **Chinês:** o STT ainda erra zh-03 (贵) e zh-05 (三→散) e devolve caracteres
+   tradicionais em parte das frases. Isso não afeta a latência, mas afeta a
+   tradução (1.2). Avaliar na 6.7 com gravações reais.
+4. **Aquecimento:** a primeira fala depois de reiniciar o STT ou o app é mais lenta
+   (1,3–3,6 s a mais). Tratar na Etapa 5.
+5. **Rede:** tudo foi medido no próprio notebook. O Wi-Fi até os celulares entra na
+   Etapa 4/5.
+6. **VRAM:** o `medium` mostrou que STT e tradutor disputam a GPU de 6 GB. Qualquer
+   modelo novo na GPU precisa de uma medição de ponta a ponta, não só isolada.
+
+### Etapa 1 – uso do agente
+
+- **Executado pelo agente:**
+  - as 6 subtarefas, com um commit cada, mais o commit da correção do STT;
+  - 6 scripts de medição em `bench/` (só biblioteca padrão, mais `websockets` e
+    `opencc` opcional);
+  - todas as medições, com os resultados brutos versionados em
+    `bench/resultados/`;
+  - o diagnóstico da lentidão com o `medium` (log do Ollama);
+  - a descoberta e a correção do bug do contador de silêncio, com teste.
+- **Erros do agente corrigidos no caminho:**
+  - o script de latência media o download depois de uma espera (deu 1,5 s em vez de
+    0,02 s);
+  - a hipótese de que o cuDNN 8 impediria a GPU estava errada;
+  - a primeira escolha do `medium` foi feita com medições isoladas e revista com a
+    de ponta a ponta;
+  - um caractere nulo entrou num script por escape errado no shell;
+  - a medição do `small` em CPU foi repetida porque rodou junto com um download.
+- **Pendências humanas:** ouvir a voz com 4 passos (1.6); gravar frases reais, se
+  o grupo quiser medir a precisão fora do caso ideal; revisar o PR, em especial a
+  mudança em `stt/app/main.py`.

@@ -9,19 +9,19 @@
 | **Libera** | Etapa 2 (só depois do portão) |
 | **Branch** | `etapa-1-viabilidade` (a partir da `main`, após o merge da Etapa 0) |
 | **Esforço** | 3P · 3M |
-| **Status** | Pendente. A etapa de tradução já foi medida: 0,28–0,35 s por frase |
+| **Status** | Concluída em 2026-11-21 (aguardando PR para a `main`). Portão aprovado: PT→ZH 1,85 s, ZH→PT 2,45 s (mediana) |
 
 ## Subtarefas
 
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
-| 1.1 | Montar um conjunto fixo de frases de teste (gravadas em PT e ZH) para todas as medições | P | Obrigatório | Conjunto salvo no repositório, ~10 frases por idioma | Pendente |
-| 1.2 | Medir a latência da configuração padrão no modo `conversation` (fim da fala → início do áudio) | M | Obrigatório | Mediana e p95 por direção registradas | Pendente |
-| 1.3 | Avaliar a precisão do STT em chinês e português: Whisper `small` em CPU contra `medium` em GPU (se couber na VRAM com o tradutor) | M | Obrigatório | Tabela de erros e tempo por modelo; escolha registrada | Pendente |
-| 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Pendente |
-| 1.5 | Medir duas falas simultâneas (dois fluxos de STT ao mesmo tempo) | P | Importante | Latência sob concorrência registrada | Pendente |
-| 1.6 | Medir o tempo de síntese de voz em PT e ZH | P | Importante | Tempo por frase registrado | Pendente |
-| **Portão** | **A mediana estimada fica abaixo de 3 s?** Se não, rever os modelos ou os parâmetros antes de seguir | — | Obrigatório | Decisão anotada nas notas | Pendente |
+| 1.1 | Montar um conjunto fixo de frases de teste (gravadas em PT e ZH) para todas as medições | P | Obrigatório | Conjunto salvo no repositório, ~10 frases por idioma | Concluída: [bench/](../../bench/README.md), 10 + 10 frases, áudio sintético |
+| 1.2 | Medir a latência da configuração padrão no modo `conversation` (fim da fala → início do áudio) | M | Obrigatório | Mediana e p95 por direção registradas | Concluída: PT→ZH 3,46 s / 3,84 s; ZH→PT 4,38 s / 5,06 s (mediana / p95) |
+| 1.3 | Avaliar a precisão do STT em chinês e português: Whisper `small` em CPU contra `medium` em GPU (se couber na VRAM com o tradutor) | M | Obrigatório | Tabela de erros e tempo por modelo; escolha registrada | Concluída: `small` fp16 na GPU (0,43 s; mesma precisão do padrão no app). O `medium` foi descartado: disputa VRAM com o tradutor. Detecção automática mantida |
+| 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Concluída: espera de 0,8 s → PT→ZH 1,67 s, ZH→PT 2,75 s (mediana). Corrigido bug do STT (pausas internas somavam) |
+| 1.5 | Medir duas falas simultâneas (dois fluxos de STT ao mesmo tempo) | P | Importante | Latência sob concorrência registrada | Concluída: PT→ZH 2,14 s, ZH→PT 3,32 s (mediana). O gargalo é a voz em CPU, não o STT |
+| 1.6 | Medir o tempo de síntese de voz em PT e ZH | P | Importante | Tempo por frase registrado | Concluída: Piper ZH 0,15 s; Supertonic PT 1,48 s → 0,83 s com 4 passos (falta ouvir) |
+| **Portão** | **A mediana estimada fica abaixo de 3 s?** Se não, rever os modelos ou os parâmetros antes de seguir | — | Obrigatório | Decisão anotada nas notas | **Aprovado**: 1,85 s e 2,45 s (p95 2,96 e 2,94 s). Ressalvas nas notas |
 
 ## Orçamento de latência (3 s)
 
@@ -38,12 +38,12 @@ fim da fala                                                 início do áudio no
 
 | Parte | Hoje | Fonte | Subtarefa |
 |---|---|---|---|
-| Espera de silêncio para fechar a frase | 1,2 s (`STT_PAUSE_FLUSH_SECONDS`) | Configuração padrão | 1.4 |
-| Janela de áudio processada pelo STT | 3,0 s (`STT_STREAM_CHUNK_SECONDS`) | Configuração padrão; o guia de produção sugere 1,2 s | 1.4 |
-| Reconhecimento (Whisper `small`, CPU) | 0,5–1,5 s por frase | Estimativa | 1.2, 1.3 |
-| Tradução (`translategemma:4b`, GPU) | 0,28–0,35 s | **Medido** em 20/11 | — |
-| Síntese de voz (Piper / Supertonic) | ? | A medir | 1.6 |
-| Download do arquivo de áudio e início da reprodução | ~0,1 s | Estimativa (rede local) | 1.2 |
+| Espera de silêncio para fechar a frase | 1,2 s → **0,8 s** (`STT_PAUSE_FLUSH_SECONDS`) | Escolhida na 1.4 | 1.4 |
+| Janela de áudio processada pelo STT | Não se aplica ao modo conversation (só fecha por pausa) | Verificado no código na 1.2 | 1.4 |
+| Reconhecimento | `small` CPU: 1,55–1,8 s; `small` GPU: 0,43 s | **Medido** na 1.3 | 1.2, 1.3 |
+| Tradução (`translategemma:4b`, GPU) | 0,28–0,35 s isolada; 0,52 s dentro do app | **Medido** em 20/11 e na 1.2 | — |
+| Síntese de voz (Piper / Supertonic) | Piper ZH 0,15 s; Supertonic PT 0,83 s (4 passos) | **Medido** na 1.6 | 1.6 |
+| Download do arquivo de áudio | 0,01–0,03 s (mesmo computador) | **Medido** na 1.2 | 1.2 |
 
 Só a espera de silêncio padrão já consome 40% do orçamento. Por isso a 1.4 é
 obrigatória.
@@ -85,6 +85,7 @@ flowchart TD
 | Latência acima de 3 s por causa do STT em CPU e da espera por silêncio | Portão de decisão; ajustar parâmetros; Whisper na GPU |
 | Whisper `small` erra muito em chinês | Comparar com `medium`; fixar o idioma por participante |
 | Reduzir a espera de silêncio corta frases no meio | Medir qualidade junto com latência na 1.4 |
+| Ruído de fundo acima de −50 dBFS impede o STT de detectar o fim da frase (medido na 1.4) | Medir o fundo dos celulares na Etapa 3; subir `STT_SILENCE_RMS_THRESHOLD` ou usar VAD |
 
 ## Saída da etapa
 
