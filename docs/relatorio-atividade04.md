@@ -218,7 +218,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | Etapa | Descrição | Status |
 |---|---|---|
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
-| 1 | Linha de base e viabilidade da latência (portão de 3 s) | Pendente (tradução já medida) |
+| 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Pendente |
 | 3 | Interface web para celular | Pendente |
 | 4 | Rede local e HTTPS | Pendente |
@@ -233,8 +233,124 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 0 | Opção `translation.keep_alive` (`TRANSLATION_KEEP_ALIVE`), enviada ao Ollama só quando configurada, para manter o modelo na GPU entre falas. Inclui 4 testes | `app/services/translation_service.py`, `config/config.yaml.example`, `.env.example`, `docker-compose.yml`, `tests/test_translation_detailed.py` |
 | 0 | Configuração de exemplo apontando a tradução para o Ollama local (`translategemma:4b`, sem chave) | `.env.example`, `config/config.yaml.example` |
 | 0 | `.gitattributes` forçando LF em scripts e Dockerfiles (correção para Windows) | `.gitattributes` |
+| 1 | Correção no STT: pausas dentro da frase se somavam como silêncio final, fechando a frase cedo e cortando o fim da fala. Inclui teste | `stt/app/main.py`, `tests/test_app.py` |
+| 1 | STT na GPU (`small` fp16), espera de silêncio de 0,8 s e Supertonic com 4 passos; volume para o cache dos modelos | `.env.example`, `docker-compose.gpu.yml` |
+| 1 | Conjunto de frases PT/ZH e scripts de medição (latência, STT, voz, concorrência) | `bench/` |
 
-### 5.4 Dificuldades encontradas
+### 5.4 Redução da latência (Etapa 1)
+
+A meta da Atividade 03 é que a mediana entre o fim da fala e o início do áudio
+traduzido fique em até 3 s em cada direção. Na configuração original do PolyTalk, a
+primeira medição deu 3,46 s (PT→ZH) e 4,38 s (ZH→PT). Depois dos ajustes da Etapa
+1, ficou em **1,85 s e 2,45 s**: uma redução de 47% e 44%, sem perda de precisão
+medida.
+
+#### Como foi medido
+
+- **Frases:** um conjunto fixo de 20 frases (10 PT, 10 ZH), em `bench/`, usado em
+  todas as medições para que as configurações fiquem comparáveis.
+- **Áudio:** as frases foram sintetizadas com as vozes da própria pilha e enviadas
+  pelo WebSocket como o navegador faz: blocos de 128 ms, em tempo real, com
+  silêncio entre as falas. As frases alternam PT e ZH, como numa conversa.
+- **Relógio:** parte do último bloco com fala. Cada mensagem do servidor marca uma
+  parte do caminho: transcrição (espera de silêncio + reconhecimento), tradução,
+  voz e download do arquivo de áudio.
+- **Amostra:** 2 rodadas, ou seja, 20 medidas por direção, nas medições principais.
+  Os resultados brutos estão em `bench/resultados/`.
+- **Ambiente:** tudo rodou no próprio notebook, sem Wi-Fi. A rede até os celulares
+  entra nas Etapas 4 e 5.
+
+#### Onde estava o tempo na configuração original
+
+| Parte (mediana, s) | PT→ZH | ZH→PT |
+|---|---|---|
+| Espera de silêncio (1,2 s) + reconhecimento (Whisper `small` na CPU) | 2,79 | 2,74 |
+| Tradução (`translategemma:4b` na GPU) | 0,52 | 0,52 |
+| Voz | 0,12 (Piper, ZH) | 1,06 (Supertonic, PT) |
+| Download do áudio | 0,02 | 0,01 |
+| **Total até o áudio** | **3,46** | **4,38** |
+
+Quase 80% do tempo estava antes da tradução: 1,2 s de espera fixa e ~1,5 s de
+reconhecimento na CPU. A tradução, que se temia ser o gargalo, levava 0,5 s. A
+direção ZH→PT é sempre mais lenta porque a voz em PT (Supertonic) é ~10× mais lenta
+que a voz em ZH (Piper).
+
+#### Mudanças e efeito de cada uma
+
+| Passo | Mudança | PT→ZH | ZH→PT | Medição |
+|---|---|---|---|---|
+| 0 | Configuração original | 3,46 | 4,38 | `1.2-padrao`, 2 rodadas |
+| — | Whisper `medium` na GPU (**descartado**) | 3,44 | 4,67 | `1.3-medium-gpu`, 2 rodadas |
+| 1 | Whisper `small` na GPU (fp16) | 2,20 | 3,49 | `1.3-small-gpu`, 1 rodada |
+| 2 | Correção do contador de silêncio do STT (não visa latência) | 2,12 | 3,08 | `1.4-pausa-1.2`, 1 rodada |
+| 3 | Espera de silêncio de 1,2 s para 0,8 s | 1,67 | 2,75 | `1.4-final`, 2 rodadas |
+| 4 | Voz em PT com 4 passos em vez de 8 | **1,85** | **2,45** | `1.6-final`, 2 rodadas |
+
+1. **Reconhecimento na GPU (−1,0 a −1,3 s).** O Whisper `small` passou de
+   1,6–1,8 s por frase na CPU para 0,43 s na GPU, com os mesmos acertos. A
+   tradução também ficou mais rápida (0,52 → 0,24 s), sem mudança no tradutor. A
+   GPU, que antes ficava parada entre as falas e reduzia o clock, agora está
+   "acordada" quando a tradução chega.
+2. **Correção no STT.** Pausas dentro da frase eram somadas como silêncio final, o
+   que fazia o STT fechar a frase cedo e cortar o fim da fala (seção 6.4). A
+   correção não mira a latência; a diferença nesta linha está dentro da variação
+   entre execuções.
+3. **Espera de silêncio menor (−0,4 s).** No modo conversa, o STT só fecha uma frase
+   depois de um tempo de silêncio. Com 0,8 s em vez de 1,2 s, cada fala ganha 0,4 s.
+   Hesitações de até ~0,7 s no meio da frase não a dividem. A partir de ~1,0 s, a
+   frase vira duas falas traduzidas separadamente.
+4. **Voz em PT mais rápida (−0,3 s em ZH→PT).** O Supertonic com 4 passos de geração
+   leva metade do tempo do padrão (8) e, transcrita pelo Whisper, é tão
+   compreensível quanto. A naturalidade ainda precisa ser conferida por alguém
+   ouvindo.
+
+O PT→ZH subiu de 1,67 para 1,85 s no passo 4, embora a mudança só afete a voz em
+PT. Isso é variação entre execuções: a medição foi feita logo depois de reiniciar o
+app, e as primeiras falas foram mais lentas (aquecimento). A diferença entre
+execuções iguais ficou em 0,1–0,2 s.
+
+#### Onde está o tempo agora
+
+| Parte (mediana, s) | PT→ZH antes | PT→ZH depois | ZH→PT antes | ZH→PT depois |
+|---|---|---|---|---|
+| Espera de silêncio + reconhecimento | 2,79 | 1,42 | 2,74 | 1,40 |
+| Tradução | 0,52 | 0,24 | 0,52 | 0,29 |
+| Voz | 0,12 | 0,14 | 1,06 | 0,75 |
+| Download do áudio | 0,02 | 0,02 | 0,01 | 0,02 |
+| **Total até o áudio (mediana)** | **3,46** | **1,85** | **4,38** | **2,45** |
+| Total até o áudio (p95) | 3,84 | 2,96 | 5,06 | 2,94 |
+
+A maior parte que sobrou é a espera de silêncio (0,8 s), que é o preço de saber que
+a pessoa terminou de falar. Com duas pessoas falando ao mesmo tempo, a mediana
+fica em 2,01 s e 2,64 s, e o p95 de ZH→PT chega a 3,5 s. Nesse caso, as duas vozes
+sintéticas disputam a CPU, e o reconhecimento quase não sofre.
+
+#### O que foi tentado e descartado
+
+- **Whisper `medium` na GPU.** Nos testes isolados, parecia melhor: acertou 9 de 10
+  frases em chinês contra 8 do `small` e levou 0,7 s. Na conversa completa, deixou
+  o tradutor 2× mais lento (0,5 → 0,95 s por pedido, confirmado no log do Ollama),
+  provavelmente por falta de memória de vídeo na GPU de 6 GB, que é dividida com o
+  tradutor. Dentro do app, também não acertou mais que o `small`. Resultado: nenhum
+  ganho em PT→ZH e piora em ZH→PT.
+- **Whisper `large-v3-turbo` (int8).** Era o mais rápido dos grandes (0,58 s), mas
+  errou palavras comuns em chinês (洗手间 → 携手间).
+- **Espera de 0,6 s ou 0,4 s.** Ganhariam mais 0,3–0,4 s, mas deixam pouca margem
+  para as pausas naturais no meio da frase. Ficam como opção se a rede somar tempo
+  demais nas próximas etapas.
+- **Voz em PT com 2 passos.** Metade do tempo de 4 passos, mas várias frases ficaram
+  incompreensíveis ("Com licença, onde fica o banheiro?" virou "Conheça em Sanchiko
+  Banyu").
+
+#### Ressalvas
+
+- O áudio de teste é sintético e o silêncio entre as falas é digital (zero). Com
+  ruído de fundo de −45 dBFS, o STT não detectou o fim de nenhuma frase. Isso
+  precisa ser medido com os celulares (seção 5.5).
+- O tempo de rede até os celulares e o início da reprodução no navegador ainda não
+  entram na conta. A medição na sala real é a Etapa 5.
+
+### 5.5 Dificuldades encontradas
 
 - **Quebras de linha no Windows (Etapa 0).** Com `core.autocrlf=true`, o git gravou
   o `entrypoint.sh` do Supertonic com CRLF, e o container entrou em loop de
@@ -247,6 +363,12 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
   alterados.
 - **Recarga do modelo de tradução (Etapa 0).** O Ollama descarrega o modelo após
   5 min parado; a recarga custava de 4 a 16 s na primeira fala depois de uma pausa.
+- **GPU de 6 GB compartilhada (Etapa 1).** Com o Whisper `medium` na GPU, o
+  tradutor ficou 2× mais lento, mesmo com todas as camadas na GPU. O motivo provável
+  é a pressão de VRAM no driver do Windows. A troca do STT para a GPU só compensou
+  com o `small`.
+- **Ruído de fundo (Etapa 1).** O STT detecta o fim da frase por energia (RMS). Com
+  ruído de −45 dBFS, nenhuma frase foi fechada. Fica para os testes com celular.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -260,7 +382,8 @@ Seção central do relatório, segundo o enunciado.
 | Viabilidade da tradução | Instalou o Ollama, escreveu e rodou o teste PT↔ZH com o prompt do PolyTalk e avaliou a qualidade das traduções | O grupo escolheu o modelo (`translategemma:4b`) |
 | Planejamento | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa |
 | Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
-| Etapas 1 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
+| Etapas 2 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -273,6 +396,14 @@ Seção central do relatório, segundo o enunciado.
   imagens eram construídas (~12 min), o agente adiantou a linha de base dos testes
   e a solução do `keep_alive`.
 
+- **Medição de ponta a ponta como critério (Etapa 1).** Em cada mudança de
+  configuração, o agente mediu a conversa inteira, além da peça isolada. Foi isso
+  que mostrou que o `medium` piorava o sistema e que revelou o bug do silêncio: a
+  latência *caía* quando se inseria uma pausa na frase, o que não fazia sentido.
+- **Inteligibilidade medida pelo próprio STT (Etapa 1).** Sem poder ouvir, o
+  agente transcreveu a voz sintetizada para comparar 8, 4 e 2 passos. É uma
+  estimativa; a naturalidade ainda depende de uma pessoa ouvir.
+
 ### 6.3 O que não funcionou
 
 - **Checagem de CRLF enganosa (Etapa 0).** O agente verificou as quebras de linha
@@ -284,6 +415,15 @@ Seção central do relatório, segundo o enunciado.
   percebido ao preparar as instruções do teste visual e corrigido nas notas.
 - **Sem acesso ao navegador (Etapa 0).** A extensão do Chrome não estava conectada,
   então a interface só pôde ser conferida por um integrante.
+
+- **Escolha com base em medições isoladas (Etapa 1).** O agente escolheu o Whisper
+  `medium` na GPU porque ele acertou mais no teste do STT e era mais rápido que o
+  `small` em CPU. Já com ele aplicado, a medição de ponta a ponta mostrou que ele
+  deixava o tradutor 2× mais lento, e dentro do app ele não acertava mais que o
+  `small`. A escolha foi revista.
+- **Erros nos próprios scripts (Etapa 1).** Um tempo de download medido no lugar
+  errado (1,5 s em vez de 0,02 s) e um caractere nulo inserido por escape errado
+  no shell. Os dois foram percebidos porque o resultado não fazia sentido.
 
 ### 6.4 Imprevistos
 
@@ -303,6 +443,13 @@ Seção central do relatório, segundo o enunciado.
   outro caminho, o agente descobriu que o endpoint OpenAI do Ollama aceita
   `keep_alive` por requisição. A solução foi para o código, versionada e testada, e
   não depende da configuração da máquina.
+- **Bug no PolyTalk revelado pela medição (Etapa 1).** O contador de silêncio do
+  STT não zerava quando a fala voltava. Uma hesitação no meio da frase fazia o
+  STT fechar cedo e cortar o fim ("o prazo está muito curto" → "o prazo está
+  morto"). Corrigido em uma linha, com teste.
+- **No modo conversa, só a espera de silêncio importa (Etapa 1).** O plano previa
+  ajustar também o tamanho da janela do STT, mas o código mostrou que, nesse modo,
+  a janela só fecha por pausa.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente
@@ -316,8 +463,8 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 |---|---|---|
 | Conversa contínua sem acionar botões a cada fala | ≥ 5 min | _(a preencher)_ |
 | Cada participante ouve apenas a tradução destinada a ele | Sim | _(a preencher)_ |
-| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | _(a preencher)_ |
-| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | _(a preencher)_ |
+| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,85 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
+| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,45 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
 | Avaliação qualitativa da tradução em frases de teste | — | _(a preencher)_ |
 
 ## 8. Resultado: antes e depois

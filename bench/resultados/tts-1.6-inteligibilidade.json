@@ -1,0 +1,14 @@
+{
+ "8": {
+  "wer_medio": 0.038,
+  "exatas": 8
+ },
+ "4": {
+  "wer_medio": 0.035,
+  "exatas": 8
+ },
+ "2": {
+  "wer_medio": 0.407,
+  "exatas": 5
+ }
+}

@@ -1509,6 +1509,61 @@ class TestSTTCadence:
         assert result["metrics"]["force_emit"] is True
         assert captured_audio == [voice]
 
+    def test_stt_stream_internal_pause_does_not_count_as_trailing_silence(self):
+        """Test a short pause inside speech does not add to the pause-flush timer.
+
+        translator-room (Etapa 1, 1.4): the silence counter used to keep growing
+        across pauses inside the same window, so the window was flushed early and
+        the trailing-silence trim cut off the end of the speech.
+        """
+        from fastapi.testclient import TestClient
+
+        stt_main = load_stt_main_module(
+            {
+                "STT_SAMPLE_RATE": "10",
+                "STT_SAMPLE_WIDTH_BYTES": "2",
+                "STT_STREAM_CHUNK_SECONDS": "10",
+                "STT_PAUSE_FLUSH_SECONDS": "0.3",
+                "STT_IDLE_FLUSH_SECONDS": "0",
+                "STT_VAD_SPEECH_PAD_MS": "0",
+                "STT_EMIT_MIN_CHARS": "1",
+                "STT_TRANSCRIBE_WORKERS": "1",
+            }
+        )
+        captured_audio = []
+        voice = (10000).to_bytes(2, "little", signed=True) * 2
+        pause = b"\x00\x00" * 2  # 0.2 s, shorter than the 0.3 s pause flush
+        silence = b"\x00\x00"
+
+        def fake_process_transcribe_job(model, job):
+            captured_audio.append(job.audio_bytes)
+            return stt_main.TranscribeResult(
+                sequence=job.sequence,
+                transcript="hello",
+                has_speech=True,
+                detected_language="en",
+                force_emit=job.force_emit,
+            )
+
+        stt_main._get_model = lambda: object()
+        stt_main._process_transcribe_job = fake_process_transcribe_job
+
+        with TestClient(stt_main.app) as client:
+            with client.websocket_connect("/v1/stream/transcriptions") as websocket:
+                websocket.send_text('{"emit_policy": "pause"}')
+                assert websocket.receive_json()["type"] == "emit_policy_ack"
+                websocket.send_bytes(voice)
+                websocket.send_bytes(pause)
+                websocket.send_bytes(voice)
+                # 0.1 s of trailing silence: 0.3 s in total with the internal
+                # pause, but only 0.1 s after the speech, so no flush yet.
+                websocket.send_bytes(silence)
+                websocket.send_bytes(silence * 2)
+                result = websocket.receive_json()
+
+        assert result["metrics"]["force_emit"] is True
+        assert captured_audio == [voice + pause + voice]
+
     def test_stt_pause_emit_policy_ignores_regular_chunk_size_flush(self):
         """Test pause mode does not emit just because the stream window is full."""
         from fastapi.testclient import TestClient
