@@ -18,6 +18,8 @@ from fastapi.staticfiles import StaticFiles
 from .config import get_config
 from .routers import api_router, web_router
 from .routers.api import close_visual_context_service
+from .rooms.models import get_room_manager
+from .rooms.router import router as rooms_router
 from .utils.logger import get_logger
 from .version import __version__
 
@@ -54,6 +56,7 @@ def create_app() -> FastAPI:
 
     app.include_router(web_router)
     app.include_router(api_router)
+    app.include_router(rooms_router)  # translator-room: salas (Etapa 2)
 
     static_dir = Path(__file__).parent / "static"
     if static_dir.exists():
@@ -78,9 +81,11 @@ async def lifespan(app: FastAPI):
     logger.info(
         f"Server will be available at http://{get_config().host}:{get_config().port}"
     )
+    get_room_manager().start()  # translator-room: expira salas e apaga áudios
     try:
         yield
     finally:
+        await get_room_manager().stop()
         await close_visual_context_service()
         logger.info("PolyTalk shutting down...")
 
