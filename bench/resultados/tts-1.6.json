@@ -1,0 +1,1271 @@
+{
+ "rotulo": "1.6",
+ "resumo": {
+  "piper-zh": {
+   "tempo": {
+    "n": 30,
+    "mediana": 0.1495,
+    "p95": 0.23,
+    "min": 0.09,
+    "max": 0.271
+   },
+   "fator_tempo_real": {
+    "n": 30,
+    "mediana": 0.055223396455649866,
+    "p95": 0.07225433526011561,
+    "min": 0.03673469387755102,
+    "max": 0.09338387319090283
+   }
+  },
+  "supertonic-pt-8p": {
+   "tempo": {
+    "n": 30,
+    "mediana": 1.482,
+    "p95": 1.9,
+    "min": 1.063,
+    "max": 1.932
+   },
+   "fator_tempo_real": {
+    "n": 30,
+    "mediana": 0.3739574157401455,
+    "p95": 0.45693779904306214,
+    "min": 0.29383614088820825,
+    "max": 0.4732854864433812
+   }
+  },
+  "supertonic-pt-4p": {
+   "tempo": {
+    "n": 30,
+    "mediana": 0.8325,
+    "p95": 1.1,
+    "min": 0.574,
+    "max": 1.264
+   },
+   "fator_tempo_real": {
+    "n": 30,
+    "mediana": 0.20321475994676083,
+    "p95": 0.2703349282296651,
+    "min": 0.166156202143951,
+    "max": 0.28679109834888733
+   }
+  },
+  "supertonic-pt-2p": {
+   "tempo": {
+    "n": 30,
+    "mediana": 0.5135000000000001,
+    "p95": 0.632,
+    "min": 0.398,
+    "max": 0.729
+   },
+   "fator_tempo_real": {
+    "n": 30,
+    "mediana": 0.12726407315725602,
+    "p95": 0.19526202440775306,
+    "min": 0.09926470588235294,
+    "max": 0.2326094957673905
+   }
+  }
+ },
+ "medidas": [
+  {
+   "id": "pt-01",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "早上好，谢谢大家来参加今天的会议。",
+   "tempo": 0.178,
+   "duracao_audio": 3.471
+  },
+  {
+   "id": "pt-02",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "你们能听清楚我说话吗？",
+   "tempo": 0.09,
+   "duracao_audio": 2.45
+  },
+  {
+   "id": "pt-03",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "我们可以先从新产品的介绍开始。",
+   "tempo": 0.173,
+   "duracao_audio": 2.995
+  },
+  {
+   "id": "pt-04",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "每件的价格是十二雷亚尔五十分。",
+   "tempo": 0.172,
+   "duracao_audio": 2.937
+  },
+  {
+   "id": "pt-05",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "我们需要在三月十五日之前交付第一批货。",
+   "tempo": 0.218,
+   "duracao_audio": 3.878
+  },
+  {
+   "id": "pt-06",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "请你说慢一点，再说一遍好吗？",
+   "tempo": 0.137,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "pt-07",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "最近的地铁站在哪里？",
+   "tempo": 0.099,
+   "duracao_audio": 1.707
+  },
+  {
+   "id": "pt-08",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "我同意这个提议，但是期限太紧了。",
+   "tempo": 0.179,
+   "duracao_audio": 3.193
+  },
+  {
+   "id": "pt-09",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "会议结束后我们一起吃午饭好吗？",
+   "tempo": 0.142,
+   "duracao_audio": 3.03
+  },
+  {
+   "id": "pt-10",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 1,
+   "texto": "非常感谢，很高兴认识你们。",
+   "tempo": 0.128,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "pt-01",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "早上好，谢谢大家来参加今天的会议。",
+   "tempo": 0.141,
+   "duracao_audio": 3.228
+  },
+  {
+   "id": "pt-02",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "你们能听清楚我说话吗？",
+   "tempo": 0.137,
+   "duracao_audio": 2.519
+  },
+  {
+   "id": "pt-03",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "我们可以先从新产品的介绍开始。",
+   "tempo": 0.271,
+   "duracao_audio": 2.902
+  },
+  {
+   "id": "pt-04",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "每件的价格是十二雷亚尔五十分。",
+   "tempo": 0.143,
+   "duracao_audio": 3.181
+  },
+  {
+   "id": "pt-05",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "我们需要在三月十五日之前交付第一批货。",
+   "tempo": 0.162,
+   "duracao_audio": 3.994
+  },
+  {
+   "id": "pt-06",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "请你说慢一点，再说一遍好吗？",
+   "tempo": 0.183,
+   "duracao_audio": 2.67
+  },
+  {
+   "id": "pt-07",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "最近的地铁站在哪里？",
+   "tempo": 0.103,
+   "duracao_audio": 1.707
+  },
+  {
+   "id": "pt-08",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "我同意这个提议，但是期限太紧了。",
+   "tempo": 0.211,
+   "duracao_audio": 3.007
+  },
+  {
+   "id": "pt-09",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "会议结束后我们一起吃午饭好吗？",
+   "tempo": 0.178,
+   "duracao_audio": 3.17
+  },
+  {
+   "id": "pt-10",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 2,
+   "texto": "非常感谢，很高兴认识你们。",
+   "tempo": 0.156,
+   "duracao_audio": 2.473
+  },
+  {
+   "id": "pt-01",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "早上好，谢谢大家来参加今天的会议。",
+   "tempo": 0.153,
+   "duracao_audio": 3.39
+  },
+  {
+   "id": "pt-02",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "你们能听清楚我说话吗？",
+   "tempo": 0.112,
+   "duracao_audio": 2.368
+  },
+  {
+   "id": "pt-03",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "我们可以先从新产品的介绍开始。",
+   "tempo": 0.127,
+   "duracao_audio": 2.833
+  },
+  {
+   "id": "pt-04",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "每件的价格是十二雷亚尔五十分。",
+   "tempo": 0.19,
+   "duracao_audio": 3.007
+  },
+  {
+   "id": "pt-05",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "我们需要在三月十五日之前交付第一批货。",
+   "tempo": 0.23,
+   "duracao_audio": 3.738
+  },
+  {
+   "id": "pt-06",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "请你说慢一点，再说一遍好吗？",
+   "tempo": 0.202,
+   "duracao_audio": 2.844
+  },
+  {
+   "id": "pt-07",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "最近的地铁站在哪里？",
+   "tempo": 0.125,
+   "duracao_audio": 1.73
+  },
+  {
+   "id": "pt-08",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "我同意这个提议，但是期限太紧了。",
+   "tempo": 0.146,
+   "duracao_audio": 3.111
+  },
+  {
+   "id": "pt-09",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "会议结束后我们一起吃午饭好吗？",
+   "tempo": 0.136,
+   "duracao_audio": 2.984
+  },
+  {
+   "id": "pt-10",
+   "motor": "piper",
+   "idioma_voz": "zh",
+   "passos": null,
+   "rodada": 3,
+   "texto": "非常感谢，很高兴认识你们。",
+   "tempo": 0.111,
+   "duracao_audio": 2.589
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 1.065,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 1.183,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 1.762,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 1.89,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 1.704,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 1.373,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 1.605,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 1.932,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 1.146,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 1,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 1.352,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 1.095,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 1.142,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 1.674,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 1.9,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 1.681,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 1.364,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 1.244,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 1.759,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 1.187,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 2,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 1.636,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 1.063,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 1.152,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 1.696,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 1.789,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 1.535,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 1.29,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 1.554,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 1.806,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 1.12,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 8,
+   "rodada": 3,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 1.429,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.594,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.574,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.846,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 0.953,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 1.017,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.869,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.891,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 0.999,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.678,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 1,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.825,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.683,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.799,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.91,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 0.991,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 0.868,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.688,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.84,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 1.264,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.625,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 2,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.737,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.613,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.609,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.96,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 1.1,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 0.872,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.724,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.714,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 0.974,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.607,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 4,
+   "rodada": 3,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.762,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.42,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.544,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.506,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 0.578,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 0.521,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.485,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.477,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 0.61,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.465,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 1,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.482,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.398,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.4,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.631,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 0.63,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 0.534,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.442,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.431,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 0.623,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.412,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 2,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.54,
+   "duracao_audio": 4.11
+  },
+  {
+   "id": "zh-01",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Olá, prazer em conhecer você.",
+   "tempo": 0.632,
+   "duracao_audio": 2.717
+  },
+  {
+   "id": "zh-02",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Com licença, onde fica o banheiro?",
+   "tempo": 0.433,
+   "duracao_audio": 2.786
+  },
+  {
+   "id": "zh-03",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Esse preço está um pouco caro, pode fazer mais barato?",
+   "tempo": 0.598,
+   "duracao_audio": 4.667
+  },
+  {
+   "id": "zh-04",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Nossa empresa fica em Xangai e tem mais de duzentos funcionários.",
+   "tempo": 0.567,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-05",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Podemos fazer a reunião na próxima quarta-feira às três da tarde?",
+   "tempo": 0.558,
+   "duracao_audio": 5.224
+  },
+  {
+   "id": "zh-06",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Desculpe, não entendi, por favor repita.",
+   "tempo": 0.429,
+   "duracao_audio": 3.483
+  },
+  {
+   "id": "zh-07",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Precisamos primeiro ver os detalhes do contrato.",
+   "tempo": 0.546,
+   "duracao_audio": 3.971
+  },
+  {
+   "id": "zh-08",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "As amostras já foram enviadas e devem chegar em cerca de cinco dias.",
+   "tempo": 0.729,
+   "duracao_audio": 5.712
+  },
+  {
+   "id": "zh-09",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Você gosta de comida chinesa?",
+   "tempo": 0.482,
+   "duracao_audio": 2.508
+  },
+  {
+   "id": "zh-10",
+   "motor": "supertonic",
+   "idioma_voz": "pt",
+   "passos": 2,
+   "rodada": 3,
+   "texto": "Obrigado pela sua ajuda, vamos manter contato.",
+   "tempo": 0.497,
+   "duracao_audio": 4.11
+  }
+ ]
+}
