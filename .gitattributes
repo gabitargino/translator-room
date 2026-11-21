@@ -1,0 +1,5 @@
+# translator-room: scripts executed inside Linux containers must keep LF line
+# endings even on Windows checkouts with core.autocrlf=true; with CRLF the
+# container fails with "/bin/sh^M: not found".
+*.sh text eol=lf
+Dockerfile text eol=lf

@@ -19,7 +19,7 @@
 | 0.2 | Fluxo de branches: uma branch por etapa, merge na `main` por pull request e tag ao concluir ([planejamento, seção 10.1](../planejamento.md#101-branches)) | P | Importante | Regra resumida no README do fork; esta branch criada | Concluída |
 | 0.3 | Configurar `.env` e `config.yaml` locais: tradução no Ollama com `translategemma:4b`, sem chaves no repositório | P | Obrigatório | `.env` e `config.yaml` no `.gitignore`; arquivos de exemplo atualizados | Concluída |
 | 0.4 | Subir em modo mock e abrir a interface no navegador do notebook | P | Importante | Fluxo da interface funciona sem modelos | Concluída (falta conferência visual no navegador) |
-| 0.5 | Construir as imagens Docker do STT e das vozes (Piper `zh_CN-huayan-medium`, Supertonic para PT) | M | Obrigatório | `docker compose up` sobe os 4 serviços sem erro | Pendente |
+| 0.5 | Construir as imagens Docker do STT e das vozes (Piper `zh_CN-huayan-medium`, Supertonic para PT) | M | Obrigatório | `docker compose up` sobe os 4 serviços sem erro | Concluída |
 | 0.6 | Testar o modo `conversation` real em um único dispositivo, falando PT e ZH | P | Obrigatório | Tradução e voz funcionam nas duas direções | Pendente |
 | 0.7 | Manter o modelo carregado na GPU entre falas (tempo de permanência do Ollama) | P | Importante | Sem a recarga de ~7 s depois de uma pausa longa | Concluída |
 | 0.8 | Rodar os testes automatizados originais e registrar o resultado como linha de base | P | Obrigatório | Resultado anotado nas notas | Concluída |
