@@ -747,3 +747,238 @@ Ressalvas que seguem para as próximas etapas:
 - **Pendências humanas:** ouvir a voz com 4 passos (1.6); gravar frases reais, se
   o grupo quiser medir a precisão fora do caso ideal; revisar o PR, em especial a
   mudança em `stt/app/main.py`.
+
+## 2026-11-21 – Etapa 2 (branch `etapa-2-salas-servidor`)
+
+### 2.1 Projeto das salas
+
+As salas são um **módulo novo**, `app/rooms/`. Do código original só mudaram três
+linhas em `app/main.py` (incluir as rotas e ligar/desligar a limpeza) e dois
+valores padrão no `docker-compose.yml`.
+
+| Arquivo | Papel |
+|---|---|
+| `settings.py` | Configuração `ROOM_*` lida do ambiente |
+| `models.py` | `Room`, `Participant` e `RoomManager` (ciclo de vida, avisos, áudios) |
+| `session.py` | Sessão de um participante: fluxo de STT e fila de falas |
+| `routing.py` | Filtro de conversa cruzada e entrega por idioma de escuta |
+| `timing.py` | Marcas de tempo por fala e estimativa do fim da fala |
+| `router.py` | Rotas REST e WebSocket |
+
+**Modelo de dados.**
+
+- **Sala:** código de 5 caracteres (alfabeto sem 0/O/1/I/L, para ditar em voz
+  alta), criação, participantes, `empty_since`, lista dos áudios gerados e um
+  contador de falas. O estado vem do número de participantes: `empty` (0),
+  `waiting` (1) e `active` (2 ou mais).
+- **Participante:** id, nome (até 40 caracteres), idioma de fala, idioma de escuta
+  (por padrão, igual ao de fala), silenciado ou não, e a função de envio da
+  conexão. Os envios passam por um `asyncio.Lock`, porque várias tarefas (o worker
+  de cada pessoa que fala) podem mandar mensagens à mesma conexão ao mesmo tempo.
+
+**Protocolo.**
+
+| Rota | O que faz |
+|---|---|
+| `POST /api/rooms` | Cria a sala: `{"room": "K4YUS", "state": "empty", "ws_url": ...}` |
+| `GET /api/rooms/{code}` | Estado e participantes (404 se não existe) |
+| `WS /api/ws/rooms/{code}?name=&speak=&listen=` | Conexão do participante |
+
+O celular envia áudio PCM 16 kHz mono 16 bits, o mesmo formato do
+`/api/ws/translate`. Ele recebe:
+
+| Mensagem | Para quem |
+|---|---|
+| `joined` | Quem entrou (com o próprio id) |
+| `participant_joined`, `participant_left`, `room_state` | Todos (2.8) |
+| `self_transcript` | Só quem falou: a própria transcrição, sem tradução nem áudio |
+| `utterance_ignored` | Só quem falou: fala descartada pelo filtro (2.7) |
+| `room_translation`, depois `room_tts` | Só os ouvintes do idioma de destino |
+| `room_error`, `error` | Erros de tradução/voz (ouvintes) ou de STT (quem fala) |
+
+Controle aceito: `mute`/`pause`, `unmute`/`resume`, `end`, `ping` (responde
+`pong`) e `playback_started` (com `utterance_id`, para a Etapa 5). Erros de
+entrada fecham a conexão com códigos próprios: 4404 (sala não existe), 4409
+(cheia) e 4400 (idioma inválido).
+
+**Decisões.**
+
+- **Um worker do app (`APP_WORKERS=1`).** As salas ficam na memória do processo.
+  O PolyTalk subia 3 workers do gunicorn; com isso, duas pessoas da mesma sala
+  podiam cair em processos diferentes e não se enxergar. O padrão no
+  `docker-compose.yml` passou para 1. O trabalho pesado está no STT, no Ollama e
+  nas vozes, que são outros processos, então um worker não limita a v1.
+- **A conexão só recebe.** O laço do WebSocket só lê e põe o áudio numa fila. O
+  STT lê dessa fila em outra tarefa. Assim, o `mute`, o `end` e a queda da
+  conexão são vistos na hora, mesmo no modo mock, cujo STT não lê o áudio.
+- **Ordem por participante (2.6).** Cada participante tem uma fila de falas com
+  um único worker. A fala N+1 só é roteada depois de a N ter sido entregue. Isso
+  garante a ordem, mas a tradução da N+1 espera a voz da N. Pode ser otimizado na
+  Etapa 5 com processamento em paralelo e reordenação na entrega.
+- **Tradução por idioma de escuta (2.5).** Os ouvintes são agrupados pelo idioma
+  de escuta, e cada grupo recebe uma tradução e uma voz. Os grupos são processados
+  em paralelo. Ouvintes com o mesmo idioma de quem falou não recebem nada.
+- **Contexto de tradução desligado**, como no modo `conversation`. Instruções
+  personalizadas e o contexto visual do PolyTalk não foram levados para as salas.
+- **Silenciar fecha a frase.** Ao receber `mute`, a sessão manda ao STT ~1 s de
+  silêncio antes de parar o áudio. Assim, a frase em andamento é traduzida em vez
+  de ficar presa no STT.
+- **Sala recém-criada conta como vazia.** O diagrama da etapa mostra a sala nascendo
+  em "Aguardando". Aqui, a sala é criada pelo REST e o criador conecta logo depois.
+  Até isso acontecer, ela está `empty` e expira se ninguém entrar.
+- **Reconexão** (uma pessoa cair e voltar com o mesmo id) ficou para a 3.7. Hoje,
+  quem volta entra como um participante novo.
+
+### 2.2 Ciclo de vida
+
+- Criar (`create_room`), entrar por código (sem diferenciar maiúsculas e
+  minúsculas, com espaços nas pontas ignorados), sair e expirar. A limpeza roda a
+  cada `ROOM_SWEEP_INTERVAL_SECONDS` (15 s) numa tarefa iniciada no `lifespan` do
+  app. A sala vazia expira após `ROOM_EMPTY_TTL_SECONDS` (120 s). Se alguém voltar
+  antes, ela continua.
+- Limite de `ROOM_MAX_PARTICIPANTS` (8) por sala. O idioma precisa ter a forma
+  `pt`, `zh` ou `pt-BR` (guardado como `pt_br`).
+- Testes: `TestRoomLifecycle` em `tests/test_rooms.py` (criar, entrar, sair,
+  expirar, voltar antes de expirar, código inválido, sala cheia, idioma inválido).
+
+### 2.3 Conexão da sala
+
+- `app/rooms/router.py`. O teste `test_two_clients_pt_zh` conecta dois clientes à
+  mesma sala pelo `TestClient`, com STT, tradução e voz falsos, e confere a
+  conversa inteira: entradas, avisos, traduções, `mute`, `ping` e saída.
+- O `TestClient` só compartilha o laço de eventos entre as duas conexões dentro de
+  `with TestClient(app)`. Fora disso, cada WebSocket ganharia um laço próprio, e
+  as mensagens de um participante para o outro quebrariam.
+
+### 2.4 Um STT por participante
+
+- Cada conexão abre o próprio fluxo com o STT (`stream_transcribe`, política
+  `pause`, como o modo `conversation`). Por padrão, a detecção é automática
+  (`language=None`), porque o idioma detectado alimenta o filtro da 2.7. A tradução
+  usa sempre o idioma **declarado** por quem fala, não o detectado.
+- `ROOM_STT_LANGUAGE_MODE=fixed` informa o idioma ao STT. É o plano B da 1.3, para
+  o caso de a detecção errar com fala real. Na prática, ele desliga o filtro.
+- **Correção de uma nota da 1.3.** Lá está escrito que o modo automático faz
+  "detecção restrita a pt/zh". Lendo o STT agora, vi que `candidate_languages` é
+  guardado e confirmado ao cliente, mas **não é usado** na transcrição: o Whisper
+  detecta livremente entre todos os idiomas. A precisão medida na 1.3 continua
+  válida (foi detecção livre o tempo todo), mas o motivo descrito estava errado.
+  Para o filtro, isso é bom: o Whisper pode devolver `zh` no microfone de quem
+  fala português.
+
+### 2.5 Roteamento
+
+- `app/rooms/routing.py`. Testes em `TestRouting`: cada lado recebe só a tradução
+  do outro; com dois ouvintes de chinês, há uma tradução e uma voz; quem ouve o
+  idioma de quem falou não recebe nada; quem saiu no meio não recebe; falha de
+  tradução vira `room_error` para o ouvinte; sala com uma pessoa só registra
+  `no_listeners` e não chama o tradutor.
+
+### 2.6 Ordem das mensagens
+
+- `test_fast_sequence_keeps_order`: três falas seguidas, a primeira com tradução
+  4× mais lenta que as outras. O ouvinte recebe `um`, `dois`, `três`, nessa ordem,
+  com `sequence` 1, 2 e 3, e cada `room_translation` vem antes do seu `room_tts`.
+
+### 2.7 Filtro de conversa cruzada
+
+- Três modos (`ROOM_CROSSTALK_FILTER`):
+  - `room` (padrão): descarta a fala detectada no idioma de fala de **outro**
+    participante da sala;
+  - `strict`: descarta qualquer idioma diferente do declarado;
+  - `off`: não descarta nada.
+- Escolhi `room` como padrão porque o Whisper às vezes classifica uma frase curta
+  em português como galego ou espanhol. No modo `strict`, essas frases se perderiam.
+  No `room`, só é descartado o que tem cara de ser a outra pessoa.
+- Se o STT não informa o idioma, a fala passa.
+- Teste unitário: `TestCrosstalkFilter`. Teste real: ver "Sala real" abaixo.
+
+### 2.8 Avisos de entrada e saída
+
+- Cada entrada e saída gera `participant_joined`/`participant_left` e um
+  `room_state` com a lista atualizada para todos. Silenciar e reativar também
+  enviam `room_state`, com o `status` da pessoa (`connected` ou `muted`).
+
+### 2.9 Limpeza dos áudios
+
+- A voz das salas é gravada como `media/output/room_<código>_<idioma>_<id>.wav`, e
+  a sala guarda a lista dos seus arquivos. Eles são apagados quando a sala expira,
+  quando passam de `ROOM_AUDIO_MAX_AGE_SECONDS` (10 min, mesmo com a sala ativa) e
+  quando o app desliga.
+- Conferido no container: depois dos testes reais, cada sala expirou 2 min após
+  esvaziar (`room expired` no log) e os arquivos dela sumiram da pasta.
+- Os arquivos `tts_*` do modo original **não** são apagados; continua como no
+  PolyTalk. Na máquina de desenvolvimento, já são 676 arquivos das medições da
+  Etapa 1.
+
+### 2.10 Marcas de tempo
+
+- Uma linha JSON por fala em `logs/room-timing.jsonl` (montado do container em
+  `./logs`) e no log padrão, com o prefixo `room_timing`. Campos: marcas absolutas
+  (`t`), duração do STT e, por idioma de destino, `translation_done`, `text_sent`,
+  `tts_done` e `audio_sent`, contadas desde o fim da fala (`since_speech_end`). O
+  `playback_started` enviado pelo celular gera uma linha separada.
+- **Fim da fala no servidor.** O servidor não sabe quando a pessoa parou de falar.
+  Ele estima pelo áudio recebido: guarda os trechos com voz (RMS ≥
+  `STT_SILENCE_RMS_THRESHOLD`, o mesmo limiar do STT) e, quando chega a
+  transcrição, pega o fim do último trecho seguido de pelo menos 75% da espera de
+  silêncio. Pausas curtas no meio da frase e uma fala nova que começou antes da
+  resposta do STT não confundem a estimativa (teste
+  `test_speech_end_ignores_short_pauses`).
+- No teste real, a diferença entre o fim estimado pelo servidor e o fim real
+  (último bloco enviado pelo cliente) foi de **0,00 s** na mediana e no p95. A
+  latência calculada pelo log bateu com a medida no cliente (diferença de até
+  0,1 s, que é o envio pela rede local). Ressalva: a fala sintética termina de
+  forma seca e o silêncio é digital. Com ruído real, a estimativa pode atrasar.
+
+### 2.11 Modos originais
+
+- Suíte completa: **489 passam e 4 falham**. As 4 falhas são as mesmas da linha de
+  base (0.8, só no Windows). São 459 testes originais e 30 novos. As rotas
+  `/api/ws/translate` (`live` e `conversation`) não foram alteradas.
+- `ruff check` sem erros, e `ruff format` aplicado nos arquivos novos.
+
+### Sala real com dois participantes
+
+- Script: `bench/testar_sala.py`. Cria uma sala no app, conecta A (pt) e B (zh) e
+  manda as 20 frases de teste alternadas, em tempo real, como dois celulares. Com
+  `--cruzada 0.3`, o microfone de quem ouve também recebe a fala do outro, a
+  cerca de −10 dB, como duas pessoas frente a frente. Configuração da Etapa 1. Uma
+  rodada de 20 frases em cada modo.
+- Resultados: `bench/resultados/2-sala-cruzada.json` e `2-sala-sem-cruzada.json`.
+
+| | Sem conversa cruzada | Com conversa cruzada (−10 dB) |
+|---|---|---|
+| Frases entregues certo (1 tradução para quem ouve, nada para quem falou) | 20/20 | 20/20 |
+| Traduções que voltaram para quem falou | 0 | 0 |
+| Falas cruzadas descartadas pelo filtro | — | 20/20 (todas detectadas no idioma certo) |
+| PT→ZH: texto / áudio, mediana (p95 do áudio), s | 1,68 / 1,81 (2,10) | 1,83 / 2,02 (2,99) |
+| ZH→PT: texto / áudio, mediana (p95 do áudio), s | 1,75 / 2,59 (3,18) | 1,96 / 2,76 (3,47) |
+
+- Sem conversa cruzada, a sala tem a mesma latência do modo `conversation` da
+  Etapa 1 (1,85 / 2,45 s). A camada de salas não acrescentou atraso perceptível.
+- Com conversa cruzada, a latência sobe ~0,2 s. Cada fala passa a ser transcrita
+  **duas vezes**, uma em cada microfone, e as duas transcrições disputam o mesmo
+  modelo na GPU (`STT_MODEL_WORKERS=1`). Mesmo assim, a mediana fica abaixo de 3 s
+  nas duas direções. O p95 de ZH→PT (3,47 s) passa da meta. Fica para a Etapa 5.
+- Os dois testes usam fala sintética e o mesmo computador. Com celulares, o volume
+  da conversa cruzada e o ruído vão ser outros (Etapas 3 e 6).
+
+### Etapa 2 – uso do agente
+
+- **Executado pelo agente:**
+  - leitura do modo `conversation`, do STT e do `docker-compose.yml` para o projeto;
+  - o módulo `app/rooms/` e as mudanças mínimas no app e na configuração;
+  - 30 testes automatizados;
+  - o script da sala real, as duas medições e a conferência da limpeza no container.
+- **Achados do agente:**
+  - o `APP_WORKERS=3` do PolyTalk quebraria as salas em memória;
+  - `candidate_languages` não é usado pelo STT, o que corrige uma nota da 1.3.
+- **Erros do agente corrigidos no caminho:**
+  - a primeira versão da estimativa do fim da fala contava o trecho de voz ainda
+    aberto como fim de frase. O teste unitário pegou o erro;
+  - um teste esperava o aviso da entrada de B e recebia antes o aviso da própria
+    entrada de A.
+- **Pendências humanas:**
+  - revisar o PR, em especial o protocolo, que a Etapa 3 vai usar;
+  - decidir se o padrão do filtro (`room`) e o tempo de expiração (120 s) servem.
