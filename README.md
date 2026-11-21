@@ -14,6 +14,17 @@
 > [notas de implementação](docs/notas-implementacao.md) ·
 > [relatório da Atividade 04](docs/relatorio-atividade04.md).
 >
+> **Fluxo de trabalho no fork** (detalhes na
+> [seção 10.1 do planejamento](docs/planejamento.md#101-branches)):
+>
+> - uma branch por etapa, com o nome do arquivo da etapa (`etapa-0-preparacao`,
+>   `etapa-1-viabilidade`, …), criada a partir da `main` atualizada;
+> - commits pequenos, um por subtarefa, com o ID no título (ex.: `2.5: roteamento…`);
+> - a `main` só recebe código por pull request **neste repositório** (`origin`),
+>   revisado pelo outro integrante; após o merge, tag `etapa-N-concluida`;
+> - o remote `upstream` (PolyTalk original) é só para leitura: nenhum push, pull
+>   request ou issue é enviado ao projeto original.
+>
 > O restante deste README é o original do PolyTalk.
 
 ---

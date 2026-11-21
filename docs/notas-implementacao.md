@@ -137,3 +137,8 @@ critério de pronto, árvore de prioridade, riscos e questões em aberto.
   explicando o fork.
 - A pasta `docs/` do PolyTalk (`benchmarking.md`, `production-deployment.md`,
   `provider-extension.md`) conviveu sem conflito com a nossa documentação.
+
+### 0.2 Fluxo de branches
+
+- Regra resumida no bloco do fork no `README.md`; branch `etapa-0-preparacao` já
+  existia (criada junto com o planejamento, commit `365d5bf`).
