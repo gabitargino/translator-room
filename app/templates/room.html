@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- SPDX-FileCopyrightText: 2026 Allan Gabriel, Gabriele Targino -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="{{ ui_locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>{{ t("room.page_title") }}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/css/room.css">
+    <script>
+        window.POLYTALK_I18N = {
+            locale: {{ ui_locale | tojson }},
+            messages: {{ i18n_messages | tojson }}
+        };
+        window.ROOM_PAGE = {
+            initialCode: {{ initial_code | tojson }}
+        };
+    </script>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- 3.1 Tela inicial -->
+        <section class="screen" id="screen-home" data-screen="home">
+            <header class="brand">
+                <img src="/static/logo.png" alt="PolyTalk" class="brand-logo">
+                <h1>{{ t("room.page_title") }}</h1>
+                <p class="tagline">{{ t("room.tagline") }}</p>
+            </header>
+
+            <button class="btn btn-primary btn-big" id="create-btn" type="button">{{ t("room.create") }}</button>
+
+            <p class="divider"><span>{{ t("room.or") }}</span></p>
+
+            <form id="join-form" class="stack" autocomplete="off">
+                <label for="code-input">{{ t("room.code_label") }}</label>
+                <input id="code-input" class="input input-code" name="code" inputmode="text"
+                       autocapitalize="characters" spellcheck="false" maxlength="12"
+                       placeholder="{{ t('room.code_placeholder') }}" value="{{ initial_code }}">
+                <button class="btn btn-secondary btn-big" id="join-btn" type="submit">{{ t("room.join_code") }}</button>
+            </form>
+
+            <p class="form-error" id="home-error" role="alert" hidden></p>
+
+            <nav class="locale-switch" aria-label="{{ t('room.ui_language') }}">
+                {% for loc in ui_locales %}
+                <a href="?ui_locale={{ loc }}" data-locale="{{ loc }}"
+                   class="{{ 'active' if loc == ui_locale else '' }}">{{ {"pt": "Português", "zh": "中文", "en": "English"}[loc] }}</a>
+                {% endfor %}
+            </nav>
+        </section>
+
+        <!-- 3.2 Configuração do participante -->
+        <section class="screen" id="screen-setup" data-screen="setup" hidden>
+            <header class="bar">
+                <button class="btn-link" id="setup-back" type="button">← {{ t("room.back") }}</button>
+                <span class="room-code" id="setup-code"></span>
+            </header>
+
+            <form id="setup-form" class="stack">
+                <label for="name-input">{{ t("room.name_label") }}</label>
+                <input id="name-input" class="input" name="name" maxlength="40" autocomplete="nickname"
+                       placeholder="{{ t('room.name_placeholder') }}">
+
+                <label for="speak-select">{{ t("room.speak_label") }}</label>
+                <select id="speak-select" class="input" name="speak">
+                    {% for lang in room_languages %}
+                    <option value="{{ lang }}">{{ i18n_messages["_languages"].get(lang, lang) }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="listen-select">{{ t("room.listen_label") }}</label>
+                <select id="listen-select" class="input" name="listen">
+                    {% for lang in room_languages %}
+                    <option value="{{ lang }}">{{ i18n_messages["_languages"].get(lang, lang) }}</option>
+                    {% endfor %}
+                </select>
+
+                <label class="check">
+                    <input type="checkbox" id="headphones-check" checked>
+                    <span>{{ t("room.headphones") }}</span>
+                </label>
+                <p class="hint">{{ t("room.headphones_hint") }}</p>
+
+                <button class="btn btn-primary btn-big" id="enter-btn" type="submit">{{ t("room.enter") }}</button>
+                <p class="hint center">{{ t("room.enter_hint") }}</p>
+            </form>
+
+            <p class="form-error" id="setup-error" role="alert" hidden></p>
+        </section>
+
+        <!-- 3.3 Tela da sala -->
+        <section class="screen screen-room" id="screen-room" data-screen="room" hidden>
+            <header class="bar">
+                <span class="room-code" id="room-code"></span>
+                <button class="btn btn-small btn-ghost" id="invite-btn" type="button">{{ t("room.invite") }}</button>
+                <button class="btn btn-small btn-danger" id="leave-btn" type="button">{{ t("room.leave") }}</button>
+            </header>
+
+            <div class="banner banner-warn" id="conn-banner" role="status" hidden></div>
+            <button class="banner banner-action" id="sound-banner" type="button" hidden>🔊 {{ t("room.tap_for_sound") }}</button>
+            <div class="banner banner-info" id="wake-banner" hidden>{{ t("room.wake_lock_unavailable") }}</div>
+
+            <section class="panel">
+                <h2>{{ t("room.participants") }}</h2>
+                <ul class="people" id="people"></ul>
+                <p class="waiting" id="waiting" hidden>{{ t("room.waiting") }}</p>
+            </section>
+
+            <section class="panel panel-captions">
+                <h2>{{ t("room.captions") }}</h2>
+                <ol class="captions" id="captions" aria-live="polite">
+                    <li class="captions-empty" id="captions-empty">{{ t("room.captions_empty") }}</li>
+                </ol>
+            </section>
+
+            <footer class="controls">
+                <div class="mic-state" id="mic-state">
+                    <span class="mic-dot" aria-hidden="true"></span>
+                    <span id="mic-label">{{ t("room.mic_active") }}</span>
+                    <span class="mic-meter" aria-hidden="true"><span id="mic-level"></span></span>
+                </div>
+                <button class="btn btn-mute btn-big" id="mute-btn" type="button" aria-pressed="false">{{ t("room.mute") }}</button>
+            </footer>
+        </section>
+
+        <!-- 3.9 Convite com QR code -->
+        <div class="sheet" id="invite-sheet" role="dialog" aria-modal="true" aria-labelledby="invite-code" hidden>
+            <div class="sheet-card">
+                <p class="room-code big" id="invite-code"></p>
+                <img id="invite-qr" class="qr" alt="QR code" width="240" height="240">
+                <p class="hint center">{{ t("room.invite_hint") }}</p>
+                <p class="invite-link" id="invite-link"></p>
+                <div class="row">
+                    <button class="btn btn-secondary" id="copy-link-btn" type="button">{{ t("room.copy_link") }}</button>
+                    <button class="btn btn-ghost" id="invite-close" type="button">{{ t("room.close") }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast" role="status" hidden></div>
+
+        <!-- 3.10 Aviso de licença -->
+        <footer class="license">
+            <a href="{{ source_url }}" target="_blank" rel="noopener noreferrer">{{ t("room.license") }}</a>
+            · {{ t("room.license_note") }}
+            · <a href="/">{{ t("room.single_device") }}</a>
+        </footer>
+    </div>
+
+    <audio id="player" preload="auto" playsinline></audio>
+
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/audio-recorder.js"></script>
+    <script src="/static/js/room-app.js"></script>
+</body>
+</html>
