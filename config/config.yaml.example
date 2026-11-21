@@ -1,5 +1,10 @@
 # PolyTalk Configuration
 # Copy this file to config.yaml and update values as needed
+#
+# translator-room: config/config.yaml is gitignored. Keep mock_mode: true in the
+# whisper/translation/tts sections to run the UI without models; set them to
+# false to use the real STT (faster-whisper), translation (Ollama, see
+# TRANSLATION_* in .env) and TTS (Piper for zh, Supertonic for pt).
 
 whisper:
   enabled: true
