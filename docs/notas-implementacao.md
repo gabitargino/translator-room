@@ -234,3 +234,37 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
 - Curiosidade: depois que um `keep_alive` longo foi definido, requisições **sem** o
   campo não reduziram o prazo. Mesmo assim, enviamos em toda requisição para não
   depender desse comportamento.
+
+### 0.5 Imagens Docker e `docker compose up`
+
+- Docker Desktop iniciado (estava parado); WSL2 com 7,4 GB e 16 CPUs, sem
+  `.wslconfig`.
+- Build **um serviço por vez** (`docker compose build <serviço>`), todos sem erro:
+
+  | Serviço | Imagem | Tamanho | Tempo de build |
+  |---|---|---|---|
+  | `tts` (Piper) | `polytalk-tts` | 1,11 GB | 93 s |
+  | `supertonic-tts` | `polytalk-supertonic-tts` | 963 MB | 78 s |
+  | `stt` (faster-whisper, CPU, `small`) | `translator-room-stt` | **7,98 GB** | **540 s** |
+  | `polytalk` (app) | `translator-room-polytalk` | 287 MB | 29 s |
+
+- Vozes do Piper: em vez das 15 do `tts/setup-voices.sh`, baixadas só
+  `zh_CN-huayan-medium` (necessária) e `en_GB-jenny_dioco-medium` (a voz padrão que o
+  serviço carrega ao iniciar). Ficam em `tts/voices/`, já ignorado pelo
+  `tts/.gitignore`. Comando (Git Bash):
+  `MSYS_NO_PATHCONV=1 docker run --rm --entrypoint python -v "$(pwd -W)/tts/voices:/data" polytalk-tts:latest -m piper.download_voices --data-dir /data zh_CN-huayan-medium`
+- **Problema: `supertonic-tts` em loop de reinício** (código 255,
+  `exec /app/entrypoint.sh: no such file or directory`). Causa: `core.autocrlf=true`
+  no Windows gravou o `entrypoint.sh` com CRLF, e o shebang virou `#!/bin/sh\r`.
+  - Correção: `.gitattributes` novo com `*.sh text eol=lf` e `Dockerfile text
+    eol=lf`; checkout dos 6 arquivos refeito (sem alterações locais) e
+    `supertonic-tts` reconstruído.
+  - **Lição:** uma checagem anterior com `grep -c $'\r'` no Git Bash disse "0 CR" e
+    estava errada. `git ls-files --eol` é a forma confiável (`w/crlf`).
+- Estado final: os 4 serviços `running`; `GET :8000/health` (STT) 200, `GET
+  :9000/api/health` 200, TTS de pé (405 em `GET /`, rota só POST). De dentro do
+  container `polytalk`, `http://host.docker.internal:11434/api/version` responde.
+- Primeira subida do Supertonic baixa 26 arquivos do HuggingFace (sem token; aviso
+  de limite de taxa, sem erro).
+- Memória: há outros containers do usuário rodando no mesmo Docker (≈1,3 GB, de
+  outros projetos). Os 4 do PolyTalk ocupam ≈1 GB parados (STT 383 MB, TTS 482 MB).
