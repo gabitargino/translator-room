@@ -133,7 +133,7 @@ Os IDs das subtarefas começam pelo número da etapa (ex.: 2.5 é a 5ª subtaref
 |---|---|---|---|---|---|---|
 | 0 | [Preparação do ambiente](etapas/etapa-0-preparacao.md) | `etapa-0-preparacao` | Fork importado e PolyTalk rodando no notebook com Ollama | 8 | 7P · 1M | Concluída |
 | 1 | [Linha de base e viabilidade](etapas/etapa-1-viabilidade.md) | `etapa-1-viabilidade` | Provar que a meta de 3 s é alcançável antes de construir as salas | 6 + portão | 3P · 3M | Concluída (portão aprovado: 1,85 s / 2,45 s) |
-| 2 | [Salas e participantes no servidor](etapas/etapa-2-salas-servidor.md) | `etapa-2-salas-servidor` | Salas, um STT por participante e roteamento para o ouvinte certo | 11 | 6P · 4M · 1G | Pendente |
+| 2 | [Salas e participantes no servidor](etapas/etapa-2-salas-servidor.md) | `etapa-2-salas-servidor` | Salas, um STT por participante e roteamento para o ouvinte certo | 11 | 6P · 4M · 1G | Concluída (sala real: 40/40, sem vazamentos) |
 | 3 | [Interface web para celular](etapas/etapa-3-interface-celular.md) | `etapa-3-interface-celular` | Telas para criar/entrar na sala e ouvir as traduções | 10 | 7P · 3M | Pendente |
 | 4 | [Rede local e HTTPS](etapas/etapa-4-rede-https.md) | `etapa-4-rede-https` | Celulares acessando o notebook pela Wi-Fi com microfone liberado | 6 | 5P · 1M | Pendente |
 | 5 | [Medição de latência](etapas/etapa-5-latencia.md) | `etapa-5-latencia` | Mediana e p95 por direção a partir de sessões reais | 4 | 4P | Pendente |
@@ -315,6 +315,6 @@ As Etapas 5, 6 e 7 seguem o mesmo padrão depois da 3.
 | Questão | Quando decidir |
 |---|---|
 | Whisper `small` em CPU ou `medium` em GPU? | [Etapa 1](etapas/etapa-1-viabilidade.md), subtarefa 1.3 |
-| Idioma fixo por participante no STT ou detecção com filtro? | Etapa 1.3 / [Etapa 2](etapas/etapa-2-salas-servidor.md), subtarefa 2.7 |
+| ~~Idioma fixo por participante no STT ou detecção com filtro?~~ Detecção com filtro (`ROOM_CROSSTALK_FILTER=room`); idioma fixo fica como plano B | Decidido na [Etapa 2](etapas/etapa-2-salas-servidor.md), 2.4 e 2.7 |
 | HTTPS direto no servidor ou por proxy? Certificado confiável ou autoassinado? | [Etapa 4](etapas/etapa-4-rede-https.md), subtarefa 4.1 |
 | Divisão de tarefas entre Allan e Gabriele (sugestão: um nas Etapas 2 e 5, outro nas Etapas 4 e 3) | Antes de iniciar a Etapa 2 |

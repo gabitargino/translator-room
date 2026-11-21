@@ -15,9 +15,9 @@
 
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
-| 6.1 | Testes automatizados das salas: criar, entrar, sair, expirar, código inválido | M | Obrigatório | Passam sem modelos (modo mock) | Pendente |
-| 6.2 | Testes de roteamento com dois clientes simulados em modo mock | M | Obrigatório | Cada cliente recebe só o que é dele | Pendente |
-| 6.3 | Teste do filtro de conversa cruzada | P | Importante | Trecho em idioma errado é descartado | Pendente |
+| 6.1 | Testes automatizados das salas: criar, entrar, sair, expirar, código inválido | M | Obrigatório | Passam sem modelos (modo mock) | Concluída na Etapa 2: TestRoomLifecycle, TestAudioCleanup |
+| 6.2 | Testes de roteamento com dois clientes simulados em modo mock | M | Obrigatório | Cada cliente recebe só o que é dele | Concluída na Etapa 2: TestRouting, TestRoomWebSocket (dois clientes) |
+| 6.3 | Teste do filtro de conversa cruzada | P | Importante | Trecho em idioma errado é descartado | Concluída na Etapa 2: TestCrosstalkFilter |
 | 6.4 | Toda a suíte original continua passando | P | Obrigatório | Mesmo resultado da linha de base (0.8) | Pendente |
 | 6.5 | Roteiro de teste manual com dois celulares (passos e o que observar) | P | Obrigatório | Roteiro nas notas | Pendente |
 | 6.6 | Sessão de validação: conversa contínua de 5 min, PT ↔ ZH, com fones | M | Obrigatório | Critérios abaixo avaliados | Pendente |

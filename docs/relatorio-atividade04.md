@@ -208,7 +208,37 @@ _(a preencher)_
 
 ### 5.1 Arquitetura da solução
 
-_(a preencher: diagrama da sala, fluxo de áudio por participante, roteamento das traduções)_
+As salas são um módulo novo (`app/rooms/`), ao lado do código original. Cada
+celular abre uma conexão WebSocket com a sala (`/api/ws/rooms/{código}`) e informa
+o nome, o idioma de fala e o idioma de escuta. A conexão envia o áudio do microfone
+no mesmo formato do PolyTalk.
+
+```mermaid
+flowchart LR
+    A[Celular A<br/>fala pt, ouve pt] -- áudio --> SA[Sessão de A<br/>fluxo de STT próprio]
+    B[Celular B<br/>fala zh, ouve zh] -- áudio --> SB[Sessão de B<br/>fluxo de STT próprio]
+    SA -- fala transcrita --> FA[Fila de A<br/>mantém a ordem]
+    SB -- fala transcrita --> FB[Fila de B]
+    FA --> R{Roteamento<br/>filtro de conversa cruzada<br/>grupos por idioma de escuta}
+    FB --> R
+    R -- traduz e sintetiza<br/>uma vez por idioma --> MT[Ollama + Piper/Supertonic]
+    MT -- texto + link do áudio em zh --> B
+    MT -- texto + link do áudio em pt --> A
+```
+
+- **Uma sessão por participante:** cada conexão tem o próprio fluxo de STT e uma
+  fila de falas com um único worker, o que mantém a ordem das falas de cada pessoa.
+- **Roteamento:** os ouvintes são agrupados pelo idioma de escuta. Cada grupo
+  recebe uma tradução e uma voz. Quem falou não recebe nada, nem quem já ouve o
+  idioma de quem falou.
+- **Filtro de conversa cruzada:** se o STT de A detecta o idioma de fala de B, o
+  trecho é a voz de B captada pelo microfone de A, e é descartado.
+- **Ciclo de vida:** a sala vazia expira após 2 min e leva junto os áudios gerados.
+  Áudios com mais de 10 min também são apagados com a sala ativa.
+- **Marcas de tempo:** uma linha JSON por fala, com o fim da fala estimado no
+  servidor e o momento de cada etapa, para a medição da Etapa 5.
+
+Protocolo completo nas [notas da Etapa 2](notas-implementacao.md#21-projeto-das-salas).
 
 ### 5.2 Etapas
 
@@ -219,7 +249,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 |---|---|---|
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
 | 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
-| 2 | Salas e participantes no servidor, roteamento por ouvinte | Pendente |
+| 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
 | 3 | Interface web para celular | Pendente |
 | 4 | Rede local e HTTPS | Pendente |
 | 5 | Medição de latência por direção | Pendente |
@@ -236,6 +266,9 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 1 | Correção no STT: pausas dentro da frase se somavam como silêncio final, fechando a frase cedo e cortando o fim da fala. Inclui teste | `stt/app/main.py`, `tests/test_app.py` |
 | 1 | STT na GPU (`small` fp16), espera de silêncio de 0,8 s e Supertonic com 4 passos; volume para o cache dos modelos | `.env.example`, `docker-compose.gpu.yml` |
 | 1 | Conjunto de frases PT/ZH e scripts de medição (latência, STT, voz, concorrência) | `bench/` |
+| 2 | Módulo de salas: criação e entrada por código, idioma de fala e de escuta por participante, um STT por participante, roteamento por idioma de escuta, filtro de conversa cruzada, avisos de entrada e saída, limpeza dos áudios e marcas de tempo por fala. Inclui 30 testes | `app/rooms/` (novo), `tests/test_rooms.py` (novo) |
+| 2 | Rotas das salas e limpeza periódica ligadas ao app; `APP_WORKERS=1` (as salas ficam na memória do processo); variáveis `ROOM_*`; pasta `logs/` montada no container | `app/main.py`, `docker-compose.yml`, `.env.example` |
+| 2 | Teste da sala real com dois participantes simulados e conversa cruzada | `bench/testar_sala.py` |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -369,6 +402,13 @@ sintéticas disputam a CPU, e o reconhecimento quase não sofre.
   com o `small`.
 - **Ruído de fundo (Etapa 1).** O STT detecta o fim da frase por energia (RMS). Com
   ruído de −45 dBFS, nenhuma frase foi fechada. Fica para os testes com celular.
+- **Vários processos do app (Etapa 2).** O PolyTalk sobe 3 workers do gunicorn.
+  Para conexões independentes isso não importa, mas as salas ficam na memória, e
+  duas pessoas da mesma sala poderiam cair em processos diferentes. O padrão passou
+  para 1 worker; o trabalho pesado já roda em outros serviços.
+- **Conversa cruzada custa STT em dobro (Etapa 2).** Quando o microfone de um
+  capta a fala do outro, a mesma frase é transcrita duas vezes, e as duas
+  transcrições disputam o único modelo na GPU. Isso acrescentou ~0,2 s à latência.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -383,7 +423,8 @@ Seção central do relatório, segundo o enunciado.
 | Planejamento | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa |
 | Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
 | Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
-| Etapas 2 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 2 – Salas | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container | Pendente: revisar o PR, em especial o protocolo que a Etapa 3 vai usar |
+| Etapas 3 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -403,6 +444,12 @@ Seção central do relatório, segundo o enunciado.
 - **Inteligibilidade medida pelo próprio STT (Etapa 1).** Sem poder ouvir, o
   agente transcreveu a voz sintetizada para comparar 8, 4 e 2 passos. É uma
   estimativa; a naturalidade ainda depende de uma pessoa ouvir.
+- **Conversa cruzada simulada (Etapa 2).** Sem dois celulares, o agente simulou
+  duas pessoas frente a frente: o microfone de quem ouve recebe a fala do outro,
+  atenuada. Isso testou o filtro com o STT real antes de existir a interface.
+- **Módulo separado (Etapa 2).** Com as salas num pacote novo, a mudança no código
+  original ficou em 3 linhas do `app/main.py`. A suíte original manteve o mesmo
+  resultado.
 
 ### 6.3 O que não funcionou
 
@@ -450,6 +497,11 @@ Seção central do relatório, segundo o enunciado.
 - **No modo conversa, só a espera de silêncio importa (Etapa 1).** O plano previa
   ajustar também o tamanho da janela do STT, mas o código mostrou que, nesse modo,
   a janela só fecha por pausa.
+- **Uma nota anterior estava errada (Etapa 2).** A nota da 1.3 dizia que a
+  detecção de idioma era "restrita a pt/zh". Ao projetar o filtro, a leitura do STT
+  mostrou que a lista de idiomas candidatos é recebida e confirmada, mas não é
+  usada: o Whisper detecta entre todos os idiomas. As medições continuam válidas;
+  a explicação foi corrigida.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente
@@ -462,7 +514,7 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 | Critério (da Atividade 03) | Meta | Resultado |
 |---|---|---|
 | Conversa contínua sem acionar botões a cada fala | ≥ 5 min | _(a preencher)_ |
-| Cada participante ouve apenas a tradução destinada a ele | Sim | _(a preencher)_ |
+| Cada participante ouve apenas a tradução destinada a ele | Sim | Parcial: na sala real com dois participantes simulados, 40/40 frases chegaram só a quem devia, inclusive com conversa cruzada (Etapa 2). Falta a sessão com celulares |
 | Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,85 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
 | Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,45 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
 | Avaliação qualitativa da tradução em frases de teste | — | _(a preencher)_ |
@@ -482,10 +534,10 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 |---|---|---|
 | Tradução fala → fala em um dispositivo | Sim | Sim (preservada) |
 | Conversa bidirecional em um dispositivo | Sim | Sim (preservada) |
-| Salas com código de acesso | Não | _(a preencher)_ |
-| Vários participantes em dispositivos diferentes | Não | _(a preencher)_ |
-| Idioma de fala e de escuta por participante | Não | _(a preencher)_ |
-| Tradução entregue apenas ao ouvinte de destino | Não | _(a preencher)_ |
+| Salas com código de acesso | Não | Sim, no servidor (Etapa 2); interface na Etapa 3 |
+| Vários participantes em dispositivos diferentes | Não | Sim, no servidor (até 8 por sala; validados 2) |
+| Idioma de fala e de escuta por participante | Não | Sim |
+| Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
 | Acesso por celular na rede local via HTTPS | Não | _(a preencher)_ |
 | Medição de latência por direção | Não | _(a preencher)_ |
 
