@@ -115,7 +115,7 @@ comparação; pode ser removido com `ollama rm qwen2.5:3b` (libera 1,9 GB).
 - A voz é devolvida como **link para um arquivo** (`audio_url`), tocado no navegador
   com `new Audio(url)`. Os arquivos ficam em `/media/output`.
 - O servidor não tem HTTPS; `ALLOWED_ORIGINS` aceita só `localhost:9000` por padrão.
-- A interface tem 14 idiomas, mas **não tem chinês**.
+- A interface tem 13 idiomas próprios (menus, botões), mas **não tem chinês**. Os seletores de idioma de tradução têm `zh` (corrigido em 2026-11-21).
 - STT com `STT_MODEL_WORKERS=2` → duas falas simultâneas podem ser processadas.
 
 ### Planejamento
@@ -301,8 +301,9 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
     `STT_EMIT_INTERVAL_SECONDS=4.5`). A medição é aproximada (o instante em que a
     mensagem `tts` chega, não o início da reprodução). Base para a 1.2 e a 1.4.
 - **Pendente:** teste com uma pessoa falando PT e ZH no navegador do notebook
-  (`http://127.0.0.1:9000`, modo conversa). A interface não tem chinês na lista de
-  idiomas (achado já registrado), então o teste pela UI pode depender da Etapa 3.
+  (`http://127.0.0.1:9000`, modo conversa). O chinês (`zh`) **está** nos seletores
+  de origem e destino da tradução. O "não tem chinês" registrado em 2026-11-20 vale
+  só para os idiomas **da interface** (`app/locales/`, 13 catálogos sem `zh`).
 
 ### Etapa 0 – uso do agente e pendências
 
