@@ -154,3 +154,21 @@ critério de pronto, árvore de prioridade, riscos e questões em aberto.
   só envia `Authorization` quando há chave.
 - `config/config.yaml.example`: só um comentário explicando os `mock_mode`.
 - Locais criados por cópia dos exemplos (mock ligado por padrão, para a 0.4).
+
+### 0.4 Modo mock
+
+- Execução local, fora do Docker: `python -m venv .venv`, `pip install -r
+  requirements.txt -r test-requirements.txt`, `python -m app.main`. Python 3.13.12
+  funcionou sem ajustes (o PolyTalk pede 3.10+).
+- `GET /api/health` → `{"status":"healthy","version":"0.4.0"}`; `GET /` e os 11
+  recursos estáticos referenciados pela página (CSS, JS, logo) → 200.
+- Teste de fumaça por script (fora do repositório): WebSocket
+  `/api/ws/translate?source_language=pt&target_language=zh&mode=conversation`, 4 s de
+  áudio sintético. Recebidos `transcription` → `conversation_turn` (`[zh] Hello` etc.)
+  → `tts` com `audio_url` (WAV servido em `/media/output/…`) → `complete`.
+- Comportamento do mock: o transcritor falso segue um roteiro fixo em inglês e
+  **fecha a conexão sozinho** ao terminar (`complete`). Clientes de teste precisam
+  tolerar isso.
+- **Pendente:** conferência visual da interface no navegador. A extensão do Chrome
+  usada pelo agente não estava conectada; fica para um integrante abrir
+  `http://127.0.0.1:9000` e clicar em iniciar.
