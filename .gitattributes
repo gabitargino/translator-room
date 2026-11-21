@@ -5,5 +5,6 @@
 Dockerfile text eol=lf
 # Caddyfile e página do certificado são lidos dentro de um contêiner Linux.
 caddy/* text eol=lf
-# PowerShell 5.1 precisa do BOM UTF-8 para ler acentos; CRLF é o padrão dele.
-*.ps1 text eol=crlf
+# PowerShell 5.1 precisa do BOM UTF-8 para ler acentos; LF evita conflito com
+# os hooks de fim de linha do pre-commit no CI (o PowerShell lê LF normalmente).
+*.ps1 text eol=lf
