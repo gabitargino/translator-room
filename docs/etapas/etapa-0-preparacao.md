@@ -16,7 +16,7 @@
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
 | 0.1 | Importar o PolyTalk para este repositório preservando o histórico; remote `upstream` | P | Obrigatório | `git log` mostra os commits originais e o README do projeto | Concluída |
-| 0.2 | Fluxo de branches: uma branch por etapa, merge na `main` por pull request e tag ao concluir ([planejamento, seção 10.1](../planejamento.md#101-branches)) | P | Importante | Regra resumida no README do fork; esta branch criada | Em andamento |
+| 0.2 | Fluxo de branches: uma branch por etapa, merge na `main` por pull request e tag ao concluir ([planejamento, seção 10.1](../planejamento.md#101-branches)) | P | Importante | Regra resumida no README do fork; esta branch criada | Concluída |
 | 0.3 | Configurar `.env` e `config.yaml` locais: tradução no Ollama com `translategemma:4b`, sem chaves no repositório | P | Obrigatório | `.env` e `config.yaml` no `.gitignore`; arquivos de exemplo atualizados | Pendente |
 | 0.4 | Subir em modo mock e abrir a interface no navegador do notebook | P | Importante | Fluxo da interface funciona sem modelos | Pendente |
 | 0.5 | Construir as imagens Docker do STT e das vozes (Piper `zh_CN-huayan-medium`, Supertonic para PT) | M | Obrigatório | `docker compose up` sobe os 4 serviços sem erro | Pendente |
