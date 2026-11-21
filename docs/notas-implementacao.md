@@ -268,3 +268,38 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
   de limite de taxa, sem erro).
 - Memória: há outros containers do usuário rodando no mesmo Docker (≈1,3 GB, de
   outros projetos). Os 4 do PolyTalk ocupam ≈1 GB parados (STT 383 MB, TTS 482 MB).
+
+### 0.6 Modo `conversation` real (teste sintético)
+
+- `config/config.yaml` local com `mock_mode: false` em `whisper`, `translation` e
+  `tts`; `docker compose restart polytalk` para recarregar.
+- O teste "falando PT e ZH" exige uma pessoa no microfone. O agente fez um **teste
+  sintético de ponta a ponta** no lugar: a fala foi gerada com as vozes da própria
+  pilha (Supertonic `F1` para PT, Piper `zh_CN-huayan-medium` para ZH), reamostrada
+  para 16 kHz Int16 (o mesmo formato do `audio-recorder.js`) e enviada em pedaços
+  de 100 ms em tempo real pelo WebSocket
+  `mode=conversation&source_language=pt&target_language=zh`, com 6 s de silêncio
+  entre as falas. Script fora do repositório (`conversation_e2e.py` no scratchpad do
+  agente), candidato a virar a ferramenta da 1.2.
+- Resultado: **funciona nas duas direções**, com o idioma detectado corretamente
+  em todos os turnos e a voz certa em cada direção.
+
+  | Turno | Fala sintetizada | Transcrição (Whisper `small`, CPU) | Tradução | Fim da fala → `tts` |
+  |---|---|---|---|---|
+  | PT→ZH | Oi, tudo bem? Você sabe onde fica a estação de metrô mais próxima? | (idêntica) | 你好，一切都好吗？你知道最近的地铁站是哪一个吗？ | 5,01 s |
+  | ZH→PT | 你好，很高兴认识你。请问洗手间在哪里？ | 你好很高興認識你,請問洗手間在哪裡? | Olá, é um prazer conhecê-lo. Onde fica o banheiro? | 5,31 s |
+  | PT→ZH | Amanhã vamos nos reunir às três da tarde para fechar o contrato. | (idêntica) | 明天下午三点，我们将见面，正式签订合同。 | 3,60 s |
+  | ZH→PT | 这个价格有点贵，能便宜一点吗？ | 這個價格有點**歸**能**貶易**一點嗎? | Este preço está um pouco alto, **não acha?** | 4,95 s |
+
+- Achados para a Etapa 1:
+  - **O Whisper devolve o chinês em caracteres tradicionais** (高興, 這個, 哪裡) e
+    errou 贵→歸 e 便宜→貶易 no turno 4, o que mudou o sentido da tradução. Entra na
+    1.3 (`small` × `medium`). Possíveis ajustes: `STT_INITIAL_PROMPT` em
+    simplificado ou conversão para simplificado antes da tradução.
+  - **Latência de 3,6 a 5,3 s**, acima da meta de 3 s, com o STT nos padrões
+    (`STT_STREAM_CHUNK_SECONDS=3.0`, `STT_PAUSE_FLUSH_SECONDS=1.2`,
+    `STT_EMIT_INTERVAL_SECONDS=4.5`). A medição é aproximada (o instante em que a
+    mensagem `tts` chega, não o início da reprodução). Base para a 1.2 e a 1.4.
+- **Pendente:** teste com uma pessoa falando PT e ZH no navegador do notebook
+  (`http://127.0.0.1:9000`, modo conversa). A interface não tem chinês na lista de
+  idiomas (achado já registrado), então o teste pela UI pode depender da Etapa 3.
