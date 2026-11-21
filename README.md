@@ -24,10 +24,79 @@
 >   revisado pelo outro integrante; após o merge, tag `etapa-N-concluida`;
 > - o remote `upstream` (PolyTalk original) é só para leitura: nenhum push, pull
 >   request ou issue é enviado ao projeto original.
->
-> O restante deste README é o original do PolyTalk.
+
+## translator-room: usar a sala pelos celulares
+
+Os navegadores só liberam o microfone em páginas HTTPS (ou em `localhost`). Por
+isso, um proxy [Caddy](https://caddyserver.com/) com uma autoridade certificadora
+local fica na frente do app (`docker-compose.https.yml`, sem mexer no app
+original). Notebook e celulares precisam estar na **mesma Wi-Fi**.
+
+### 1. Preparar o notebook (a cada rede nova)
+
+```powershell
+# descobre o IP da Wi-Fi e preenche o .env (ROOM_LAN_IP, ROOM_PUBLIC_BASE_URL,
+# ALLOWED_ORIGINS e COMPOSE_FILE com docker-compose.https.yml)
+powershell -ExecutionPolicy Bypass -File tools\rede-local.ps1
+docker compose up -d
+```
+
+O script mostra os dois endereços para o celular:
+
+| Endereço | Para quê |
+|---|---|
+| `http://<IP>:9080` | Página com o passo a passo e o download do certificado (uma vez por celular) |
+| `https://<IP>:9443/sala` | A sala. No notebook, use `https://localhost:9443/sala` ou `http://127.0.0.1:9000/sala` |
+
+Se o celular não abrir nenhum dos dois, libere as portas no Firewall do Windows
+(PowerShell **como administrador**; a regra vale só para a sub-rede local):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\rede-local.ps1 -Firewall
+```
+
+O IP muda de uma rede para outra: rode o script de novo e `docker compose up -d`.
+O certificado instalado nos celulares continua valendo, porque a autoridade fica
+guardada no volume `caddy_data`.
+
+### 2. Instalar o certificado (uma vez em cada celular)
+
+Abra `http://<IP>:9080` no celular e toque em **Baixar o certificado**.
+
+**Android (Chrome)**
+
+1. Baixe `translator-room-ca.crt`.
+2. Configurações → Segurança → Mais configurações de segurança → Criptografia e
+   credenciais → Instalar um certificado → **Certificado de CA** → "Instalar mesmo
+   assim" → escolha o arquivo. (O caminho varia um pouco por fabricante; procure
+   "certificado de CA" na busca das Configurações.)
+3. Abra `https://<IP>:9443/sala`: não deve aparecer aviso de segurança.
+
+**iPhone (Safari)**
+
+1. Abra a página no **Safari** (outros navegadores do iOS não instalam perfis) e
+   toque em **Baixar o certificado** → Permitir.
+2. Ajustes → **Perfil Transferido** → Instalar (pede o código do iPhone).
+3. Ajustes → Geral → Sobre → **Ajustes de Confiança de Certificados** → ative
+   "Caddy Local Authority". Sem este passo o Safari continua recusando a conexão.
+
+Para remover depois: Android, Criptografia e credenciais → Credenciais do usuário;
+iPhone, Ajustes → Geral → VPN e Gerenciamento de Dispositivos.
+
+### 3. Se não funcionar (testar de fora para dentro)
+
+| Sintoma | Causa provável |
+|---|---|
+| `http://<IP>:9080` não abre | Rede isola os aparelhos (comum em Wi-Fi pública ou de universidade: use o roteador do celular), IP errado ou firewall (`-Firewall`) |
+| Aviso "conexão não é particular" | Certificado não instalado, ou (iPhone) sem a confiança total do passo 3 |
+| Página abre, mas o microfone não é pedido | Página aberta por `http://`: use o endereço `https://` |
+| QR code aponta para `localhost` | Sala criada no notebook sem rodar o script: falta `ROOM_PUBLIC_BASE_URL` no `.env` |
+
+Detalhes e decisões: [Etapa 4](docs/etapas/etapa-4-rede-https.md).
 
 ---
+
+_O restante deste README é o original do PolyTalk._
 
 <p align="center">
   <a href="https://www.polytalk.io/">
