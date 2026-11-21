@@ -1,0 +1,231 @@
+{
+ "rotulo": "1.4-ruido-60",
+ "inicio": "2026-11-21T15:38:24",
+ "rodadas": 1,
+ "ruido_dbfs": -60.0,
+ "pausa_interna": 0.0,
+ "config_stt": {
+  "STT_MAX_CROSS_DELTA_WORD_REPEATS": "6",
+  "STT_TRANSCRIBE_WORKERS": "2",
+  "STT_EMIT_INTERVAL_SECONDS": "4.5",
+  "STT_COMPUTE_TYPE": "float16",
+  "STT_INITIAL_PROMPT": "",
+  "STT_NO_SPEECH_PROB_THRESHOLD": "0.50",
+  "STT_EMIT_MIN_CHARS": "120",
+  "STT_WORKERS": "1",
+  "STT_STREAM_CHUNK_SECONDS": "3.0",
+  "STT_LOG_PROB_THRESHOLD": "-1.0",
+  "STT_CHUNK_OVERLAP_SECONDS": "0.25",
+  "STT_IDLE_FLUSH_SECONDS": "3.0",
+  "STT_MODEL": "small",
+  "STT_TEMPERATURE": "0.0",
+  "STT_PRELOAD_MODEL": "true",
+  "STT_DEVICE": "cuda",
+  "STT_VAD_FILTER": "true",
+  "STT_LEADING_SILENCE_PREROLL_SECONDS": "0.2",
+  "STT_MODEL_WORKERS": "1",
+  "STT_SILENCE_RMS_THRESHOLD": "0.003",
+  "STT_TRANSCRIBE_QUEUE_SIZE": "8",
+  "STT_CONDITION_ON_PREVIOUS_TEXT": "false",
+  "STT_WORD_TIMESTAMPS": "true",
+  "STT_PAUSE_FLUSH_SECONDS": "0.8",
+  "STT_VAD_MIN_SILENCE_MS": "500",
+  "STT_VAD_SPEECH_PAD_MS": "200"
+ },
+ "resumo": {
+  "pt→zh": {
+   "transcricao": {
+    "n": 2,
+    "mediana": 1.4045,
+    "p95": 1.414,
+    "min": 1.395,
+    "max": 1.414
+   },
+   "traducao": {
+    "n": 2,
+    "mediana": 1.6844999999999999,
+    "p95": 1.713,
+    "min": 1.656,
+    "max": 1.713
+   },
+   "voz": {
+    "n": 2,
+    "mediana": 1.8555,
+    "p95": 1.894,
+    "min": 1.817,
+    "max": 1.894
+   },
+   "audio": {
+    "n": 2,
+    "mediana": 1.877,
+    "p95": 1.902,
+    "min": 1.852,
+    "max": 1.902
+   },
+   "so_traducao": {
+    "n": 2,
+    "mediana": 0.28,
+    "p95": 0.31800000000000006,
+    "min": 0.242,
+    "max": 0.31800000000000006
+   },
+   "so_voz": {
+    "n": 2,
+    "mediana": 0.17099999999999993,
+    "p95": 0.18099999999999983,
+    "min": 0.16100000000000003,
+    "max": 0.18099999999999983
+   },
+   "so_envio": {
+    "n": 2,
+    "mediana": 0.021500000000000075,
+    "p95": 0.03500000000000014,
+    "min": 0.008000000000000007,
+    "max": 0.03500000000000014
+   },
+   "falhas": 0,
+   "frases_divididas": 0,
+   "direcao_errada": 0
+  },
+  "zh→pt": {
+   "transcricao": {
+    "n": 2,
+    "mediana": 1.294,
+    "p95": 1.316,
+    "min": 1.272,
+    "max": 1.316
+   },
+   "traducao": {
+    "n": 2,
+    "mediana": 1.597,
+    "p95": 1.636,
+    "min": 1.558,
+    "max": 1.636
+   },
+   "voz": {
+    "n": 2,
+    "mediana": 2.9,
+    "p95": 3.23,
+    "min": 2.57,
+    "max": 3.23
+   },
+   "audio": {
+    "n": 2,
+    "mediana": 2.912,
+    "p95": 3.243,
+    "min": 2.581,
+    "max": 3.243
+   },
+   "so_traducao": {
+    "n": 2,
+    "mediana": 0.30299999999999994,
+    "p95": 0.3639999999999999,
+    "min": 0.242,
+    "max": 0.3639999999999999
+   },
+   "so_voz": {
+    "n": 2,
+    "mediana": 1.303,
+    "p95": 1.594,
+    "min": 1.0119999999999998,
+    "max": 1.594
+   },
+   "so_envio": {
+    "n": 2,
+    "mediana": 0.01200000000000001,
+    "p95": 0.0129999999999999,
+    "min": 0.01100000000000012,
+    "max": 0.0129999999999999
+   },
+   "falhas": 0,
+   "frases_divididas": 0,
+   "direcao_errada": 0
+  }
+ },
+ "medidas": [
+  {
+   "id": "pt-01",
+   "idioma": "pt",
+   "rodada": 1,
+   "duracao_fala": 2.64,
+   "texto": "Bom dia, obrigado por virem à reunião de hoje.",
+   "pausa_interna": false,
+   "transcricao": 1.414,
+   "n_transcricao": 1,
+   "traducao": 1.656,
+   "n_traducao": 1,
+   "voz": 1.817,
+   "n_voz": 1,
+   "transcrito": "Bom dia. Obrigado por virem à reunião de hoje.",
+   "traduzido": "早上好。感谢大家今天参加会议。",
+   "idioma_detectado": "pt",
+   "idioma_destino": "zh",
+   "erros": [],
+   "audio": 1.852,
+   "download": 0.035
+  },
+  {
+   "id": "zh-01",
+   "idioma": "zh",
+   "rodada": 1,
+   "duracao_fala": 1.59,
+   "texto": "你好，很高兴认识你。",
+   "pausa_interna": false,
+   "transcricao": 1.316,
+   "n_transcricao": 1,
+   "traducao": 1.558,
+   "n_traducao": 1,
+   "voz": 2.57,
+   "n_voz": 1,
+   "transcrito": "你好很高興認識你",
+   "traduzido": "Olá, é um prazer conhecer-te.",
+   "idioma_detectado": "zh",
+   "idioma_destino": "pt",
+   "erros": [],
+   "audio": 2.581,
+   "download": 0.011
+  },
+  {
+   "id": "pt-08",
+   "idioma": "pt",
+   "rodada": 1,
+   "duracao_fala": 3.36,
+   "texto": "Eu concordo com a proposta, mas o prazo está muito curto.",
+   "pausa_interna": false,
+   "transcricao": 1.395,
+   "n_transcricao": 1,
+   "traducao": 1.713,
+   "n_traducao": 1,
+   "voz": 1.894,
+   "n_voz": 1,
+   "transcrito": "Eu concordo com a proposta, mas o prazo está muito curto.",
+   "traduzido": "我赞同这个方案，但时间安排太紧凑了。",
+   "idioma_detectado": "pt",
+   "idioma_destino": "zh",
+   "erros": [],
+   "audio": 1.902,
+   "download": 0.008
+  },
+  {
+   "id": "zh-08",
+   "idioma": "zh",
+   "rodada": 1,
+   "duracao_fala": 2.57,
+   "texto": "样品已经寄出了，大概五天能到。",
+   "pausa_interna": false,
+   "transcricao": 1.272,
+   "n_transcricao": 1,
+   "traducao": 1.636,
+   "n_traducao": 1,
+   "voz": 3.23,
+   "n_voz": 1,
+   "transcrito": "样品已经寄出了大概五天能到。",
+   "traduzido": "A amostra já foi enviada e deve chegar em cerca de cinco dias.",
+   "idioma_detectado": "zh",
+   "idioma_destino": "pt",
+   "erros": [],
+   "audio": 3.243,
+   "download": 0.013
+  }
+ ]
+}
