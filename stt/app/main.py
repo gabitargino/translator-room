@@ -733,6 +733,12 @@ async def stream_transcription(
                     trailing_silence_bytes = 0
                 elif current_window_has_voice and not has_voice:
                     trailing_silence_bytes += len(audio_data)
+                elif has_voice:
+                    # translator-room: speech resumed, so the silence so far was
+                    # an internal pause, not trailing silence. Without this reset
+                    # pauses inside a phrase add up, the window is flushed early
+                    # and the pause-flush trim cuts off the end of the speech.
+                    trailing_silence_bytes = 0
 
                 audio_chunks.append(audio_data)
 
