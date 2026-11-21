@@ -5,7 +5,9 @@
 
 - ``POST /api/rooms``: cria uma sala e devolve o código.
 - ``GET /api/rooms/{code}``: estado da sala e participantes.
-- ``WS /api/ws/rooms/{code}?name=&speak=&listen=``: conexão do participante.
+- ``GET /api/rooms/{code}/qr.svg``: QR code com o link de entrada (3.9).
+- ``WS /api/ws/rooms/{code}?name=&speak=&listen=&rejoin=``: conexão do
+  participante. ``rejoin`` é o id anterior de quem está reconectando (3.7).
   O celular envia áudio PCM 16 kHz mono 16 bits (mesmo formato do
   ``/api/ws/translate``) e recebe JSON:
 
@@ -23,13 +25,15 @@ import asyncio
 import json
 import time
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response
 
 from ..routers import api as api_module
 from ..utils.logger import get_logger
 from .models import RoomError, get_room_manager
 from .routing import RoomRouter
 from .session import ParticipantSession
+from .web import join_url, qr_svg
 
 logger = get_logger(__name__)
 
@@ -61,21 +65,36 @@ def get_room_router() -> RoomRouter:
 
 
 @router.post("/rooms", status_code=201)
-async def create_room() -> dict:
+async def create_room(request: Request) -> dict:
     room = get_room_manager().create_room()
     return {
         "room": room.code,
         "state": room.state,
         "ws_url": f"/api/ws/rooms/{room.code}",
+        "join_url": join_url(request, room.code),
     }
 
 
 @router.get("/rooms/{code}")
-async def get_room(code: str) -> dict:
+async def get_room(code: str, request: Request) -> dict:
     try:
-        return get_room_manager().get_room(code).to_state()
+        room = get_room_manager().get_room(code)
     except RoomError as exc:
         raise HTTPException(status_code=404, detail=exc.message) from exc
+    return {**room.to_state(), "join_url": join_url(request, room.code)}
+
+
+@router.get("/rooms/{code}/qr.svg")
+async def get_room_qr(code: str, request: Request) -> Response:
+    try:
+        room = get_room_manager().get_room(code)
+    except RoomError as exc:
+        raise HTTPException(status_code=404, detail=exc.message) from exc
+    return Response(
+        content=qr_svg(join_url(request, room.code)),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @router.websocket("/ws/rooms/{code}")
@@ -85,9 +104,13 @@ async def room_websocket(
     name: str | None = None,
     speak: str | None = None,
     listen: str | None = None,
+    rejoin: str | None = None,
 ):
     await websocket.accept()
     manager = get_room_manager()
+    # Quem volta de uma queda substitui o próprio "fantasma"; os outros veem
+    # só um participant_joined com rejoined=true e a lista atualizada.
+    stale = manager.drop_stale(code, rejoin)
     try:
         room, participant = manager.join(
             code, name, speak, listen, send_func=websocket.send_json
@@ -106,7 +129,12 @@ async def room_websocket(
         {"type": "joined", "room": room.code, "participant": participant.to_public()}
     )
     await manager.broadcast_state(
-        room, {"type": "participant_joined", "participant": participant.to_public()}
+        room,
+        {
+            "type": "participant_joined",
+            "participant": participant.to_public(),
+            "rejoined": stale is not None,
+        },
     )
 
     try:
@@ -129,6 +157,9 @@ async def room_websocket(
     try:
         while True:
             message = await websocket.receive()
+            if not participant.connected:
+                # Substituído por uma reconexão (3.7) ou conexão morta.
+                break
             if message.get("type") == "websocket.disconnect":
                 break
             if message.get("bytes") is not None:
@@ -165,10 +196,12 @@ async def room_websocket(
     except Exception as exc:
         logger.error(f"room websocket error participant={participant.id}: {exc}")
     finally:
-        manager.leave(room.code, participant.id)
-        await manager.broadcast_state(
-            room, {"type": "participant_left", "participant": participant.to_public()}
-        )
+        if participant.id in room.participants:
+            manager.leave(room.code, participant.id)
+            await manager.broadcast_state(
+                room,
+                {"type": "participant_left", "participant": participant.to_public()},
+            )
         session.end_audio()
         try:
             await asyncio.wait_for(stt_task, timeout=STT_DRAIN_SECONDS)

@@ -982,3 +982,149 @@ entrada fecham a conexão com códigos próprios: 4404 (sala não existe), 4409
 - **Pendências humanas:**
   - revisar o PR, em especial o protocolo, que a Etapa 3 vai usar;
   - decidir se o padrão do filtro (`room`) e o tempo de expiração (120 s) servem.
+
+## 2026-11-21 – Etapa 3 (branch `etapa-3-interface-celular`)
+
+**Ordem trocada:** o plano previa a Etapa 4 (HTTPS) antes desta. A interface foi
+feita primeiro e conferida no notebook, onde `http://127.0.0.1` já é contexto
+seguro e o navegador libera o microfone. Nos celulares, pelo IP da Wi-Fi, o
+microfone só funciona com HTTPS: a conferência nos aparelhos fica para depois da
+Etapa 4. A página avisa isso (`room.mic_unsupported`) em vez de falhar calada.
+
+### Projeto da interface
+
+- Página nova `/sala` (alias `/room`), com três telas na mesma página: inicial,
+  configuração e sala. `?code=K7Q29` abre direto a configuração daquela sala; é o
+  link do QR code. Ao entrar, a URL vira `/sala?code=...`, e recarregar a página
+  volta à configuração da mesma sala.
+- Arquivos novos: `app/rooms/web.py` (rota da página, link de entrada e QR),
+  `app/templates/room.html`, `app/static/js/room-app.js`,
+  `app/static/css/room.css`. A tela original (`/`) só ganhou um link para a sala.
+- Cores da marca PolyTalk com um sentido: laranja para falar (microfone), azul
+  para ouvir (traduções).
+
+### 3.1–3.3 Telas
+
+- Inicial: "Criar sala" (`POST /api/rooms`) ou código (`GET /api/rooms/{code}`
+  confere se existe antes de seguir). O campo aceita minúsculas e remove o que
+  não é letra ou número.
+- Configuração: nome, "eu falo", "quero ouvir em" (acompanha o idioma de fala até
+  a pessoa mudar) e "estou de fone". A escolha fica salva no aparelho
+  (`localStorage`, só por conveniência).
+- Sala: código, convidar e sair no topo; lista de participantes com idioma e
+  estado (conectado, silenciado, "tradução tocando" quando o áudio dessa pessoa
+  está tocando); legendas com a tradução no idioma de quem segura o celular e,
+  menor, o que a própria pessoa disse ("Você disse"), para ela ver se o STT
+  entendeu; nível do microfone e um botão grande de silenciar embaixo, ao
+  alcance do polegar.
+
+### 3.4 Som liberado no toque
+
+- Tudo que precisa de gesto acontece **antes do primeiro `await`** no toque em
+  "Entrar": o `<audio>` único toca 0,1 s de silêncio (WAV gerado no próprio JS) e
+  o `AudioContext` do microfone é criado ali. As traduções seguintes trocam só o
+  `src` desse mesmo elemento, que já está liberado.
+- O `AudioRecorder` do PolyTalk cria o contexto depois de pedir o microfone, ou
+  seja, depois de um `await`. No Safari esse contexto pode nascer suspenso, e aí o
+  microfone não manda nada. Por isso a sala usa uma subclasse
+  (`RoomMicrophone extends AudioRecorder`) que recebe o contexto pronto e
+  reaproveita o resto (cálculo do nível, PCM 16 kHz, cancelamento de eco).
+- Se mesmo assim o navegador bloquear, a tradução volta para a frente da fila e
+  aparece "Toque aqui para ligar o som".
+
+### 3.5 Fila de reprodução
+
+- `PlaybackQueue`: uma tradução por vez; a próxima começa no `ended` da anterior.
+  Um vigia de 30 s pula um áudio que nunca termina.
+- Ao começar a tocar, o celular manda `playback_started`, que o servidor já grava
+  no log de tempos (Etapa 2). A Etapa 5 usa isso para medir até o som de verdade.
+- **Sem fone:** o alto-falante do celular seria captado pelo próprio microfone, e
+  a tradução seria traduzida de volta. Com "estou de fone" desmarcado, enquanto a
+  tradução toca o celular manda silêncio no lugar do microfone. O STT fecha a
+  frase pendente e não ouve o alto-falante.
+
+### 3.6 Tela ligada
+
+- `navigator.wakeLock.request('screen')` no toque em "Entrar". O navegador solta
+  o bloqueio quando a aba some; ao voltar, a página pede de novo, retoma o
+  `AudioContext` e reabre o microfone se o celular o encerrou.
+- Sem suporte (iOS anterior ao 16.4, por exemplo), aparece o aviso para manter a
+  tela ligada à mão.
+
+### 3.7 Reconexão
+
+- Se a conexão cai, o celular tenta de novo em 0,5, 1, 2, 4 e 8 s (depois a cada
+  8 s), e na hora em que o sistema avisa que a rede voltou (`online`).
+- Wi-Fi caído muitas vezes não fecha a conexão: ela só para de responder. O
+  celular manda `ping` a cada 5 s; sem nenhuma mensagem por 15 s, descarta a
+  conexão e reconecta.
+- **Fantasma no servidor:** o servidor também demora a perceber a queda, e a
+  pessoa ficaria duas vezes na sala. Na volta, o celular informa o id anterior
+  (`rejoin`). O servidor tira o antigo antes de aceitar o novo
+  (`RoomManager.drop_stale`) e avisa a sala com `participant_joined` e
+  `rejoined: true`, que a interface não mostra como "entrou". A conexão antiga
+  é encerrada na próxima mensagem dela.
+- Se a sala expirou durante a queda (120 s vazia), a página volta à tela inicial
+  com "A sala foi encerrada".
+- Conferido no servidor real com um script (`websockets`): fantasma removido,
+  `rejoined: true`, lista com 2 pessoas.
+
+### 3.8 Chinês
+
+- O PolyTalk tem 13 idiomas de interface e nenhum é chinês. Foi acrescentado
+  `app/locales/zh.json` completo (134 textos, nomes de idiomas e mensagens do JS),
+  então a tela original também passa a funcionar em chinês. `zh` entrou na lista
+  de idiomas da interface (`app/ui_locales.py`).
+- As 60 chaves `room.*` estão em PT, ZH e EN; os outros idiomas caem no inglês
+  pelo mecanismo que o PolyTalk já tem. O idioma vem de `?ui_locale=`, do cookie
+  ou do idioma do celular: um aparelho em chinês abre a sala em chinês.
+- Os textos em chinês foram escritos pelo agente. Precisam da revisão de um
+  falante.
+
+### 3.9 QR code
+
+- Gerado no servidor em SVG com `segno` (Python puro, nova dependência). Não usa
+  internet nem biblioteca JS de terceiros.
+- O link usa o endereço pelo qual quem criou a sala abriu a página (o IP do
+  notebook). Se a página foi aberta por `localhost`, o QR apontaria para o próprio
+  celular; para isso existe `ROOM_PUBLIC_BASE_URL`.
+- O convite abre sozinho para quem criou a sala enquanto está sozinho, e fecha
+  quando a segunda pessoa entra.
+
+### 3.10 Licença
+
+- Rodapé com "Código-fonte (AGPL-3.0)" apontando para o fork
+  (`ROOM_SOURCE_URL`), "baseado no PolyTalk CE" e link para o tradutor original.
+
+### Testes
+
+- `tests/test_room_ui.py`: 22 testes (página e telas, código pela URL, idiomas
+  nos seletores, página em chinês e pelo `Accept-Language`, catálogo `zh`
+  completo, chaves `room.*` traduzidas e com os mesmos `{parâmetros}`, link da
+  licença, QR, `join_url`, `rejoin` e os pontos do JS que o celular depende).
+- Suíte inteira no Windows: 511 passam; as 4 falhas são as da linha de base.
+- `node --check` no `room-app.js`. O comportamento no navegador (som, microfone,
+  tela ligada, Wi-Fi) não tem teste automático: vai para a conferência humana.
+
+### Etapa 3 – uso do agente
+
+- **Executado pelo agente:** leitura do `AudioRecorder`, do i18n e das rotas do
+  PolyTalk; as telas, o JS, o CSS, o catálogo em chinês, as mudanças no servidor
+  (QR, `join_url`, `rejoin`) e os testes; reconstrução do container e teste da
+  reconexão no servidor real.
+- **Achados do agente:**
+  - o `AudioRecorder` cria o `AudioContext` depois de um `await`, o que pode deixar
+    o microfone mudo no Safari;
+  - sem fone, a tradução tocada no alto-falante voltaria pelo microfone;
+  - a queda do Wi-Fi deixaria um participante fantasma na sala.
+- **Erros do agente corrigidos no caminho:**
+  - um teste procurava um texto chinês da tela original no HTML, mas essa tela é
+    traduzida no navegador; o teste passou a conferir o título, que vem do
+    servidor;
+  - o primeiro script da reconexão leu o aviso da entrada do próprio Bo no lugar
+    do da Ana.
+- **Sem navegador:** a extensão do Chrome continuou desconectada; nem a tela no
+  notebook pôde ser vista pelo agente.
+- **Pendências humanas:** a tabela "Conferência humana pendente" da
+  [Etapa 3](etapas/etapa-3-interface-celular.md); revisar os textos em chinês;
+  revisar o PR.
