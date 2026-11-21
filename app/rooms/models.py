@@ -205,6 +205,25 @@ class RoomManager:
         )
         return room, participant
 
+    def drop_stale(
+        self, code: str | None, participant_id: str | None
+    ) -> Optional[Participant]:
+        """Remove o participante antigo de quem está reconectando (3.7).
+
+        Quando o Wi-Fi oscila, o servidor pode demorar a perceber que a conexão
+        antiga caiu. O celular volta informando o id anterior, e esse "fantasma"
+        sai da sala antes de a nova conexão entrar.
+        """
+        room = self.rooms.get(normalize_room_code(code))
+        if room is None or not participant_id:
+            return None
+        if participant_id not in room.participants:
+            return None
+        stale = room.participants[participant_id]
+        self.leave(room.code, participant_id)
+        logger.info(f"room rejoin code={room.code} replaced={participant_id}")
+        return stale
+
     def leave(self, code: str, participant_id: str) -> Optional[Room]:
         room = self.rooms.get(normalize_room_code(code))
         if room is None:
