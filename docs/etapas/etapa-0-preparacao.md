@@ -9,7 +9,7 @@
 | **Libera** | Etapa 1 (viabilidade) e Etapa 4 (rede e HTTPS) |
 | **Branch** | `etapa-0-preparacao` (a partir da `main`) |
 | **Esforço** | 7P · 1M |
-| **Status** | Em andamento: Ollama instalado e `translategemma:4b` testado |
+| **Status** | Quase concluída: 0.1–0.3, 0.5, 0.7 e 0.8 prontas; faltam a conferência visual da UI (0.4) e o teste falado (0.6) |
 
 ## Subtarefas
 
