@@ -25,6 +25,7 @@ import asyncio
 import collections
 import json
 import random
+import struct
 import subprocess
 import sys
 import time
@@ -62,6 +63,37 @@ def config_stt() -> dict[str, str]:
     return dict(x.split("=", 1) for x in out.splitlines() if x.startswith("STT_"))
 
 
+def esticar_pausa(pcm: bytes, alvo_s: float) -> tuple[bytes, bool]:
+    """Estica a maior pausa interna da frase (ex.: na vírgula) até `alvo_s`.
+
+    Procura, entre 15% e 85% da frase, o trecho mais longo de quadros de 10 ms com
+    RMS abaixo de 1% da escala. Se tiver pelo menos 50 ms, insere silêncio no meio
+    dele até a pausa somar `alvo_s`. Simula quem hesita no meio da frase.
+    """
+    q = 160 * 2  # 10 ms em bytes
+    quadros = [pcm[i : i + q] for i in range(0, len(pcm) - q + 1, q)]
+    baixos = []
+    for b in quadros:
+        n = len(b) // 2
+        soma = sum(v * v for (v,) in struct.iter_unpack("<h", b))
+        baixos.append((soma / n) ** 0.5 / 32768 < 0.01)
+    ini_ok, fim_ok = int(len(quadros) * 0.15), int(len(quadros) * 0.85)
+    melhor, atual = (0, 0), None
+    for i in range(ini_ok, fim_ok):
+        if baixos[i]:
+            atual = (atual[0], i + 1) if atual else (i, i + 1)
+            if atual[1] - atual[0] > melhor[1] - melhor[0]:
+                melhor = atual
+        else:
+            atual = None
+    tamanho = melhor[1] - melhor[0]
+    if tamanho < 5:
+        return pcm, False
+    meio = (melhor[0] + tamanho // 2) * q
+    extra = max(0, int(alvo_s * 100) - tamanho) * q
+    return pcm[:meio] + b"\x00" * extra + pcm[meio:], True
+
+
 def baixar(url: str) -> float:
     """Baixa o áudio e devolve quanto tempo o download levou."""
     t = time.perf_counter()
@@ -79,6 +111,12 @@ async def medir(args: argparse.Namespace) -> dict:
     zh = [f for f in frases if f["idioma"] == "zh"]
     ordem = [f for par in zip(pt, zh) for f in par] + pt[len(zh) :] + zh[len(pt) :]
     audios = {f["id"]: ler_pcm16k(AUDIO_DIR / f"{f['id']}.wav") for f in ordem}
+    pausas: dict[str, bool] = {}
+    if args.pausa_interna:
+        for k, (pcm, _) in audios.items():
+            novo, ok = esticar_pausa(pcm, args.pausa_interna)
+            audios[k] = (novo, len(novo) / 32000)
+            pausas[k] = ok
 
     rng = random.Random(1)
     silencio = bloco_silencio(args.ruido_dbfs, rng)
@@ -154,6 +192,7 @@ async def medir(args: argparse.Namespace) -> dict:
                     "rodada": rodada,
                     "duracao_fala": round(dur, 3),
                     "texto": f["texto"],
+                    "pausa_interna": pausas.get(f["id"], False),
                 }
                 tipos = {
                     "transcription": "transcricao",
@@ -275,6 +314,12 @@ def main() -> int:
         "--tempo-max", type=float, default=20.0, help="limite por frase (s)"
     )
     ap.add_argument(
+        "--pausa-interna",
+        type=float,
+        default=0.0,
+        help="estica a pausa da vírgula para este total (s); 0 = áudio original",
+    )
+    ap.add_argument(
         "--ruido-dbfs",
         type=float,
         default=None,
@@ -292,6 +337,7 @@ def main() -> int:
         "inicio": inicio,
         "rodadas": args.rodadas,
         "ruido_dbfs": args.ruido_dbfs,
+        "pausa_interna": args.pausa_interna,
         "config_stt": stt,
         "resumo": res,
         **dados,

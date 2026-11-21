@@ -517,3 +517,94 @@ a outra parte grande (1.4).
 Lições para o relatório: medir cada peça isolada não bastou. O `medium` parecia
 melhor nas duas métricas isoladas (precisão no STT, tradução sozinha) e piorou o
 sistema. Foi a medição de ponta a ponta que mostrou o problema.
+
+### 1.4 Espera de silêncio e janelas do STT
+
+- **Janelas:** no modo conversation, o PolyTalk usa `emit_policy=pause`, e o STT
+  só fecha a frase por pausa (`STT_PAUSE_FLUSH_SECONDS`) ou por falta de áudio
+  (`STT_IDLE_FLUSH_SECONDS`, que não ocorre com o microfone aberto). O tamanho da
+  janela (`STT_STREAM_CHUNK_SECONDS`) e as regras de emissão (`STT_EMIT_*`) só
+  valem no modo live. **O único ajuste que importa aqui é a espera de silêncio.**
+- **Bug encontrado e corrigido** (commit `2ec42ed`):
+  - Em `stt/app/main.py`, o contador `trailing_silence_bytes` não zerava quando a
+    fala voltava, então pausas internas se somavam. Uma frase com hesitação de
+    0,9 s (abaixo da espera de 1,2 s) fechava cedo, e o corte do silêncio final
+    apagava o fim: "o prazo está muito curto" virou "o prazo está morto".
+  - O que revelou o bug foi a primeira varredura: com hesitação, a latência
+    ficava *menor*, o que não faz sentido.
+  - Correção de uma linha (zerar o contador quando a voz volta) e teste novo
+    (`test_stt_stream_internal_pause_does_not_count_as_trailing_silence`), que
+    falhava antes da correção. Suíte: 459 passam; as 4 falhas são as mesmas da
+    0.8, só no Windows.
+  - A primeira varredura foi descartada e refeita.
+- Script: `bench/medir_conversa.py` ganhou `--pausa-interna`. A opção estica a
+  maior pausa dentro da frase (entre 15% e 85% dela, normalmente a vírgula) para
+  simular hesitação. 15 das 20 frases têm onde esticar.
+
+Varredura com o STT `small` fp16 na GPU (1 rodada, 10 frases por direção; tempo
+até o áudio, mediana / p95 em s):
+
+| Espera | Áudio | PT→ZH | ZH→PT | Divididas | Erro PT | Erro ZH |
+|---|---|---|---|---|---|---|
+| 1,2 s | original | 2,12 / 2,23 | 3,08 / 3,71 | 0 | 0% | 1,5% |
+| 1,2 s | hesitação 0,5 s | 2,15 / 2,28 | 3,11 / 3,65 | 0 | 0% | 1,5% |
+| 0,8 s | original | 1,70 / 1,93 | 2,72 / 3,17 | 0 | 0% | 1,5% |
+| 0,8 s | hesitação 0,5 s | 1,75 / 1,85 | 2,64 / 3,34 | 0 | 0% | 1,5% |
+| 0,6 s | original | 1,42 / 1,55 | 2,42 / 2,99 | 0 | 0% | 1,5% |
+| 0,6 s | hesitação 0,5 s | 1,46 / 1,64 | 2,45 / 3,24 | 0 | 0% | 1,5% |
+| 0,4 s | original | 1,31 / 1,46 | 2,23 / 3,17 | 0 | 0% | 1,5% |
+| 0,4 s | hesitação 0,5 s | 1,35 / 1,42 | 2,40 / 3,00 | 0 | 0% | 1,5% |
+
+- Cada 0,1 s a menos de espera tira ~0,1 s da latência, até 0,6 s. De 0,6 para
+  0,4 s, o ganho cai (o bloco de áudio tem 128 ms).
+- Os erros são sempre zh-03 e zh-05 (os mesmos da 1.3). Com hesitação, aparece
+  zh-08 (样品→央品), porque o script inseriu a pausa no meio da palavra. É um
+  efeito do script, não da espera.
+- **A hesitação de 0,5 s não dividiu frases nem com espera de 0,4 s.** A pausa
+  inserida fica, na prática, com ~0,4 s abaixo do limiar do STT
+  (`STT_SILENCE_RMS_THRESHOLD=0.003`), contados em blocos de 128 ms. Teste direto
+  no STT com espera de 0,8 s (`pt-08`): pausa interna de 0,7 s mantém a frase
+  inteira; de 1,0 s ou 1,3 s, divide em duas falas ("Eu concordo com a proposta." e
+  depois a frase toda). A primeira metade sai enquanto a pessoa ainda fala.
+- **Escolha: `STT_PAUSE_FLUSH_SECONDS=0.8`** (em `.env.example` e no `.env`). Fica
+  abaixo de 3 s nas duas direções e tolera hesitações de até ~0,7 s. A 0,6 s
+  ganharia mais 0,3 s, mas a fala real tem pausas de 0,5–1 s entre trechos da
+  frase, e cada divisão vira uma tradução separada, sem o contexto da outra
+  metade. Fica como opção se a voz em PT (1.6) não melhorar.
+
+Medição final com a configuração escolhida (`small` fp16 GPU, espera 0,8 s;
+`bench/resultados/1.4-final.json`, 2 rodadas, 20 medidas por direção):
+
+| Parte (mediana / p95, s) | PT→ZH | ZH→PT |
+|---|---|---|
+| Até a transcrição (espera + STT) | 1,35 / 1,50 | 1,37 / 1,49 |
+| Tradução (isolada) | 0,22 / 0,31 | 0,26 / 0,37 |
+| Voz (isolada) | 0,10 / 0,13 (Piper) | 1,04 / 1,53 (Supertonic) |
+| Download do áudio | 0,02 / 0,02 | 0,02 / 0,03 |
+| **Total até o áudio** | **1,67 / 1,89** | **2,75 / 3,27** |
+
+Em relação à 1.2 (padrão): PT→ZH 3,46 → 1,67 s e ZH→PT 4,38 → 2,75 s. Nenhuma
+falha nem direção errada.
+
+Com hesitação de 1,0 s (`1.4-final-hesitacao-1.0.json`), 12 das 20 frases foram
+divididas, como esperado: pausa maior que a espera. A latência até o áudio da
+última parte ficou em 1,41 s (PT→ZH) e 2,47 s (ZH→PT). Dividir não atrasa, mas
+cada parte é traduzida sem a outra.
+
+**Risco descoberto: ruído de fundo.**
+
+- O STT considera silêncio o bloco de 128 ms com RMS abaixo de 0,003
+  (`STT_SILENCE_RMS_THRESHOLD`, ≈ −50 dBFS). Medi com ruído gaussiano no lugar do
+  silêncio digital (`--ruido-dbfs`, 4 frases):
+  - **−60 dBFS:** normal (1,85–3,24 s até o áudio).
+  - **−45 dBFS:** **nenhuma frase transcrita.** O silêncio nunca é detectado, a
+    pausa nunca fecha a frase e, com o microfone aberto, a espera por
+    inatividade (3 s) também nunca dispara.
+- O navegador pede `noiseSuppression` e `echoCancellation` ao abrir o microfone
+  (`app/static/js/audio-recorder.js`), e o teste humano da 0.6 funcionou com o
+  microfone do notebook. Então, na prática, o fundo ficou abaixo do limiar. Mas
+  celulares e salas variam.
+- **Pendência para a Etapa 3 (celulares) e a Etapa 6 (testes):** medir o nível de
+  fundo real dos celulares. Se passar de −50 dBFS, subir
+  `STT_SILENCE_RMS_THRESHOLD` ou trocar a detecção por RMS pelo VAD (Silero),
+  que o faster-whisper já tem.
