@@ -367,3 +367,46 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
   áudios: ele não manda silêncio depois da fala, e o STT só fecha a janela por
   pausa (`STT_PAUSE_FLUSH_SECONDS`) ou por tamanho. Os scripts de `bench/` mandam
   silêncio depois da fala, como o navegador faz.
+
+### 1.2 Latência da configuração padrão (modo conversation)
+
+- Script: `bench/medir_conversa.py`. Uma sessão `mode=conversation` pt↔zh recebe o
+  áudio como o navegador manda (blocos de 2048 amostras, 128 ms, em tempo real),
+  com as frases alternadas pt-01, zh-01, pt-02... O relógio parte do último bloco
+  com fala. Resultado bruto: `bench/resultados/1.2-padrao.json`.
+- Configuração: a do `.env.example` (`STT_PAUSE_FLUSH_SECONDS=1.2`, Whisper `small`
+  CPU int8, Supertonic com 8 passos, `translategemma:4b` com `keep_alive`).
+- 2 rodadas × 20 frases = 20 medidas por direção. Nenhuma falha, frase dividida ou
+  direção errada (a detecção pt/zh acertou as 40).
+
+Tempo desde o fim da fala (s), mediana / p95:
+
+| Parte | PT→ZH | ZH→PT |
+|---|---|---|
+| Até a transcrição (espera de silêncio + STT) | 2,79 / 3,05 | 2,74 / 2,95 |
+| Tradução (isolada) | 0,52 / 0,57 | 0,52 / 0,69 |
+| Voz (isolada) | 0,12 / 0,31 (Piper zh) | 1,06 / 1,63 (Supertonic pt) |
+| Download do áudio (isolado) | 0,02 / 0,02 | 0,01 / 0,03 |
+| **Total até o áudio** | **3,46 / 3,84** | **4,38 / 5,06** |
+
+- **Nenhuma direção cumpre a meta de 3 s.** A transcrição sozinha leva ~2,75 s,
+  dos quais 1,2 s são espera de silêncio. Os ~1,5 s restantes são STT (a 1.3 vai
+  separar inferência de fila).
+- A voz em PT (Supertonic) custa ~1 s a mais que a voz em ZH (Piper): é a diferença
+  entre as direções (1.6).
+- A tradução dentro do app leva 0,52 s, contra 0,28–0,35 s medidos isoladamente no
+  Ollama. A diferença é o prompt do PolyTalk e o processamento do app; não é a
+  maior parte do problema.
+- O tempo de transcrição quase não depende do tamanho da frase (1,4 s a 4,1 s de
+  fala dão 2,65 a 3,24 s): o custo é a espera fixa mais o processamento.
+- **Correção no script durante a medição:** a primeira versão media o download
+  depois de esperar 1,5 s sem mensagens e deu "envio = 1,5 s". O download real
+  leva 0,01–0,03 s; o script agora soma só o tempo do download à chegada da
+  mensagem `tts`.
+- **Limitações:** silêncio digital (o microfone real tem ruído; o script aceita
+  `--ruido-dbfs`), servidor e cliente no mesmo computador (sem Wi-Fi) e o início
+  da reprodução no navegador não entra na conta.
+- Qualidade observada (para a 1.3): no ZH, o STT trocou 贵→规 (zh-03, a tradução
+  perdeu "caro") e 三→散 (zh-05, a tradução perdeu "quarta-feira"). No PT, a
+  transcrição saiu certa, mas `pt-07` virou "a que distância fica" na tradução
+  (erro do tradutor). A pontuação do STT em ZH às vezes cai no meio da frase.

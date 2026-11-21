@@ -16,7 +16,7 @@
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
 | 1.1 | Montar um conjunto fixo de frases de teste (gravadas em PT e ZH) para todas as medições | P | Obrigatório | Conjunto salvo no repositório, ~10 frases por idioma | Concluída: [bench/](../../bench/README.md), 10 + 10 frases, áudio sintético |
-| 1.2 | Medir a latência da configuração padrão no modo `conversation` (fim da fala → início do áudio) | M | Obrigatório | Mediana e p95 por direção registradas | Pendente |
+| 1.2 | Medir a latência da configuração padrão no modo `conversation` (fim da fala → início do áudio) | M | Obrigatório | Mediana e p95 por direção registradas | Concluída: PT→ZH 3,46 s / 3,84 s; ZH→PT 4,38 s / 5,06 s (mediana / p95) |
 | 1.3 | Avaliar a precisão do STT em chinês e português: Whisper `small` em CPU contra `medium` em GPU (se couber na VRAM com o tradutor) | M | Obrigatório | Tabela de erros e tempo por modelo; escolha registrada | Pendente |
 | 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Pendente |
 | 1.5 | Medir duas falas simultâneas (dois fluxos de STT ao mesmo tempo) | P | Importante | Latência sob concorrência registrada | Pendente |
@@ -41,9 +41,9 @@ fim da fala                                                 início do áudio no
 | Espera de silêncio para fechar a frase | 1,2 s (`STT_PAUSE_FLUSH_SECONDS`) | Configuração padrão | 1.4 |
 | Janela de áudio processada pelo STT | 3,0 s (`STT_STREAM_CHUNK_SECONDS`) | Configuração padrão; o guia de produção sugere 1,2 s | 1.4 |
 | Reconhecimento (Whisper `small`, CPU) | 0,5–1,5 s por frase | Estimativa | 1.2, 1.3 |
-| Tradução (`translategemma:4b`, GPU) | 0,28–0,35 s | **Medido** em 20/11 | — |
+| Tradução (`translategemma:4b`, GPU) | 0,28–0,35 s isolada; 0,52 s dentro do app | **Medido** em 20/11 e na 1.2 | — |
 | Síntese de voz (Piper / Supertonic) | ? | A medir | 1.6 |
-| Download do arquivo de áudio e início da reprodução | ~0,1 s | Estimativa (rede local) | 1.2 |
+| Download do arquivo de áudio | 0,01–0,03 s (mesmo computador) | **Medido** na 1.2 | 1.2 |
 
 Só a espera de silêncio padrão já consome 40% do orçamento. Por isso a 1.4 é
 obrigatória.
