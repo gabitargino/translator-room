@@ -1171,7 +1171,7 @@ abrirem a sala pela Wi-Fi com o microfone liberado, o que exige HTTPS.
   ignorando Tailscale, WSL e Docker (o notebook tem Tailscale com perfil Privado).
 - Problema do PowerShell 5.1: `$PSScriptRoot` está vazio no valor padrão do
   `param()`; corrigido calculando o caminho do `.env` no corpo. O script tem BOM
-  UTF-8 (`*.ps1 text eol=crlf`), senão o 5.1 lê os acentos como ANSI.
+  UTF-8 (`*.ps1 text eol=lf`; com CRLF o pre-commit do CI falhou em `mixed-line-ending`), senão o 5.1 lê os acentos como ANSI.
 
 ### 4.4 Origens
 
