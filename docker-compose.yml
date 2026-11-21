@@ -135,7 +135,9 @@ services:
       # Application
       - APP_HOST=0.0.0.0
       - APP_PORT=8000
-      - APP_WORKERS=${APP_WORKERS:-3}
+      # translator-room: rooms live in process memory, so run a single worker
+      # (with several, participants of the same room may land in different ones).
+      - APP_WORKERS=${APP_WORKERS:-1}
       - APP_DEBUG=${APP_DEBUG:-false}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:9000,http://127.0.0.1:9000}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
@@ -143,6 +145,17 @@ services:
       - TRANSLATION_FLUSH_SECONDS=${TRANSLATION_FLUSH_SECONDS:-2.0}
       - TRANSLATION_FLUSH_MIN_CHARS=${TRANSLATION_FLUSH_MIN_CHARS:-40}
       - CUSTOM_INSTRUCTION_MAX_CHARS=${CUSTOM_INSTRUCTION_MAX_CHARS:-250}
+      # translator-room: rooms (Etapa 2). The STT values are reused to estimate
+      # the end of each utterance for the timing log.
+      - ROOM_EMPTY_TTL_SECONDS=${ROOM_EMPTY_TTL_SECONDS:-120}
+      - ROOM_MAX_PARTICIPANTS=${ROOM_MAX_PARTICIPANTS:-8}
+      - ROOM_AUDIO_MAX_AGE_SECONDS=${ROOM_AUDIO_MAX_AGE_SECONDS:-600}
+      - ROOM_SWEEP_INTERVAL_SECONDS=${ROOM_SWEEP_INTERVAL_SECONDS:-15}
+      - ROOM_CROSSTALK_FILTER=${ROOM_CROSSTALK_FILTER:-room}
+      - ROOM_STT_LANGUAGE_MODE=${ROOM_STT_LANGUAGE_MODE:-auto}
+      - ROOM_TIMING_LOG=${ROOM_TIMING_LOG:-logs/room-timing.jsonl}
+      - STT_PAUSE_FLUSH_SECONDS=${STT_PAUSE_FLUSH_SECONDS:-1.0}
+      - STT_SILENCE_RMS_THRESHOLD=${STT_SILENCE_RMS_THRESHOLD:-0.003}
     volumes:
       # Mount app source for development (remove for production)
       - ./app:/app/app:ro
@@ -150,6 +163,8 @@ services:
       - ./config:/app/config:ro
       # Persist generated media files
       - ./media/output:/app/media/output
+      # translator-room: per-utterance timing log of the rooms (Etapa 2, 2.10)
+      - ./logs:/app/logs
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
