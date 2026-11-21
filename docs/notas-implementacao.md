@@ -638,3 +638,42 @@ cada parte é traduzida sem a outra.
 - Com duas falas simultâneas, **ZH→PT passa da meta (mediana 3,32 s)**. Na sala,
   falas simultâneas devem ser exceção (as pessoas se revezam), mas o p95 de 4,3 s
   mostra que a voz em PT é o próximo ponto a atacar (1.6).
+
+### 1.6 Tempo de síntese de voz
+
+- Script: `bench/medir_tts.py`, direto nos serviços. Sintetiza a coluna
+  `referencia` (o texto que o TTS recebe numa conversa) com os parâmetros do app:
+  ZH no Piper (`zh_CN-huayan-medium`) e PT no Supertonic (voz F1). Para o
+  Supertonic, testa 8 (padrão), 4 e 2 passos. 3 rodadas × 10 frases. Resultado:
+  `bench/resultados/tts-1.6.json`. Os áudios ficam em `bench/resultados/tts-1.6/`,
+  fora do git, para serem ouvidos.
+- Inteligibilidade estimada com `bench/inteligibilidade_tts.py`: transcreve a voz
+  gerada com o STT e calcula o WER contra o texto. Isso mede se o Whisper entende,
+  não se a voz soa natural.
+
+| Voz | Tempo (mediana / p95, s) | Tempo / duração do áudio | WER pelo STT | Frases exatas |
+|---|---|---|---|---|
+| Piper ZH | 0,15 / 0,23 | 0,06 | — | — |
+| Supertonic PT, 8 passos (padrão) | 1,48 / 1,90 | 0,37 | 3,8% | 8/10 |
+| **Supertonic PT, 4 passos** | **0,83 / 1,10** | 0,20 | 3,5% | 8/10 |
+| Supertonic PT, 2 passos | 0,51 / 0,63 | 0,13 | 40,7% | 5/10 |
+
+- O Piper é 10× mais rápido que o Supertonic. Por isso ZH→PT (voz em PT) é sempre
+  a direção mais lenta.
+- Com 4 passos, a voz é tão inteligível quanto com 8 e leva quase metade do tempo.
+  Com 2, várias frases ficaram ininteligíveis ("Com licença, onde fica o
+  banheiro?" virou "Conheça em Sanchiko Banyu").
+- Os erros com 8 e 4 passos são de nome e número ("Sangai/Shanghai" por Xangai,
+  "200" por "duzentos", porque o normalizador só escreve por extenso até 99), não
+  de pronúncia.
+- **Escolha: `SUPERTONIC_TTS_STEPS=4`** (em `.env.example` e no `.env`).
+  **Pendente: um integrante ouvir** `bench/resultados/tts-1.6/*-pt-8p.wav` contra
+  `*-pt-4p.wav` e confirmar que a voz continua natural. Para gerar os arquivos:
+  `python bench/medir_tts.py --rotulo 1.6 --passos 8,4,2`.
+- Dentro do app, a voz em PT passou de 1,04 para 0,75 s na mediana (`1.6-final`).
+  O ganho é menor que no teste direto, porque as traduções reais são mais curtas
+  que as referências.
+- Aquecimento: depois de reiniciar o container `polytalk`, as duas primeiras vozes
+  em ZH levaram 2,1 s e 1,3 s, contra 0,1 s nas demais (provavelmente a busca da
+  lista de vozes do Piper, que o app guarda por 1 h, e as conexões novas). Fica
+  para a Etapa 5: aquecer os serviços ao iniciar.

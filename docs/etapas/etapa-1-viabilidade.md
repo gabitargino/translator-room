@@ -20,7 +20,7 @@
 | 1.3 | Avaliar a precisão do STT em chinês e português: Whisper `small` em CPU contra `medium` em GPU (se couber na VRAM com o tradutor) | M | Obrigatório | Tabela de erros e tempo por modelo; escolha registrada | Concluída: `small` fp16 na GPU (0,43 s; mesma precisão do padrão no app). O `medium` foi descartado: disputa VRAM com o tradutor. Detecção automática mantida |
 | 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Concluída: espera de 0,8 s → PT→ZH 1,67 s, ZH→PT 2,75 s (mediana). Corrigido bug do STT (pausas internas somavam) |
 | 1.5 | Medir duas falas simultâneas (dois fluxos de STT ao mesmo tempo) | P | Importante | Latência sob concorrência registrada | Concluída: PT→ZH 2,14 s, ZH→PT 3,32 s (mediana). O gargalo é a voz em CPU, não o STT |
-| 1.6 | Medir o tempo de síntese de voz em PT e ZH | P | Importante | Tempo por frase registrado | Pendente |
+| 1.6 | Medir o tempo de síntese de voz em PT e ZH | P | Importante | Tempo por frase registrado | Concluída: Piper ZH 0,15 s; Supertonic PT 1,48 s → 0,83 s com 4 passos (falta ouvir) |
 | **Portão** | **A mediana estimada fica abaixo de 3 s?** Se não, rever os modelos ou os parâmetros antes de seguir | — | Obrigatório | Decisão anotada nas notas | Pendente |
 
 ## Orçamento de latência (3 s)
@@ -42,7 +42,7 @@ fim da fala                                                 início do áudio no
 | Janela de áudio processada pelo STT | Não se aplica ao modo conversation (só fecha por pausa) | Verificado no código na 1.2 | 1.4 |
 | Reconhecimento | `small` CPU: 1,55–1,8 s; `small` GPU: 0,43 s | **Medido** na 1.3 | 1.2, 1.3 |
 | Tradução (`translategemma:4b`, GPU) | 0,28–0,35 s isolada; 0,52 s dentro do app | **Medido** em 20/11 e na 1.2 | — |
-| Síntese de voz (Piper / Supertonic) | ? | A medir | 1.6 |
+| Síntese de voz (Piper / Supertonic) | Piper ZH 0,15 s; Supertonic PT 0,83 s (4 passos) | **Medido** na 1.6 | 1.6 |
 | Download do arquivo de áudio | 0,01–0,03 s (mesmo computador) | **Medido** na 1.2 | 1.2 |
 
 Só a espera de silêncio padrão já consome 40% do orçamento. Por isso a 1.4 é
