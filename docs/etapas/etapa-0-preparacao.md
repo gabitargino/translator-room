@@ -22,7 +22,7 @@
 | 0.5 | Construir as imagens Docker do STT e das vozes (Piper `zh_CN-huayan-medium`, Supertonic para PT) | M | Obrigatório | `docker compose up` sobe os 4 serviços sem erro | Pendente |
 | 0.6 | Testar o modo `conversation` real em um único dispositivo, falando PT e ZH | P | Obrigatório | Tradução e voz funcionam nas duas direções | Pendente |
 | 0.7 | Manter o modelo carregado na GPU entre falas (tempo de permanência do Ollama) | P | Importante | Sem a recarga de ~7 s depois de uma pausa longa | Pendente |
-| 0.8 | Rodar os testes automatizados originais e registrar o resultado como linha de base | P | Obrigatório | Resultado anotado nas notas | Pendente |
+| 0.8 | Rodar os testes automatizados originais e registrar o resultado como linha de base | P | Obrigatório | Resultado anotado nas notas | Concluída |
 
 ## Como o ambiente fica montado
 

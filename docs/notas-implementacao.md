@@ -172,3 +172,35 @@ critério de pronto, árvore de prioridade, riscos e questões em aberto.
 - **Pendente:** conferência visual da interface no navegador. A extensão do Chrome
   usada pelo agente não estava conectada; fica para um integrante abrir
   `http://127.0.0.1:9000` e clicar em iniciar.
+
+### 0.8 Linha de base dos testes originais
+
+Feita antes da 0.5 porque não depende do Docker (o daemon estava parado).
+Comando do CI original: `pytest tests/ -v` (o CI usa Python 3.12 no Ubuntu; aqui,
+Python 3.13.12 no Windows, dentro do `.venv`).
+
+| Execução | Passou | Falhou | Cobertura (`app/`) | Tempo |
+|---|---|---|---|---|
+| Direta, com o `.env` local presente | 452 | 6 | 75,79 % | 138 s |
+| Sem o `.env` local e com `PYTHONUTF8=1` | **454** | **4** | **75,90 %** | 100 s |
+
+As 6 falhas são do ambiente, não do código:
+
+| Teste | Causa |
+|---|---|
+| `test_app.py::TestSTTCadence::test_stt_pause_flush_seconds_default` | O app carrega o `.env` com `python-dotenv`; o `.env.example` traz `STT_PAUSE_FLUSH_SECONDS=1.2` e o teste espera o padrão do código, `1.0`. Passa sem o `.env` local |
+| `test_i18n.py::test_locale_catalogs_have_required_shape` | Lê os catálogos sem `encoding=` e o Windows usa cp1252. Passa com `PYTHONUTF8=1` |
+| `test_app.py::TestBenchmarks::test_stt_benchmark_missing_audio_has_clear_error` e `test_pipeline_benchmark_missing_audio_has_clear_error` | Comparam a mensagem com `/tmp/...` literal; no Windows o `Path` vira `\tmp\...`. Só no Windows |
+| `test_logger_detailed.py::TestSetupFileLogger::test_setup_file_logger_with_dir` e `test_setup_file_logger_creates_dir` | O `TemporaryDirectory` tenta apagar o `polytalk.log` ainda aberto pelo handler de log (WinError 32). Só no Windows |
+
+**Linha de base adotada:** 454/458 no Windows com `PYTHONUTF8=1` e sem `.env`, e as
+4 restantes conhecidas como específicas do Windows. Os testes originais **não** foram
+alterados. Daqui em diante, qualquer falha além dessas 4 é regressão nossa.
+Comando de referência (Git Bash):
+
+```bash
+mv .env .env.off; PYTHONUTF8=1 .venv/Scripts/python -m pytest tests/ -q; mv .env.off .env
+```
+
+Observação: o `.github/workflows/ci.yml` do PolyTalk também roda no nosso fork a
+cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no Linux.
