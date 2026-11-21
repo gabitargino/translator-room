@@ -24,6 +24,9 @@ translation:
   api_format: "${TRANSLATION_API_FORMAT}"
   api_key: "${TRANSLATION_API_KEY}"
   model: "${TRANSLATION_MODEL}"
+  # Ollama only: keep the model loaded between requests (e.g. "24h", "-1m"
+  # = forever). Omitted from requests when TRANSLATION_KEEP_ALIVE is unset.
+  keep_alive: "${TRANSLATION_KEEP_ALIVE}"
   providers:
     qwen3:
       base_url: "${TRANSLATION_BASE_URL}"

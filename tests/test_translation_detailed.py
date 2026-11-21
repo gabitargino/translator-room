@@ -578,6 +578,54 @@ class TestTranslationProviderRouting:
         assert headers["Authorization"] == "Bearer gamma-key"
         assert payload["model"] == "translategamma"
 
+    def test_openai_chat_omits_keep_alive_by_default(self):
+        """Test keep_alive is not sent unless configured (original behavior)."""
+        with patch("app.services.translation_service.get_config") as mock_config:
+            mock_config.return_value.translation = self._service_config()
+            service = TranslationService()
+
+        _, _, payload = service._build_translation_request("Hello", "en", "gu")
+
+        assert "keep_alive" not in payload
+
+    def test_openai_chat_unresolved_keep_alive_env_is_omitted(self):
+        """Test an unset ${VAR} keep_alive placeholder is treated as missing."""
+        config = self._service_config()
+        config["keep_alive"] = "${TRANSLATION_KEEP_ALIVE}"
+        with patch("app.services.translation_service.get_config") as mock_config:
+            mock_config.return_value.translation = config
+            service = TranslationService()
+
+        _, _, payload = service._build_translation_request("Hello", "en", "gu")
+
+        assert "keep_alive" not in payload
+
+    def test_openai_chat_sends_flat_keep_alive_to_routed_provider(self):
+        """Test flat translation keep_alive is inherited by routed providers."""
+        config = self._service_config()
+        config["keep_alive"] = "24h"
+        with patch("app.services.translation_service.get_config") as mock_config:
+            mock_config.return_value.translation = config
+            service = TranslationService()
+
+        _, _, payload = service._build_translation_request("Hello", "en", "gu")
+
+        assert payload["model"] == "translategamma"
+        assert payload["keep_alive"] == "24h"
+
+    def test_openai_chat_provider_keep_alive_overrides_flat_value(self):
+        """Test a provider-level keep_alive wins over the flat value."""
+        config = self._service_config()
+        config["keep_alive"] = "24h"
+        config["providers"]["translategamma"]["keep_alive"] = "-1m"
+        with patch("app.services.translation_service.get_config") as mock_config:
+            mock_config.return_value.translation = config
+            service = TranslationService()
+
+        _, _, payload = service._build_translation_request("Hello", "en", "gu")
+
+        assert payload["keep_alive"] == "-1m"
+
     def test_endpoint_model_placeholder_uses_safe_replacement(self):
         """Test endpoint model substitution only replaces the documented token."""
         config = self._service_config()

@@ -615,6 +615,11 @@ class TranslationService(BaseTranslationService):
                 "temperature": temperature,
                 "max_tokens": max_tokens,
             }
+            # Ollama extension: keep the model loaded between requests. Only sent
+            # when configured, since other OpenAI-compatible servers may reject it.
+            keep_alive = self._provider_value(provider_config, "keep_alive", "")
+            if keep_alive:
+                payload["keep_alive"] = keep_alive
             return url, self._bearer_headers(provider_config), payload
 
         if api_format == "openai_responses":

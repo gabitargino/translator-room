@@ -204,3 +204,33 @@ mv .env .env.off; PYTHONUTF8=1 .venv/Scripts/python -m pytest tests/ -q; mv .env
 
 Observação: o `.github/workflows/ci.yml` do PolyTalk também roda no nosso fork a
 cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no Linux.
+
+### 0.7 Modelo carregado entre falas (`keep_alive`)
+
+- Problema confirmado: o Ollama descarrega o modelo após 5 min sem uso. Recarga
+  medida hoje: **16 s** (a frio) e **4,1 s** (arquivo em cache do SO).
+- Primeira tentativa: variável de usuário `OLLAMA_KEEP_ALIVE=24h` + reiniciar o
+  Ollama. **Bloqueada pelo controle de permissões do agente** (alteração persistente
+  do sistema + encerrar processos). Isso levou a uma solução melhor, dentro do
+  repositório e sem mexer na máquina.
+- Teste manual: o endpoint OpenAI do Ollama (`/v1/chat/completions`) **aceita**
+  `"keep_alive"` no corpo. `ollama ps` passou de "4 minutes from now" para "24 hours
+  from now".
+- Implementação (mudança no código original):
+  - `app/services/translation_service.py`: no formato `openai_chat`, envia
+    `keep_alive` **só se estiver configurado**. Provedores OpenAI reais poderiam
+    rejeitar o campo, então o comportamento original fica intacto por padrão.
+  - Chave `translation.keep_alive: "${TRANSLATION_KEEP_ALIVE}"` no
+    `config.yaml.example`. Como os provedores herdam as chaves da seção
+    `translation`, vale para `qwen3` e `translategamma`, e cada provedor pode
+    sobrescrever.
+  - `TRANSLATION_KEEP_ALIVE=24h` no `.env.example`, repassada ao container no
+    `docker-compose.yml` (o container só recebe as variáveis listadas ali).
+  - 4 testes novos em `tests/test_translation_detailed.py`: ausente por padrão;
+    `${VAR}` não resolvida = ausente; herdado pelo provedor roteado; provedor
+    sobrescreve.
+- Verificação: modelo descarregado (`keep_alive: 0`) → recarregado sem o campo (4
+  min) → uma tradução pelo `TranslationService` → `ollama ps` mostra 24 h.
+- Curiosidade: depois que um `keep_alive` longo foi definido, requisições **sem** o
+  campo não reduziram o prazo. Mesmo assim, enviamos em toda requisição para não
+  depender desse comportamento.
