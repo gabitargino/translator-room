@@ -250,7 +250,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
 | 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
-| 3 | Interface web para celular | Pendente |
+| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares (precisa do HTTPS da Etapa 4) |
 | 4 | Rede local e HTTPS | Pendente |
 | 5 | Medição de latência por direção | Pendente |
 | 6 | Testes automatizados e validação com dois celulares | Pendente |
@@ -269,6 +269,9 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 2 | Módulo de salas: criação e entrada por código, idioma de fala e de escuta por participante, um STT por participante, roteamento por idioma de escuta, filtro de conversa cruzada, avisos de entrada e saída, limpeza dos áudios e marcas de tempo por fala. Inclui 30 testes | `app/rooms/` (novo), `tests/test_rooms.py` (novo) |
 | 2 | Rotas das salas e limpeza periódica ligadas ao app; `APP_WORKERS=1` (as salas ficam na memória do processo); variáveis `ROOM_*`; pasta `logs/` montada no container | `app/main.py`, `docker-compose.yml`, `.env.example` |
 | 2 | Teste da sala real com dois participantes simulados e conversa cruzada | `bench/testar_sala.py` |
+| 3 | Página da sala para celular: criar ou entrar por código, idiomas de fala e de escuta, lista de participantes, legendas, silenciar, som liberado no toque, fila de reprodução, tela ligada, reconexão automática, convite por QR code e aviso AGPL. Inclui 22 testes | `app/rooms/web.py`, `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `tests/test_room_ui.py` (novos) |
+| 3 | Interface em chinês (o PolyTalk não tinha), também para a tela original; textos da sala em PT, ZH e EN | `app/locales/zh.json` (novo), `app/locales/en.json`, `app/locales/pt.json`, `app/ui_locales.py` |
+| 3 | Servidor: link de entrada nas respostas, QR code em SVG e `rejoin` para substituir o participante antigo numa reconexão; link para a sala na tela original | `app/rooms/router.py`, `app/rooms/models.py`, `app/main.py`, `app/templates/index.html`, `requirements.txt` (`segno`) |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -424,7 +427,8 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
 | Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
 | Etapa 2 – Salas | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container | Pendente: revisar o PR, em especial o protocolo que a Etapa 3 vai usar |
-| Etapas 3 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 3 – Interface | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda | Pendente: conferir nos celulares (som, tela ligada, Wi-Fi, QR) e revisar os textos em chinês |
+| Etapas 4 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -502,6 +506,12 @@ Seção central do relatório, segundo o enunciado.
   mostrou que a lista de idiomas candidatos é recebida e confirmada, mas não é
   usada: o Whisper detecta entre todos os idiomas. As medições continuam válidas;
   a explicação foi corrigida.
+- **Ordem das etapas trocada (Etapa 3).** A interface foi feita antes do HTTPS.
+  No notebook, `127.0.0.1` já libera o microfone; nos celulares, não. A
+  conferência nos aparelhos ficou para depois da Etapa 4.
+- **Reaproveitar nem sempre basta (Etapa 3).** O módulo de captura do PolyTalk
+  serve, mas cria o contexto de áudio na hora errada para o Safari. Foi preciso
+  uma subclasse, em vez de usar o módulo como está.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente
@@ -534,7 +544,8 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 |---|---|---|
 | Tradução fala → fala em um dispositivo | Sim | Sim (preservada) |
 | Conversa bidirecional em um dispositivo | Sim | Sim (preservada) |
-| Salas com código de acesso | Não | Sim, no servidor (Etapa 2); interface na Etapa 3 |
+| Salas com código de acesso | Não | Sim: servidor (Etapa 2) e página `/sala` com QR code (Etapa 3) |
+| Interface em chinês | Não (13 idiomas, sem chinês) | Sim, na sala e na tela original |
 | Vários participantes em dispositivos diferentes | Não | Sim, no servidor (até 8 por sala; validados 2) |
 | Idioma de fala e de escuta por participante | Não | Sim |
 | Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
