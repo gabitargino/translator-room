@@ -322,8 +322,21 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
     WebSocket, não visualmente.
 - **Pendências para fechar a etapa** (antes do PR para a `main` e da tag
   `etapa-0-concluida`):
-  1. Abrir `http://127.0.0.1:9000` no navegador e conferir a interface (0.4).
-  2. Teste falado PT↔ZH por uma pessoa (0.6).
-  3. Revisão das mudanças de código por um integrante:
+  1. ~~Abrir `http://127.0.0.1:9000` no navegador e conferir a interface (0.4).~~
+     Feito.
+  2. ~~Teste falado PT↔ZH por uma pessoa (0.6).~~ Feito.
+  3. Revisão das mudanças de código por um integrante (no PR):
      `app/services/translation_service.py`, `tests/test_translation_detailed.py`,
      `docker-compose.yml`, `.gitattributes`.
+
+### 0.4 e 0.6 – conferência humana
+
+- Um integrante abriu `http://127.0.0.1:9000` no Chrome do notebook, com a pilha
+  Docker no modo real (mocks desligados), e usou o modo **Conversation** com origem
+  Portuguese e destino Chinese.
+- Resultado relatado: **a interface carregou e traduziu nas duas direções** (PT→ZH
+  e ZH→PT, com voz). Latência e erros de console não foram anotados; a medição
+  formal fica para a Etapa 1 (1.2).
+- Com isso, 0.4 e 0.6 estão concluídas, e a **Etapa 0 está concluída**. Falta o PR
+  `etapa-0-preparacao` → `main`, com revisão do outro integrante, e a tag
+  `etapa-0-concluida`.

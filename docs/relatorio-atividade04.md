@@ -217,7 +217,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 
 | Etapa | Descrição | Status |
 |---|---|---|
-| 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Em andamento |
+| 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
 | 1 | Linha de base e viabilidade da latência (portão de 3 s) | Pendente (tradução já medida) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Pendente |
 | 3 | Interface web para celular | Pendente |
@@ -228,11 +228,25 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 
 ### 5.3 Principais alterações no código
 
-_(a preencher)_
+| Etapa | Alteração | Arquivos |
+|---|---|---|
+| 0 | Opção `translation.keep_alive` (`TRANSLATION_KEEP_ALIVE`), enviada ao Ollama só quando configurada, para manter o modelo na GPU entre falas. Inclui 4 testes | `app/services/translation_service.py`, `config/config.yaml.example`, `.env.example`, `docker-compose.yml`, `tests/test_translation_detailed.py` |
+| 0 | Configuração de exemplo apontando a tradução para o Ollama local (`translategemma:4b`, sem chave) | `.env.example`, `config/config.yaml.example` |
+| 0 | `.gitattributes` forçando LF em scripts e Dockerfiles (correção para Windows) | `.gitattributes` |
 
 ### 5.4 Dificuldades encontradas
 
-_(a preencher)_
+- **Quebras de linha no Windows (Etapa 0).** Com `core.autocrlf=true`, o git gravou
+  o `entrypoint.sh` do Supertonic com CRLF, e o container entrou em loop de
+  reinício (`exec /app/entrypoint.sh: no such file or directory`). Resolvido com um
+  `.gitattributes`.
+- **Testes originais no Windows (Etapa 0).** Linha de base: 454 de 458. Duas falhas
+  vinham do ambiente (o `.env` local carregado pelos testes e a codificação cp1252,
+  resolvidas com `PYTHONUTF8=1` e sem o `.env`); as 4 restantes só acontecem no
+  Windows (caminho `/tmp` e arquivo de log aberto). Os testes originais não foram
+  alterados.
+- **Recarga do modelo de tradução (Etapa 0).** O Ollama descarrega o modelo após
+  5 min parado; a recarga custava de 4 a 16 s na primeira fala depois de uma pausa.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -245,15 +259,31 @@ Seção central do relatório, segundo o enunciado.
 | Escolha do projeto | Leu o código de três candidatos (open-realtime-translate, PolyTalk, live-translate), levantou o hardware da máquina, comparou requisitos e recomendou a troca | O grupo decidiu trocar após considerar o projeto original complexo demais |
 | Viabilidade da tradução | Instalou o Ollama, escreveu e rodou o teste PT↔ZH com o prompt do PolyTalk e avaliou a qualidade das traduções | O grupo escolheu o modelo (`translategemma:4b`) |
 | Planejamento | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa |
-| Etapas 0 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
+| Etapas 1 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
-_(a preencher)_
+- **Teste sintético de ponta a ponta (Etapa 0).** Sem microfone, o agente gerou
+  fala com as próprias vozes da pilha (Supertonic para PT, Piper para ZH) e a enviou
+  pelo WebSocket no mesmo formato do navegador. Isso validou as duas direções antes
+  do teste humano e já revelou dois problemas para a Etapa 1: transcrição do
+  chinês em caracteres tradicionais, com erros, e latência de 3,6 a 5,3 s.
+- **Trabalho em paralelo à espera (Etapa 0).** Enquanto o Docker iniciava e as
+  imagens eram construídas (~12 min), o agente adiantou a linha de base dos testes
+  e a solução do `keep_alive`.
 
 ### 6.3 O que não funcionou
 
-_(a preencher)_
+- **Checagem de CRLF enganosa (Etapa 0).** O agente verificou as quebras de linha
+  com `grep` e concluiu, errado, que estavam corretas; o erro só apareceu quando o
+  container quebrou. A forma confiável é `git ls-files --eol`.
+- **Leitura apressada de uma nota (Etapa 0).** O agente repetiu que "a interface não
+  tem chinês" e sugeriu que o teste falado dependeria da Etapa 3. Na verdade, só os
+  textos da interface não têm chinês; os seletores de tradução têm. O erro foi
+  percebido ao preparar as instruções do teste visual e corrigido nas notas.
+- **Sem acesso ao navegador (Etapa 0).** A extensão do Chrome não estava conectada,
+  então a interface só pôde ser conferida por um integrante.
 
 ### 6.4 Imprevistos
 
@@ -267,6 +297,12 @@ _(a preencher)_
   parecido inviável.
 - **O PolyTalk já tinha um modo de conversa bidirecional** em um único dispositivo,
   que não aparecia em destaque na documentação. Ele virou a base das salas.
+- **O bloqueio de permissões levou a uma solução melhor (Etapa 0).** A primeira
+  ideia do agente para manter o modelo carregado era mudar uma variável de ambiente
+  do Windows e reiniciar o Ollama, e o controle de permissões bloqueou. Ao procurar
+  outro caminho, o agente descobriu que o endpoint OpenAI do Ollama aceita
+  `keep_alive` por requisição. A solução foi para o código, versionada e testada, e
+  não depende da configuração da máquina.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente
