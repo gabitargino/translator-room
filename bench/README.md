@@ -1,4 +1,4 @@
-# Conjunto de medição (Etapa 1)
+# Conjunto de medição (Etapas 1 e 2)
 
 Frases fixas em PT e ZH usadas em todas as medições de latência e de precisão. Com o
 mesmo áudio, os resultados de configurações diferentes ficam comparáveis. Plano:
@@ -15,6 +15,7 @@ mesmo áudio, os resultados de configurações diferentes ficam comparáveis. Pl
 | `medir_concorrencia.py` | Duas sessões falando ao mesmo tempo (1.5) |
 | `medir_tts.py` | Tempo de síntese das vozes; passos do Supertonic (1.6) |
 | `inteligibilidade_tts.py` | Transcreve a voz gerada para estimar se é inteligível (1.6) |
+| `testar_sala.py` | Sala real com dois participantes simulados: roteamento, conversa cruzada e latência (Etapa 2) |
 | `resultados/` | Resultados brutos (JSON) de cada medição citada nas notas |
 
 ## Frases
