@@ -340,3 +340,30 @@ cada push (job `pre-commit` + `tests` no Ubuntu). Isso serve de conferência no 
 - Com isso, 0.4 e 0.6 estão concluídas, e a **Etapa 0 está concluída**. Falta o PR
   `etapa-0-preparacao` → `main`, com revisão do outro integrante, e a tag
   `etapa-0-concluida`.
+
+## 2026-11-21 – Etapa 1 (branch `etapa-1-viabilidade`)
+
+### 1.1 Conjunto de frases de teste
+
+- Pasta nova [`bench/`](../bench/README.md), separada de `tools/benchmarks/` (que é
+  do PolyTalk), para não misturar código nosso com o original.
+- `bench/frases.tsv`: 10 frases em PT e 10 em ZH (reunião de negócios e viagem),
+  com a tradução de referência de cada uma, para reaproveitar na 6.7. Incluem
+  números, datas, preço e nome de cidade.
+- `bench/audio/*.wav`: 16 kHz, mono, 16 bits, de 1,3 a 4,1 s, sem silêncio nas pontas;
+  1,6 MB no total.
+- **Desvio do plano:** o plano dizia "gravadas"; os áudios foram **sintetizados**
+  com as vozes da própria pilha (Supertonic em PT, com 10 vozes alternadas; Piper
+  `zh_CN-huayan-medium` em ZH, uma voz só). Isso permite regerar o conjunto e medir
+  sem depender de alguém gravar. Em troca, a precisão medida é otimista. O README
+  explica como trocar por gravações reais com o mesmo `id`.
+- Conferência rápida pelo WebSocket do STT (Whisper `small`, CPU):
+  - PT saiu correto (`pt-01` exato; `pt-04` escreveu "R$ 12,50" por extenso→número).
+  - ZH errou de novo, como na 0.6: `zh-03` 贵→规; `zh-05` 三→散, em caracteres
+    tradicionais (下個星期散下午3點).
+  - A comparação da 1.3 precisa normalizar números e tradicional→simplificado
+    antes de contar erros.
+- O `tools/benchmarks/benchmark_stt.py` do PolyTalk não devolve texto com esses
+  áudios: ele não manda silêncio depois da fala, e o STT só fecha a janela por
+  pausa (`STT_PAUSE_FLUSH_SECONDS`) ou por tamanho. Os scripts de `bench/` mandam
+  silêncio depois da fala, como o navegador faz.

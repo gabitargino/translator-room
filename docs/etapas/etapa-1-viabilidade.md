@@ -9,13 +9,13 @@
 | **Libera** | Etapa 2 (só depois do portão) |
 | **Branch** | `etapa-1-viabilidade` (a partir da `main`, após o merge da Etapa 0) |
 | **Esforço** | 3P · 3M |
-| **Status** | Pendente. A etapa de tradução já foi medida: 0,28–0,35 s por frase |
+| **Status** | Em andamento desde 2026-11-21. A etapa de tradução já foi medida: 0,28–0,35 s por frase |
 
 ## Subtarefas
 
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
-| 1.1 | Montar um conjunto fixo de frases de teste (gravadas em PT e ZH) para todas as medições | P | Obrigatório | Conjunto salvo no repositório, ~10 frases por idioma | Pendente |
+| 1.1 | Montar um conjunto fixo de frases de teste (gravadas em PT e ZH) para todas as medições | P | Obrigatório | Conjunto salvo no repositório, ~10 frases por idioma | Concluída: [bench/](../../bench/README.md), 10 + 10 frases, áudio sintético |
 | 1.2 | Medir a latência da configuração padrão no modo `conversation` (fim da fala → início do áudio) | M | Obrigatório | Mediana e p95 por direção registradas | Pendente |
 | 1.3 | Avaliar a precisão do STT em chinês e português: Whisper `small` em CPU contra `medium` em GPU (se couber na VRAM com o tradutor) | M | Obrigatório | Tabela de erros e tempo por modelo; escolha registrada | Pendente |
 | 1.4 | Ajustar o tempo de silêncio e o tamanho das janelas do STT para conversa; medir antes e depois | M | Obrigatório | Nova configuração com latência e qualidade registradas | Pendente |
