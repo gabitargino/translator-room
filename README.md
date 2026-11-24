@@ -200,7 +200,7 @@ powershell -ExecutionPolicy Bypass -File tools\tunel-cloudflare.ps1
 - O áudio passa pela internet, então a latência é maior que pela Wi-Fi local.
 
 Detalhes e decisões: [Etapa 4](docs/etapas/etapa-4-rede-https.md) e
-[relatório, seção 5.7](docs/relatorio-atividade04.md#57-acesso-pelo-túnel-da-cloudflare-pós-entrega).
+[relatório, seção 4.7](docs/relatorio-atividade04.md#47-acesso-pelo-túnel-da-cloudflare-pós-entrega).
 
 ---
 
