@@ -246,5 +246,7 @@
   "room.license_note": "基于 PolyTalk CE 的自由软件。",
   "room.ui_language": "界面语言",
   "room.single_device": "单设备翻译",
-  "room.open_room_link": "翻译房间（两部手机）"
+  "room.cta_title": "翻译房间",
+  "room.cta_text": "与另一个人交谈，各用自己的手机和语言。",
+  "room.cta_join": "已有房间码？加入"
 }
