@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Allan Gabriel, Gabriele Targino
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Medição de latência da sala (Etapa 5)."""
+"""Medição de latência da sala (Etapa 5) e resumo da sessão (Etapa 6)."""
 
 from pathlib import Path
 
@@ -13,6 +13,8 @@ from app.rooms.latency import (
     markdown_table,
     percentile,
     playback_record,
+    session_markdown,
+    session_summary,
 )
 from tests.test_rooms import read_timing, receive_until, room_client  # noqa: F401
 
@@ -148,8 +150,12 @@ class TestRoomWebSocketLatency:
                         "wait_ms": 210,
                     }
                 )
+                a.send_json({"type": "mute"})
+                a.send_json({"type": "unmute"})
                 b.send_json({"type": "ping"})  # garante que o aviso foi lido
                 assert receive_until(b, "pong")["c"] is None
+                a.send_json({"type": "ping"})
+                receive_until(a, "pong")
                 b.send_json({"type": "end"})
             a.send_json({"type": "end"})
 
@@ -162,6 +168,63 @@ class TestRoomWebSocketLatency:
         rows = collect(records, room=code)
         assert rows and rows[0]["direction"] == "pt→zh"
         assert "playback" in rows[0]["since_speech_end"]
+
+        summary = session_summary(records, room=code)
+        assert summary["participantes"] == 2
+        assert summary["reconexoes"] == 0
+        assert summary["toques_silenciar"] == 1
+        assert summary["toques_reativar"] == 1
+        assert summary["traducao_para_quem_falou"] == 0
+        assert summary["avisos_de_reproducao"] == 1
+        joined = [r for r in records if r.get("event") == "participant_joined"]
+        assert {(r["speak"], r["listen"]) for r in joined} == {
+            ("pt", "pt"),
+            ("zh", "zh"),
+        }
+        assert len([r for r in records if r.get("event") == "participant_left"]) == 2
+
+
+class TestSessionSummary:
+    def test_counts_session_events(self):
+        records = [
+            {"event": "participant_joined", "room": "R", "participant": "a"},
+            {"event": "participant_joined", "room": "R", "participant": "b"},
+            {
+                "event": "participant_joined",
+                "room": "R",
+                "participant": "b",
+                "rejoined": True,
+            },
+            {"event": "control", "room": "R", "participant": "a", "kind": "mute"},
+            utterance("R-1", "pt", "zh", "b", 100.0, SENT, room="R"),
+            utterance("R-2", "zh", "pt", "a", 400.5, SENT, room="R"),
+            {
+                **utterance("R-3", "pt", "zh", "b", 200.0, SENT, room="R"),
+                "status": "ignored_crosstalk",
+                "targets": {},
+            },
+            # vazamento: a tradução voltou para quem falou
+            {**utterance("R-4", "pt", "zh", "s", 300.0, SENT, room="R")},
+            utterance("X-1", "pt", "zh", "b", 9000.0, SENT, room="X"),
+        ]
+        summary = session_summary(records, room="R")
+        assert summary["duracao_s"] == 300.5
+        assert summary["falas"] == 4
+        assert summary["por_status"] == {"delivered": 3, "ignored_crosstalk": 1}
+        assert summary["traducao_para_quem_falou"] == 1
+        assert summary["participantes"] == 2
+        assert summary["reconexoes"] == 1
+        assert summary["toques_silenciar"] == 1
+        assert summary["toques_reativar"] == 0
+
+        table = session_markdown(summary)
+        assert "| Duração (primeira → última fala) | 5 min 00 s |" in table
+        assert "| Tradução entregue a quem falou | 1 |" in table
+
+    def test_empty_session(self):
+        summary = session_summary([], room="R")
+        assert summary["falas"] == 0 and summary["duracao_s"] == 0.0
+        assert "| Destino das falas | – |" in session_markdown(summary)
 
 
 def test_client_sends_rtt_and_wait():

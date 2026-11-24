@@ -6,6 +6,9 @@ calcula mediana, p95 e máximo de T0 → T6 (fim da fala → início do áudio
 traduzido) por direção, além da mediana de cada etapa intermediária.
 As definições das marcas estão em app/rooms/latency.py.
 
+Também resume a sessão (6.6): duração, destino das falas, tradução entregue a
+quem falou (deve ser 0), reconexões e toques em silenciar/reativar.
+
 Uso:
     python bench/latencia_sala.py                      # última sala do log
     python bench/latencia_sala.py --sala ABCDE --rotulo 6-sessao-5min
@@ -25,7 +28,13 @@ BENCH = Path(__file__).resolve().parent
 RAIZ = BENCH.parent
 sys.path.insert(0, str(RAIZ))
 
-from app.rooms.latency import analyze, collect, markdown_table  # noqa: E402
+from app.rooms.latency import (  # noqa: E402
+    analyze,
+    collect,
+    markdown_table,
+    session_markdown,
+    session_summary,
+)
 
 
 def ler_log(caminho: Path) -> list[dict]:
@@ -67,7 +76,8 @@ def main() -> int:
         print(f"nenhuma fala entregue para a sala {sala}", file=sys.stderr)
         return 1
     resultado = analyze(linhas)
-    tabela = markdown_table(resultado)
+    sessao = session_summary(registros, room=sala)
+    tabela = markdown_table(resultado) + "\n" + session_markdown(sessao)
 
     rotulo = args.rotulo or f"5-latencia-{sala or 'todas'}"
     saida = {
@@ -80,6 +90,7 @@ def main() -> int:
             "T6": "aviso playback_started do celular: chegada no servidor − RTT/2",
         },
         "resumo": resultado,
+        "sessao": sessao,
         "falas": linhas,
     }
     destino = BENCH / "resultados" / f"{rotulo}.json"
