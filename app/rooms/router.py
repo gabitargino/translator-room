@@ -127,6 +127,26 @@ async def room_websocket(
     room_router = get_room_router()
     pipeline = room_router.pipeline
     session = ParticipantSession(room, participant, room_router, pipeline)
+
+    def log_event(event: str, **extra) -> None:
+        # Entradas, saídas e toques no log da sala: o resumo da sessão de
+        # validação (6.6) conta reconexões e botões a partir daqui.
+        room_router.timing_log.write(
+            {
+                "event": event,
+                "room": room.code,
+                "participant": participant.id,
+                "t": round(time.time(), 3),
+                **extra,
+            }
+        )
+
+    log_event(
+        "participant_joined",
+        rejoined=stale is not None,
+        speak=participant.speak_language,
+        listen=participant.listen_language,
+    )
     await participant.send(
         {"type": "joined", "room": room.code, "participant": participant.to_public()}
     )
@@ -154,6 +174,7 @@ async def room_websocket(
             # Fecha a frase pendente antes de parar de mandar áudio.
             session.push_silence(room_router.settings.pause_flush_seconds + 0.2)
         participant.muted = muted
+        log_event("control", kind="mute" if muted else "unmute")
         await manager.broadcast_state(room)
 
     try:
@@ -203,6 +224,7 @@ async def room_websocket(
     except Exception as exc:
         logger.error(f"room websocket error participant={participant.id}: {exc}")
     finally:
+        log_event("participant_left")
         if participant.id in room.participants:
             manager.leave(room.code, participant.id)
             await manager.broadcast_state(

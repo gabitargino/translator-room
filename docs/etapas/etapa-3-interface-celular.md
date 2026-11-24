@@ -102,6 +102,8 @@ ajuda quando a voz não for entendida e serve de apoio na validação.
 
 ## Conferência humana pendente
 
+Tudo isto está reunido, em ordem, no [roteiro de validação](../roteiro-validacao.md) (Parte C).
+
 | O que conferir | Onde | Subtarefa |
 |---|---|---|
 | Telas legíveis e usáveis com uma mão | Chrome Android e Safari iOS | 3.1–3.3 |

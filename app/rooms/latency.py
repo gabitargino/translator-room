@@ -243,3 +243,73 @@ def markdown_table(result: dict[str, dict[str, Any]]) -> str:
             + f" | {'–' if rtt is None else round(rtt)} |"
         )
     return "\n".join(lines) + "\n"
+
+
+def session_summary(
+    records: Iterable[dict[str, Any]], room: Optional[str] = None
+) -> dict[str, Any]:
+    """Resumo da sessão de validação (6.6) a partir do mesmo log.
+
+    Conta o que a pessoa não deveria precisar fazer (tocar em silenciar,
+    reconectar) e o que não deveria acontecer (tradução voltando para quem
+    falou), além da duração e do destino de cada fala.
+    """
+    selected = [
+        r
+        for r in records
+        if isinstance(r, dict) and (room is None or r.get("room") == room)
+    ]
+    utterances = [r for r in selected if "targets" in r and "event" not in r]
+    status: dict[str, int] = {}
+    for r in utterances:
+        key = str(r.get("status") or "?")
+        status[key] = status.get(key, 0) + 1
+    self_delivery = sum(
+        1
+        for r in utterances
+        for target in (r.get("targets") or {}).values()
+        if r.get("speaker") in (target.get("listeners") or [])
+    )
+    times = [
+        (r.get("t") or {}).get("speech_end") or (r.get("t") or {}).get("stt_done")
+        for r in utterances
+    ]
+    times = [t for t in times if isinstance(t, (int, float))]
+    joins = [r for r in selected if r.get("event") == "participant_joined"]
+    controls = [r for r in selected if r.get("event") == "control"]
+    return {
+        "duracao_s": round(max(times) - min(times), 1) if len(times) > 1 else 0.0,
+        "falas": len(utterances),
+        "por_status": dict(sorted(status.items())),
+        "traducao_para_quem_falou": self_delivery,
+        "participantes": len(
+            {r.get("participant") for r in joins if not r.get("rejoined")}
+        ),
+        "reconexoes": sum(1 for r in joins if r.get("rejoined")),
+        "toques_silenciar": sum(1 for r in controls if r.get("kind") == "mute"),
+        "toques_reativar": sum(1 for r in controls if r.get("kind") == "unmute"),
+        "avisos_de_reproducao": sum(
+            1 for r in selected if r.get("event") == "playback_started"
+        ),
+    }
+
+
+def session_markdown(summary: dict[str, Any]) -> str:
+    minutes, seconds = divmod(int(round(summary["duracao_s"])), 60)
+    status = ", ".join(f"{k}: {v}" for k, v in summary["por_status"].items()) or "–"
+    rows = [
+        ("Duração (primeira → última fala)", f"{minutes} min {seconds:02d} s"),
+        ("Falas transcritas", summary["falas"]),
+        ("Destino das falas", status),
+        ("Tradução entregue a quem falou", summary["traducao_para_quem_falou"]),
+        ("Participantes", summary["participantes"]),
+        ("Reconexões", summary["reconexoes"]),
+        (
+            "Toques em silenciar / reativar",
+            f"{summary['toques_silenciar']} / {summary['toques_reativar']}",
+        ),
+        ("Avisos de reprodução (T6)", summary["avisos_de_reproducao"]),
+    ]
+    lines = ["| Sessão | Valor |", "|---|---|"]
+    lines += [f"| {name} | {value} |" for name, value in rows]
+    return "\n".join(lines) + "\n"

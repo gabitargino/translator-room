@@ -133,6 +133,8 @@ Resultado: [bench/resultados/4-sala-https.json](../../bench/resultados/4-sala-ht
 
 ## Conferência humana pendente
 
+Tudo isto está reunido, em ordem, no [roteiro de validação](../roteiro-validacao.md) (Parte B).
+
 O agente não tem celular nem acesso de outro aparelho à rede. Falta:
 
 | Conferir | Aparelho | Subtarefa |

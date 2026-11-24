@@ -1290,3 +1290,50 @@ A Etapa 2 já gravava as marcas T0–T5 por fala, e a Etapa 3 já mandava o avis
   de fala no `testar_sala.py`.
 - **Pendências humanas:** sessão com celulares (Etapa 6, 6.6) e depois
   `python bench/latencia_sala.py --rotulo 6-sessao-5min`.
+
+## 2026-11-23 – Etapa 6 (branch `etapa-6-testes`)
+
+### 6.1 a 6.4
+
+- 6.1 a 6.3 já tinham sido cobertos pelos testes da Etapa 2.
+- 6.4: suíte inteira no Windows, 533 passam; as 4 falhas são as da linha de base
+  (`/tmp` e arquivo de log aberto, só no Windows). CI no Linux verde.
+
+### 6.5 Roteiro
+
+- [roteiro-validacao.md](roteiro-validacao.md) reúne em ordem tudo o que depende
+  de pessoas e celulares: notebook e aquecimento (A), rede e certificado da
+  Etapa 4 (B), interface da Etapa 3 (C), sessão de 5 min (D), notas de
+  qualidade (E). Cada linha tem o esperado e o que fazer se falhar.
+
+### 6.6 Sessão
+
+- Para o critério "sem acionar botões" não depender só de anotação, o log da
+  sala passou a gravar `participant_joined` (com `rejoined`),
+  `participant_left` e `control` (mute/unmute). `bench/latencia_sala.py`
+  imprime o resumo da sessão junto com a tabela de latência.
+- Ensaio na pilha real, sala `ZNYFE`, 3 rodadas das 20 frases com conversa
+  cruzada: 6 min 43 s, 120 falas transcritas (60 entregues, 60 cruzadas
+  descartadas), 0 vazamentos, 0 reconexões, 0 toques. Mediana T0→T6 PT→ZH
+  1,83 s (p95 2,20), ZH→PT 2,52 s (p95 3,10).
+- Duas tentativas do ensaio foram interrompidas: a primeira rodava no
+  contêiner antigo, sem o log de entradas (rebuild); a segunda foi contaminada
+  por um teste de prompt do agente rodando no mesmo Ollama (pt-05 em 3,6 s).
+
+### 6.7 Qualidade
+
+- Nota preliminar do agente sobre as traduções de ponta a ponta da Etapa 5:
+  PT→ZH 17/20, ZH→PT 15/20, nenhum 0. Tabela na Etapa 6.
+- Teste de instrução pt-BR (`custom_instruction`, sem mexer no original): sem
+  efeito ("contacto" continua), +16 ms. Descartado.
+- Só tradução, texto correto: zh-05 星期三 → "terça-feira" (errado). Na sala, o
+  erro do STT (散) fez o dia sumir. Avaliar só o fluxo completo esconde erros
+  do tradutor.
+
+### Etapa 6 – uso do agente
+
+- **Executado pelo agente:** suíte, roteiro, log de controle, resumo da sessão,
+  3 testes, ensaio, avaliação preliminar e o teste de prompt.
+- **Erro do agente:** rodar o teste de prompt durante o ensaio; percebido pela
+  latência fora do padrão e corrigido repetindo o ensaio.
+- **Pendências humanas:** roteiro inteiro com os celulares, nota humana da 6.7.
