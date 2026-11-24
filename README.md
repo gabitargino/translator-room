@@ -25,6 +25,91 @@
 > - o remote `upstream` (PolyTalk original) é só para leitura: nenhum push, pull
 >   request ou issue é enviado ao projeto original.
 
+## translator-room: o que foi adicionado
+
+Uma **sala** em que cada pessoa entra pelo próprio celular, escolhe o idioma em
+que fala e o idioma em que quer ouvir, e recebe no fone só a tradução da fala dos
+outros. Tudo roda no notebook, na rede local, sem internet.
+
+| Parte | O que faz | Onde |
+|---|---|---|
+| Salas no servidor | Criar e entrar por código; idioma de fala e de escuta por participante; um STT por pessoa; tradução e voz uma vez por idioma de escuta; quem falou não recebe a própria tradução; filtro de conversa cruzada (o microfone de um capta a voz do outro); avisos de entrada e saída; limpeza dos áudios | `app/rooms/` |
+| Página do celular | `/sala`: criar ou entrar, QR code do convite, legendas, silenciar, som liberado no primeiro toque, fila de reprodução, tela sempre ligada, reconexão automática, interface em PT, ZH e EN, aviso AGPL | `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `app/locales/zh.json` |
+| HTTPS na rede local | Proxy Caddy com autoridade certificadora local (o navegador só libera o microfone em HTTPS); página para baixar o certificado; script que descobre o IP da Wi-Fi e preenche o `.env` | `docker-compose.https.yml`, `caddy/`, `tools/rede-local.ps1` |
+| Latência | Marcas de tempo por fala, aviso do celular quando o áudio começa a tocar (com o RTT), tabela por direção e resumo da sessão | `app/rooms/timing.py`, `app/rooms/latency.py`, `bench/latencia_sala.py` |
+| Ajustes no PolyTalk | `keep_alive` do modelo de tradução; correção no STT (pausas no meio da frase cortavam o fim); STT na GPU com espera de silêncio de 0,8 s | `app/services/translation_service.py`, `stt/app/main.py`, `.env.example` |
+| Medições | Frases de teste PT/ZH, scripts de latência, STT, voz e concorrência, e a sala real com dois participantes simulados | `bench/` |
+
+O código original mudou pouco: 20 linhas de Python acrescentadas em 4 arquivos
+do app e do STT, nenhuma removida, mais 1 linha no HTML da tela original (link
+para a sala). Os testes originais só receberam acréscimos. Resultados, decisões e o
+processo com agentes estão no [relatório](docs/relatorio-atividade04.md).
+
+## translator-room: build
+
+Pré-requisitos (testado no Windows 11 com RTX 4050 de 6 GB):
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (com WSL2 no
+  Windows). GPU NVIDIA é opcional, mas sem ela a latência passa de 3 s.
+- [Ollama](https://ollama.com/) instalado fora do Docker, com o modelo de tradução:
+
+  ```bash
+  ollama pull translategemma:4b
+  ```
+
+Passos:
+
+```bash
+git clone https://github.com/gabitargino/translator-room.git
+cd translator-room
+cp .env.example .env
+cp config/config.yaml.example config/config.yaml
+# o exemplo vem em modo mock (sem modelos); para a pilha real, desligue o mock
+# do STT, da tradução e da voz:
+sed -i 's/^  mock_mode: true/  mock_mode: false/' config/config.yaml
+# sem GPU NVIDIA: tire docker-compose.gpu.yml do COMPOSE_FILE e use STT_DEVICE=cpu no .env
+docker compose build
+docker compose up -d
+```
+
+- Sala no notebook: `http://127.0.0.1:9000/sala`. Tela original do PolyTalk:
+  `http://127.0.0.1:9000`.
+- Para os celulares, veja a seção seguinte (IP da Wi-Fi, certificado e HTTPS).
+- A primeira subida baixa os modelos de STT e voz (alguns minutos). A primeira
+  frase depois de subir pode demorar ~10 s; fale uma frase em cada idioma antes
+  de usar de verdade.
+
+## translator-room: como testar
+
+**Testes automatizados** (Python 3.12+, sem modelos, em modo mock):
+
+```bash
+python -m venv .venv
+.venv/bin/pip install -r requirements.txt -r test-requirements.txt   # Windows: .venv\Scripts\pip
+mv .env .env.off      # os testes não devem ler o .env da pilha real
+PYTHONUTF8=1 .venv/bin/python -m pytest tests/ -q
+mv .env.off .env
+```
+
+No Linux (CI) tudo passa. No Windows, 4 testes originais falham por motivos do
+sistema (caminho `/tmp` e arquivo de log aberto); é a linha de base, sem relação
+com as salas. Os testes das salas são `tests/test_rooms.py`,
+`tests/test_room_ui.py`, `tests/test_room_latency.py` e
+`tests/test_https_proxy.py`.
+
+**Sala real sem celular** (com a pilha no ar): dois participantes simulados
+mandam as frases de teste como dois celulares, com conversa cruzada, e conferem
+que cada tradução chega só a quem deve:
+
+```bash
+cd bench
+../.venv/bin/python testar_sala.py --rotulo meu-teste            # 20 frases, PT e ZH alternadas
+../.venv/bin/python latencia_sala.py --rotulo meu-teste-latencia # tabela de latência e resumo
+```
+
+**Com os celulares:** siga o [roteiro de validação](docs/roteiro-validacao.md)
+(rede e certificado, interface, conversa de 5 min e notas de qualidade).
+
 ## translator-room: usar a sala pelos celulares
 
 Os navegadores só liberam o microfone em páginas HTTPS (ou em `localhost`). Por
