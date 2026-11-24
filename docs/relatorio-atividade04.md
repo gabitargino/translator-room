@@ -4,9 +4,12 @@
 **Integrantes:** Allan Gabriel e Gabriele Targino
 **Projeto da Atividade 03:** Sistema de Interpretação Simultânea Multiusuário em Rede Local
 
-> Documento em construção. As seções marcadas com _(a preencher)_ serão completadas
-> ao longo da implementação. Anotações brutas, medições e decisões do dia a dia
-> ficam em [notas-implementacao.md](notas-implementacao.md).
+> Estado: implementação concluída (Etapas 0 a 7). Falta só o que depende de
+> pessoas e celulares, marcado como **Pendente (grupo)**: a sessão de validação
+> com dois celulares ([roteiro](roteiro-validacao.md)), as notas humanas da
+> tradução, a familiaridade prévia (1.1) e o contato com os mantenedores (10.3).
+> Anotações brutas, medições e decisões do dia a dia ficam em
+> [notas-implementacao.md](notas-implementacao.md).
 >
 > **Foco pedido no enunciado:** o processo de desenvolvimento com agentes e a
 > experiência de trabalhar num projeto já existente — o que funcionou, o que não
@@ -25,8 +28,8 @@ cobre português ↔ chinês (mandarim), em rede Wi-Fi local, sem depender de in
 
 ### 1.1 Familiaridade prévia do grupo
 
-_(a preencher pelo grupo: nível de experiência com cada item antes do projeto —
-nenhuma, básica, intermediária ou avançada)_
+**Pendente (grupo):** cada integrante preenche o próprio nível antes do projeto
+(nenhuma, básica, intermediária ou avançada). O agente não tem como saber.
 
 | Tecnologia / técnica usada no projeto | Allan | Gabriele |
 |---|---|---|
@@ -204,7 +207,11 @@ seção 7.
 
 ## 5. Implementação
 
-_(a preencher)_
+A implementação seguiu 8 etapas, cada uma numa branch própria, com um commit por
+subtarefa, pull request no fork e tag `etapa-N-concluida` depois do merge. O
+trabalho novo ficou em pacotes e arquivos novos (`app/rooms/`, página `/sala`,
+proxy HTTPS, `bench/`). O código original recebeu 20 linhas de Python em 4
+arquivos, nenhuma removida (seção 8).
 
 ### 5.1 Arquitetura da solução
 
@@ -254,7 +261,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir o microfone nos celulares |
 | 5 | Medição de latência por direção | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6); falta repetir com celulares |
 | 6 | Testes automatizados e validação com dois celulares | Implementada: ensaio de 5 min na pilha real aprovado, roteiro e avaliação preliminar; falta a sessão com celulares |
-| 7 | Documentação e entrega | Pendente |
+| 7 | Documentação e entrega | Implementada: README (o que foi adicionado, build, testes), relatório e recontagem; faltam os itens do grupo |
 
 ### 5.3 Principais alterações no código
 
@@ -476,7 +483,7 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 4 – Rede e HTTPS | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Pendente: instalar o certificado e conferir o microfone no Android e no iPhone; liberar o firewall como administrador se preciso |
 | Etapa 5 – Latência | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala | Pendente: gerar a tabela com os celulares (sessão da Etapa 6) |
 | Etapa 6 – Testes | Rodou a suíte, escreveu o roteiro único com todas as conferências humanas, fez o log contar toques e reconexões para o critério "sem acionar botões", ensaiou a sessão de 5 min na pilha real e deu uma nota preliminar às 20 traduções. Testou uma instrução pt-BR no prompt e a descartou por não ter efeito | Pendente: sessão com celulares e nota humana (sobretudo PT→ZH, por falante de chinês) |
-| Etapa 7 – Entrega | _(a preencher ao fim da etapa)_ | |
+| Etapa 7 – Entrega | Escreveu a parte do README exigida pelo enunciado (o que foi adicionado, build, testes), recontou arquivos e linhas com o método do apêndice (conferido contra os números do `2aeadfd`), separou o que mudou no código original e preencheu o relatório a partir das notas | Pendente: revisar o relatório, preencher 1.1 e 10.3, rodar o roteiro com os celulares e gravar o vídeo |
 
 ### 6.2 O que funcionou
 
@@ -502,6 +509,25 @@ Seção central do relatório, segundo o enunciado.
 - **Módulo separado (Etapa 2).** Com as salas num pacote novo, a mudança no código
   original ficou em 3 linhas do `app/main.py`. A suíte original manteve o mesmo
   resultado.
+- **Ler o código antes de seguir o plano (Etapas 3 e 4).** O agente leu o módulo
+  de captura do PolyTalk e viu que ele criaria o contexto de áudio na hora errada
+  para o Safari. Leu o CORS e viu que a lista de origens não bloquearia o
+  celular, ao contrário do que o plano supunha. Nos dois casos, o trabalho foi
+  para o problema real.
+- **Prever falhas que só apareceriam no celular (Etapa 3).** Eco sem fone,
+  participante fantasma depois de uma queda de Wi-Fi, tela apagando no meio da
+  conversa: tudo tratado antes de existir um celular para testar.
+- **Simular o celular inteiro (Etapas 4 a 6).** O mesmo script da Etapa 2 passou
+  a validar o certificado como o celular (Etapa 4), a medir o RTT e avisar o
+  início da reprodução (Etapa 5) e a rodar uma conversa de quase 7 min (Etapa
+  6). Cada etapa reaproveitou a ferramenta da anterior.
+- **Conferir a medida por outro caminho (Etapa 5).** O T0 do servidor foi
+  comparado com o fim real da fala que o cliente simulado conhecia (1 ms de
+  diferença), e o T6 do servidor com o tempo medido pelo cliente. Sem essa
+  conferência, a tabela de latência seria só uma afirmação.
+- **Transformar critérios humanos em números (Etapa 6).** "Sem acionar botões" e
+  "cada um ouve só o seu" viraram contagens no log (toques, reconexões, tradução
+  entregue a quem falou), além da anotação dos participantes.
 
 ### 6.3 O que não funcionou
 
@@ -523,6 +549,18 @@ Seção central do relatório, segundo o enunciado.
 - **Erros nos próprios scripts (Etapa 1).** Um tempo de download medido no lugar
   errado (1,5 s em vez de 0,02 s) e um caractere nulo inserido por escape errado
   no shell. Os dois foram percebidos porque o resultado não fazia sentido.
+- **Sem celular nem navegador até o fim.** Nenhuma tela foi vista pelo agente, e
+  a extensão do Chrome nunca se conectou. Tudo o que depende de microfone,
+  alto-falante, Wi-Fi e navegador móvel ficou para a sessão humana
+  ([roteiro](roteiro-validacao.md)). É a maior lacuna da validação.
+- **Comandos de shell longos.** Textos em português com aspas e crases dentro de
+  heredocs do Bash quebraram o comando mais de uma vez; a saída foi gravar o
+  script num arquivo e executá-lo.
+- **Formatação automática deslocando um comentário (Etapa 5).** O `ruff format`
+  quebrou uma assinatura em várias linhas, e o `# noqa` foi parar no parâmetro
+  errado. O CI do PR acusou, e a correção foi um commit a mais.
+- **O agente atrapalhou a própria medição (Etapa 6).** Rodou um teste no Ollama
+  durante o ensaio de 5 min (ver 6.4).
 
 ### 6.4 Imprevistos
 
@@ -575,8 +613,31 @@ Seção central do relatório, segundo o enunciado.
 
 ### 6.5 Trabalhar num projeto já existente
 
-_(a preencher: como foi entender um código escrito por outras pessoas, onde o agente
-ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilidade)_
+- **Entender antes de mudar.** O PolyTalk tem ~6.800 linhas de Python e ~2.300
+  de JavaScript. O agente começou cada etapa lendo a parte do código que ela
+  tocava (modo conversa, STT, captura de áudio, i18n, CORS, configuração do
+  gunicorn) e registrando o que encontrou nas notas. Foi assim que apareceram o
+  modo de conversa bidirecional que virou a base das salas, os 3 workers que
+  quebrariam as salas em memória e a lista de idiomas que o STT recebia mas não
+  usava.
+- **Reaproveitar sem copiar.** As salas usam o pipeline original (STT, tradução e
+  voz) pelas mesmas interfaces da tela original. O que não servia como estava
+  (captura de áudio no Safari) virou uma subclasse, não uma cópia alterada.
+- **Mudar o mínimo no original.** Tudo o que é novo está em arquivos novos. No
+  código original: 20 linhas de Python em 4 arquivos (registrar as rotas das
+  salas, `keep_alive` da tradução, idioma chinês na interface e a correção do
+  STT), 1 linha de HTML (link para a sala) e configuração.
+- **Compatibilidade verificada a cada etapa.** A suíte original rodou em todas
+  as etapas com o mesmo resultado da linha de base, e os testes originais só
+  receberam acréscimos. A tela original continua funcionando, agora também em
+  chinês.
+- **Duas correções de bugs do original** (STT cortando o fim da frase e o
+  `keep_alive`) foram feitas com teste, de forma que poderiam ser oferecidas aos
+  mantenedores depois da disciplina (10.3).
+- **Ambiente diferente do dos mantenedores.** O projeto foi escrito para Linux;
+  no Windows apareceram CRLF em scripts, 4 testes que só falham no Windows e o
+  `localhost` lento. Nenhum era bug do projeto, mas cada um custou tempo até ser
+  entendido.
 
 ## 7. Validação
 
@@ -592,12 +653,12 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 
 | Métrica | PolyTalk original (`2aeadfd`) | Após a contribuição | Diferença |
 |---|---|---|---|
-| Arquivos versionados | 118 | _(a preencher)_ | |
-| Python sem testes (linhas) | 6.795 | _(a preencher)_ | |
-| Testes Python (linhas) | 10.153 | _(a preencher)_ | |
-| JavaScript (linhas) | 2.269 | _(a preencher)_ | |
-| CSS (linhas) | 1.568 | _(a preencher)_ | |
-| HTML (linhas) | 277 | _(a preencher)_ | |
+| Arquivos versionados | 118 | 223 | +105 (inclui docs, resultados das medições e áudios de teste) |
+| Python sem testes (linhas) | 6.795 | 10.151 | +3.356: salas 1.662, scripts de medição 1.674, código original 20 |
+| Testes Python (linhas) | 10.153 | 11.467 | +1.314 (4 arquivos novos e acréscimos em 2 originais) |
+| JavaScript (linhas) | 2.269 | 3.185 | +916 (`room-app.js`) |
+| CSS (linhas) | 1.568 | 1.808 | +240 (`room.css`) |
+| HTML (linhas) | 277 | 483 | +206 (`room.html`, página do certificado, 1 linha na tela original) |
 
 | Funcionalidade | Antes | Depois |
 |---|---|---|
@@ -613,24 +674,101 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 
 ## 9. Limitações e trabalhos futuros
 
-_(a preencher)_
+**Limitações da versão entregue**
+
+- **Validação com celulares pendente.** Latência, roteamento e a conversa de
+  5 min foram verificados na pilha real com clientes simulados. Microfone real,
+  ruído, Wi-Fi e navegador móvel dependem da sessão do
+  [roteiro](roteiro-validacao.md).
+- **Ruído de fundo.** O fim da frase é detectado por energia. Com ruído a partir
+  de −45 dBFS, o STT não fecha a frase (Etapa 1). Num ambiente barulhento, a
+  conversa pode travar até alguém parar de falar por mais tempo.
+- **ZH→PT perto do limite.** Mediana entre 2,5 e 2,8 s, com p95 acima de 3 s,
+  por causa da voz em português (Supertonic). Fone Bluetooth soma ~0,2 s, que o
+  sistema não mede.
+- **Qualidade.** O tradutor às vezes usa português de Portugal e errou um dia da
+  semana; o Whisper `small` erra caracteres chineses e escreve parte em
+  tradicional. Notas humanas ainda pendentes.
+- **Um notebook, uma GPU de 6 GB.** STT, tradução e voz disputam a mesma GPU;
+  com mais pessoas falando ao mesmo tempo a latência sobe. Validado com 2
+  participantes.
+- **Salas em memória.** Um único processo do app (`APP_WORKERS=1`); reiniciar o
+  app encerra as salas.
+- **Certificado instalado à mão** em cada celular, e o IP do notebook muda com a
+  rede.
+
+**Trabalhos futuros**
+
+- Validar 3 ou mais participantes e outros pares de idiomas (o código já
+  suporta até 8 por sala e qualquer idioma do PolyTalk).
+- Detector de voz mais robusto a ruído (VAD por modelo) no lugar do limiar de
+  energia.
+- Modelo de tradução com controle da variante do português, e Whisper maior
+  quando houver mais memória de vídeo.
+- Voz em português mais rápida, para tirar o ZH→PT de perto do limite.
+- Serviço de tradução dentro do Docker Compose, versão publicada e chave de API
+  escolhida pelo usuário.
+- Oferecer aos mantenedores, depois da disciplina, as correções do STT e do
+  `keep_alive`, que independem das salas.
 
 ## 10. Aprendizados e conclusão
 
 ### 10.1 O que o grupo aprendeu
 
-_(a preencher: sobre agentes de codificação, sobre manutenção de software existente
-e sobre as tecnologias do projeto)_
+Rascunho feito a partir das notas de cada etapa; **o grupo revisa e completa**
+com a própria experiência.
+
+- **Sobre agentes de codificação**
+  - O agente rende mais com um plano em etapas pequenas e verificáveis e com a
+    regra de registrar tudo nas notas. As notas viraram a memória entre sessões
+    e a fonte deste relatório.
+  - Ele precisa de um jeito de verificar o próprio trabalho. Onde havia
+    medição de ponta a ponta (latência, sala real simulada), os erros apareceram
+    cedo. Onde não havia (telas no celular), tudo ficou para a conferência
+    humana.
+  - Os erros do agente foram, na maioria, de pressa e não de conhecimento:
+    checagem de CRLF com a ferramenta errada, nota lida às pressas, medição no
+    lugar errado, teste rodando junto com o ensaio. Resultados que "não faziam
+    sentido" foram o melhor alarme.
+  - O controle de permissões bloqueou uma solução de máquina e levou a uma
+    solução melhor, versionada no código (`keep_alive`).
+- **Sobre manutenção de software existente**
+  - Ler o código antes de seguir o plano mudou várias decisões: o plano supunha
+    bloqueios que não existiam e não previa problemas que existiam.
+  - Mudanças pequenas no original e trabalho novo em arquivos novos deixam a
+    compatibilidade fácil de provar: a mesma suíte, com o mesmo resultado.
+  - Medir antes de otimizar: a troca do STT só foi decidida depois de ver onde
+    estava o tempo, e uma escolha baseada em medições isoladas teve de ser
+    desfeita.
+- **Sobre as tecnologias**
+  - Em tempo real, o gargalo raramente é o modelo de tradução (0,3 s); é a espera
+    de silêncio e a síntese de voz.
+  - O navegador móvel impõe regras (HTTPS para o microfone, som só depois de um
+    toque, tela que apaga) que moldam a arquitetura tanto quanto o servidor.
+  - Uma GPU de 6 GB comporta STT, tradução e voz, mas cada modelo maior afeta os
+    outros.
 
 ### 10.2 Conclusão
 
-_(a preencher)_
+O fork do PolyTalk ganhou salas multiusuário em rede local: cada pessoa entra
+pelo celular, escolhe o idioma, fala normalmente e ouve no próprio fone só a
+tradução da fala dos outros, com tudo rodando num notebook. Na pilha real, com
+dois participantes simulados e conversa cruzada, o sistema entregou 60 de 60
+falas só a quem devia numa conversa de quase 7 min, sem nenhum toque, com
+mediana de 1,8 s (PT→ZH) e 2,5 s (ZH→PT) do fim da fala ao início do áudio
+traduzido, dentro da meta de 3 s. O código original mudou em 20 linhas de
+Python e a suíte original continua com o mesmo resultado.
+
+Falta a parte que nenhum agente faz sozinho: duas pessoas, dois celulares e uma
+conversa de verdade. O [roteiro](roteiro-validacao.md) deixa essa sessão pronta
+para ser feita e registrada com os mesmos scripts.
 
 ### 10.3 Contato com os mantenedores
 
 O enunciado permite, após a entrega, perguntar aos mantenedores do PolyTalk se
-teriam interesse na melhoria. _(a preencher: se o grupo fez esse contato e qual foi
-a resposta)_
+teriam interesse na melhoria. **Pendente (grupo):** a regra da disciplina só
+permite o contato depois da Atividade 04; registrar aqui se foi feito e qual foi a
+resposta. Candidatas naturais: a correção do STT e o `keep_alive`.
 
 ---
 
