@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#1a1a2e">
     <title>{{ t("room.page_title") }}</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/css/room.css">
+    <link rel="stylesheet" href="{{ static_url('css/room.css') }}">
     <script>
         window.POLYTALK_I18N = {
             locale: {{ ui_locale | tojson }},
@@ -151,8 +151,8 @@
 
     <audio id="player" preload="auto" playsinline></audio>
 
-    <script src="/static/js/i18n.js"></script>
-    <script src="/static/js/audio-recorder.js"></script>
-    <script src="/static/js/room-app.js"></script>
+    <script src="{{ static_url('js/i18n.js') }}"></script>
+    <script src="{{ static_url('js/audio-recorder.js') }}"></script>
+    <script src="{{ static_url('js/room-app.js') }}"></script>
 </body>
 </html>

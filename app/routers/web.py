@@ -15,10 +15,12 @@ from pathlib import Path
 from ..config import get_config
 from ..i18n import preferred_locale, public_catalog, t, ui_locale_options
 from ..utils.config import get_custom_instruction_max_chars
+from ..utils.static_url import static_url
 
 router = APIRouter(tags=["web"])
 
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
+templates.env.globals["static_url"] = static_url
 
 
 @router.get("/", response_class=HTMLResponse)
