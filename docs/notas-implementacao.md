@@ -1337,3 +1337,53 @@ A Etapa 2 já gravava as marcas T0–T5 por fala, e a Etapa 3 já mandava o avis
 - **Erro do agente:** rodar o teste de prompt durante o ensaio; percebido pela
   latência fora do padrão e corrigido repetindo o ensaio.
 - **Pendências humanas:** roteiro inteiro com os celulares, nota humana da 6.7.
+
+## 2026-11-23 – Etapa 7 (branch `etapa-7-entrega`)
+
+### 7.1 README
+
+- Três seções novas antes do guia dos celulares: o que foi adicionado (tabela
+  por parte, com os arquivos), build (Docker Desktop, Ollama com
+  `translategemma:4b`, `.env` e `config.yaml` a partir dos exemplos) e como
+  testar (suíte, sala real simulada, roteiro com celulares).
+- **Armadilha encontrada ao escrever o build:** o `config.yaml.example` vem com
+  `mock_mode: true` no STT, na tradução e na voz. Quem copiasse o exemplo e
+  subisse a pilha teria traduções falsas. O README inclui o `sed` que desliga os
+  três.
+
+### 7.3 Recontagem
+
+- Método do apêndice A aplicado com `git ls-tree`/`git show` em cada commit;
+  reproduz exatamente os números do `2aeadfd` (118 arquivos, 6.795 / 10.153 /
+  2.269 / 1.568 / 277 linhas).
+- `main` depois da Etapa 6: 223 arquivos; Python sem testes 10.151 (+3.356 =
+  `app/rooms/` 1.662 + `bench/` 1.674 + original 20); testes 11.467; JS 3.185;
+  CSS 1.808; HTML 483.
+- Original modificado (`git diff --numstat --diff-filter=M 2aeadfd`): Python
+  `app/main.py` +7, `translation_service.py` +5, `ui_locales.py` +2,
+  `stt/app/main.py` +6, nenhuma linha removida; `index.html` +1; testes
+  originais só com acréscimos (+55, +48); o resto é configuração, locais e
+  README.
+
+### 7.2 e 7.4 Relatório
+
+- Preenchidas as seções 5 (abertura), 6.1 a 6.5, 8, 9 e 10.2. A 10.1 é
+  rascunho a partir das notas, para o grupo revisar.
+- Ficam como **Pendente (grupo)**: 1.1 (familiaridade prévia, que só os
+  integrantes sabem) e 10.3 (contato com os mantenedores, permitido só depois
+  da Atividade 04).
+
+### Conferências da entrega
+
+- `git ls-files` sem `.env`, chave ou certificado; remote `upstream` com push
+  desativado; nenhum PR ou issue do grupo no PolyTalkIO/polytalk.
+
+### Etapa 7 – uso do agente
+
+- **Executado pelo agente:** README, recontagem, relatório, lista de
+  conferência.
+- **Achado do agente:** o `mock_mode: true` do exemplo, que tornaria o build do
+  README enganoso.
+- **Pendências humanas:** revisar o relatório (sobretudo 10.1), preencher 1.1 e
+  10.3, rodar o [roteiro](roteiro-validacao.md) com os celulares, atualizar a
+  seção 7 do relatório com os números da sessão e gravar o vídeo (7.5).
