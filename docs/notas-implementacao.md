@@ -1225,3 +1225,68 @@ abrirem a sala pela Wi-Fi com o microfone liberado, o que exige HTTPS.
   [Etapa 4](etapas/etapa-4-rede-https.md#conferência-humana-pendente) e, em
   seguida, a da Etapa 3; rodar `-Firewall` como administrador se o celular não
   alcançar o notebook; revisar o PR.
+
+## 2026-11-23 – Etapa 5 (branch `etapa-5-latencia`)
+
+A Etapa 2 já gravava as marcas T0–T5 por fala, e a Etapa 3 já mandava o aviso
+`playback_started`. Faltava T6 confiável e a tabela.
+
+### 5.1 Definições
+
+- T0 = fim do último bloco com voz antes da pausa (`VoiceActivityTracker`), e não
+  T1 − espera configurada, como o plano sugeria. Conferido contra o fim real
+  conhecido pelo cliente simulado: diferença mediana de 1 ms, pior caso 0,14 s
+  *antes* (o servidor nunca marca depois do fim real).
+- T6 = evento `playing` do `<audio>` no celular de quem ouve.
+- Direção = idioma de quem fala → idioma de quem ouve, uma linha por ouvinte.
+- Definições no docstring de `app/rooms/latency.py` e no relatório (5.6).
+
+### 5.2 e 5.3 Aviso do celular e relógios
+
+- O `ping` do celular leva `c: performance.now()`, e o `pong` devolve o `c`. O
+  celular guarda a mediana dos 5 últimos RTTs. O primeiro ping sai quando a
+  conexão abre, para já haver RTT na primeira fala.
+- O `playback_started` passa a levar `rtt_ms` e `wait_ms` (de receber o
+  `room_tts` até o `playing`, no relógio do celular).
+- O servidor grava `t` (chegada) e `t_playback = t − RTT/2`. Valores inválidos
+  (negativos, NaN, RTT > 5 s) são ignorados e a linha diz
+  `"clock": "server_arrival"`.
+- Nenhuma comparação entre relógios: só durações medidas no celular entram na
+  conta. Erro possível = assimetria da rede (≤ RTT/2).
+
+### 5.4 Tabela
+
+- `bench/latencia_sala.py`: lê o log, junta falas e avisos por
+  (`utterance_id`, ouvinte), grava JSON e Markdown em `bench/resultados/`. O
+  padrão é a última sala do log.
+- `bench/testar_sala.py` agora age como o celular: ping a cada ~5 s, baixa o
+  áudio assim que chega o link e avisa `playback_started`. Bug encontrado na
+  primeira execução: `ler_marcas_servidor` indexava por `utterance_id` e as
+  linhas de aviso sobrescreviam as de fala (`KeyError: 'targets'`); agora ignora
+  linhas com `event`.
+- Primeira execução logo depois do `docker compose up`: pt-01 não chegou em 12 s
+  e zh-01 levou 10,7 s (modelos frios). **Antes da sessão com celulares, aquecer
+  a pilha** (uma frase em cada idioma).
+- Segunda execução (sala `2R5K5`, 40 falas, conversa cruzada): 40/40 entregues,
+  0 vazamentos. Mediana T0→T6 PT→ZH 1,89 s (p95 2,40), ZH→PT 2,79 s (p95 3,35;
+  12/20 ≤ 3 s). Voz em PT 0,74 s contra 0,12 s em ZH. A medida do cliente
+  (1,87/2,79 s) confere com a do servidor.
+
+### Testes
+
+- `tests/test_room_latency.py`: T6 com e sem RTT, valores inválidos, percentil,
+  junção por ouvinte, filtro por sala, análise e tabela, e o caminho real pelo
+  WebSocket (`pong` com `c`, aviso gravado no log).
+
+### Etapa 5 – uso do agente
+
+- **Executado pelo agente:** definições, protocolo do RTT, módulo de análise,
+  script da tabela, adaptação do teste da sala real, rebuild e execução na pilha
+  real, documentação.
+- **Achados do agente:** a definição de T0 do plano (T1 − espera) era pior que a
+  marca já existente; o aviso de reprodução sozinho mediria a chegada no
+  servidor, não o início no celular, por isso o RTT.
+- **Erro do agente corrigido no caminho:** a colisão das linhas de aviso com as
+  de fala no `testar_sala.py`.
+- **Pendências humanas:** sessão com celulares (Etapa 6, 6.6) e depois
+  `python bench/latencia_sala.py --rotulo 6-sessao-5min`.
