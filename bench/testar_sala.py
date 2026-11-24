@@ -20,6 +20,8 @@ servidor gravou em logs/room-timing.jsonl entram no resultado para comparação.
 
 Uso:
     python bench/testar_sala.py --rotulo 2-sala [--rodadas 1] [--cruzada 0.3]
+    # pelo proxy HTTPS da Etapa 4, validando o certificado como um celular:
+    python bench/testar_sala.py --rotulo 4-sala-https --app 192.168.1.16:9443         --ca certificado.crt
 Resultado: bench/resultados/<rotulo>.json
 """
 
@@ -29,6 +31,7 @@ import argparse
 import asyncio
 import collections
 import json
+import ssl
 import struct
 import sys
 import time
@@ -62,12 +65,12 @@ class Cliente:
         self.ws = None
         self.id = None
 
-    async def conectar(self, app: str, sala: str) -> None:
+    async def conectar(self, app: str, sala: str, tls=None) -> None:
         url = (
-            f"ws://{app}/api/ws/rooms/{sala}?name={self.nome}"
+            f"{'wss' if tls else 'ws'}://{app}/api/ws/rooms/{sala}?name={self.nome}"
             f"&speak={self.idioma}&listen={self.idioma}"
         )
-        self.ws = await websockets.connect(url, max_size=None)
+        self.ws = await websockets.connect(url, max_size=None, ssl=tls)
         self.tarefas = [
             asyncio.create_task(self._enviar()),
             asyncio.create_task(self._ler()),
@@ -134,10 +137,16 @@ async def testar(args: argparse.Namespace) -> dict:
     ordem = [f for par in zip(pt, zh) for f in par] + pt[len(zh) :] + zh[len(pt) :]
     audios = {f["id"]: ler_pcm16k(AUDIO_DIR / f"{f['id']}.wav") for f in ordem}
 
-    sala = json.loads(post_json(f"http://{args.app}/api/rooms", {}))["room"]
+    # Etapa 4: --ca testa pelo proxy HTTPS (https/wss), validando o certificado
+    # com a raiz da autoridade local, como o celular faz.
+    tls = ssl.create_default_context(cafile=args.ca) if args.ca else None
+    if tls:
+        ssl._create_default_https_context = lambda: tls  # usado pelo urllib
+    http = "https" if tls else "http"
+    sala = json.loads(post_json(f"{http}://{args.app}/api/rooms", {}))["room"]
     a, b = Cliente("A", "pt"), Cliente("B", "zh")
-    await a.conectar(args.app, sala)
-    await b.conectar(args.app, sala)
+    await a.conectar(args.app, sala, tls)
+    await b.conectar(args.app, sala, tls)
     por_idioma = {"pt": (a, b), "zh": (b, a)}
     await asyncio.sleep(2.0)  # silêncio inicial, como ao abrir o microfone
 
@@ -210,7 +219,7 @@ async def testar(args: argparse.Namespace) -> dict:
             }
             if vozes:
                 med["download_s"] = round(
-                    baixar(f"http://{args.app}{vozes[0]['audio_url']}"), 3
+                    baixar(f"{http}://{args.app}{vozes[0]['audio_url']}"), 3
                 )
                 med["audio_s"] = round(med["voz_s"] + med["download_s"], 3)
             ok = (
@@ -278,6 +287,10 @@ def main() -> int:
     )
     ap.add_argument("--rotulo", required=True)
     ap.add_argument("--app", default="127.0.0.1:9000")
+    ap.add_argument(
+        "--ca",
+        help="certificado raiz (http://IP:9080/certificado.crt): testa por https/wss",
+    )
     ap.add_argument("--rodadas", type=int, default=1)
     ap.add_argument("--so", help="ids separados por vírgula")
     ap.add_argument(

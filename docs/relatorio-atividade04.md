@@ -250,8 +250,8 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
 | 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
-| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares (precisa do HTTPS da Etapa 4) |
-| 4 | Rede local e HTTPS | Pendente |
+| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares |
+| 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir o microfone nos celulares |
 | 5 | Medição de latência por direção | Pendente |
 | 6 | Testes automatizados e validação com dois celulares | Pendente |
 | 7 | Documentação e entrega | Pendente |
@@ -272,6 +272,8 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 3 | Página da sala para celular: criar ou entrar por código, idiomas de fala e de escuta, lista de participantes, legendas, silenciar, som liberado no toque, fila de reprodução, tela ligada, reconexão automática, convite por QR code e aviso AGPL. Inclui 22 testes | `app/rooms/web.py`, `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `tests/test_room_ui.py` (novos) |
 | 3 | Interface em chinês (o PolyTalk não tinha), também para a tela original; textos da sala em PT, ZH e EN | `app/locales/zh.json` (novo), `app/locales/en.json`, `app/locales/pt.json`, `app/ui_locales.py` |
 | 3 | Servidor: link de entrada nas respostas, QR code em SVG e `rejoin` para substituir o participante antigo numa reconexão; link para a sala na tela original | `app/rooms/router.py`, `app/rooms/models.py`, `app/main.py`, `app/templates/index.html`, `requirements.txt` (`segno`) |
+| 4 | HTTPS na rede local: proxy Caddy com autoridade certificadora local na frente do app, página para baixar o certificado e app confiando no `X-Forwarded-Proto` (link do QR com `https`). Nenhuma linha do app original mudou. Inclui 8 testes | `docker-compose.https.yml`, `caddy/Caddyfile`, `caddy/index.html` (novos), `.env.example`, `tests/test_https_proxy.py` (novo) |
+| 4 | Script que descobre o IP da Wi-Fi, preenche o `.env` e libera o firewall; guia de instalação do certificado no README; teste da sala por `https`/`wss` | `tools/rede-local.ps1` (novo), `README.md`, `bench/testar_sala.py` |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -412,6 +414,10 @@ sintéticas disputam a CPU, e o reconhecimento quase não sofre.
 - **Conversa cruzada custa STT em dobro (Etapa 2).** Quando o microfone de um
   capta a fala do outro, a mesma frase é transcrita duas vezes, e as duas
   transcrições disputam o único modelo na GPU. Isso acrescentou ~0,2 s à latência.
+- **Celular abre por IP, sem SNI (Etapa 4).** Os navegadores não mandam o nome do
+  servidor no TLS quando o endereço é um IP, e o proxy não saberia qual
+  certificado entregar. Resolvido com um certificado padrão (`default_sni`) no IP
+  da Wi-Fi.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -428,7 +434,8 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
 | Etapa 2 – Salas | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container | Pendente: revisar o PR, em especial o protocolo que a Etapa 3 vai usar |
 | Etapa 3 – Interface | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda | Pendente: conferir nos celulares (som, tela ligada, Wi-Fi, QR) e revisar os textos em chinês |
-| Etapas 4 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 4 – Rede e HTTPS | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Pendente: instalar o certificado e conferir o microfone no Android e no iPhone; liberar o firewall como administrador se preciso |
+| Etapas 5 a 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -512,6 +519,10 @@ Seção central do relatório, segundo o enunciado.
 - **Reaproveitar nem sempre basta (Etapa 3).** O módulo de captura do PolyTalk
   serve, mas cria o contexto de áudio na hora errada para o Safari. Foi preciso
   uma subclasse, em vez de usar o módulo como está.
+- **O plano supunha um bloqueio que não existia (Etapa 4).** A subtarefa 4.4 previa
+  que a lista de origens do PolyTalk barraria o celular. Ao ler o código, o agente
+  viu que ela só vale para CORS e que a sala é da mesma origem. O problema real,
+  não previsto, era o link do QR code sair com `http` atrás do proxy.
 - _(a preencher com o que surgir na implementação)_
 
 ### 6.5 Trabalhar num projeto já existente
@@ -549,7 +560,7 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 | Vários participantes em dispositivos diferentes | Não | Sim, no servidor (até 8 por sala; validados 2) |
 | Idioma de fala e de escuta por participante | Não | Sim |
 | Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
-| Acesso por celular na rede local via HTTPS | Não | _(a preencher)_ |
+| Acesso por celular na rede local via HTTPS | Não | Sim: proxy com certificado local e guia de instalação (Etapa 4); falta conferir nos celulares |
 | Medição de latência por direção | Não | _(a preencher)_ |
 
 ## 9. Limitações e trabalhos futuros

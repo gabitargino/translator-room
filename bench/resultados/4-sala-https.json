@@ -1,0 +1,861 @@
+{
+  "inicio": "2026-11-21T19:33:01",
+  "args": {
+    "rotulo": "4-sala-https",
+    "app": "192.168.1.16:9443",
+    "ca": "C:/Users/gabri/AppData/Local/Temp/claude/4cb3051e250510ea/90525cf5-82d0-4326-be2a-9710ed254a8a/scratchpad/ca.crt",
+    "rodadas": 1,
+    "so": null,
+    "cruzada": 0.3,
+    "tempo_max": 12.0,
+    "quieto": 1.5,
+    "intervalo": 0.5
+  },
+  "sala": "KJZAV",
+  "resumo": {
+    "PT→ZH": {
+      "frases": 10,
+      "ok": 10,
+      "vazamentos": 0,
+      "cruzada_descartada": 10,
+      "texto_s": {
+        "n": 10,
+        "mediana": 1.794,
+        "p95": 4.349,
+        "min": 1.632,
+        "max": 4.349
+      },
+      "voz_s": {
+        "n": 10,
+        "mediana": 2.0365,
+        "p95": 6.678,
+        "min": 1.802,
+        "max": 6.678
+      },
+      "audio_s": {
+        "n": 10,
+        "mediana": 2.049,
+        "p95": 6.713,
+        "min": 1.813,
+        "max": 6.713
+      },
+      "servidor_audio_enviado_s": {
+        "n": 10,
+        "mediana": 2.136,
+        "p95": 6.672,
+        "min": 1.801,
+        "max": 6.672
+      },
+      "erro_fim_da_fala_s": {
+        "n": 10,
+        "mediana": 0.0005,
+        "p95": 0.003,
+        "min": -0.138,
+        "max": 0.003
+      }
+    },
+    "ZH→PT": {
+      "frases": 10,
+      "ok": 10,
+      "vazamentos": 0,
+      "cruzada_descartada": 10,
+      "texto_s": {
+        "n": 10,
+        "mediana": 1.899,
+        "p95": 2.157,
+        "min": 1.65,
+        "max": 2.157
+      },
+      "voz_s": {
+        "n": 10,
+        "mediana": 2.7145,
+        "p95": 4.711,
+        "min": 2.386,
+        "max": 4.711
+      },
+      "audio_s": {
+        "n": 10,
+        "mediana": 2.7335000000000003,
+        "p95": 4.741,
+        "min": 2.399,
+        "max": 4.741
+      },
+      "servidor_audio_enviado_s": {
+        "n": 10,
+        "mediana": 2.7345,
+        "p95": 4.834,
+        "min": 2.383,
+        "max": 4.834
+      },
+      "erro_fim_da_fala_s": {
+        "n": 10,
+        "mediana": 0.0,
+        "p95": 0.002,
+        "min": -0.124,
+        "max": 0.002
+      }
+    }
+  },
+  "medidas": [
+    {
+      "id": "pt-01",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 2.64,
+      "texto": "Bom dia, obrigado por virem à reunião de hoje.",
+      "fim_da_fala_epoch": 1795300386.031,
+      "transcrito": "Bom dia, obrigado por virem à reunião de hoje.",
+      "traduzido": "早上好，感谢大家参加今天的会议。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Bom dia. Obrigado por virem à reunião de hoje."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 4.349,
+      "voz_s": 6.678,
+      "utterance_id": "KJZAV-2",
+      "download_s": 0.035,
+      "audio_s": 6.713,
+      "ok": true,
+      "servidor": {
+        "stt_s": 4.003,
+        "audio_sent": 6.672,
+        "text_sent": 4.345,
+        "translation_done": 4.344,
+        "tts_done": 6.672
+      },
+      "servidor_audio_enviado_s": 6.672,
+      "erro_fim_da_fala_s": 0.003
+    },
+    {
+      "id": "zh-01",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 1.59,
+      "texto": "你好，很高兴认识你。",
+      "fim_da_fala_epoch": 1795300396.32,
+      "transcrito": "你好很高興認識你",
+      "traduzido": "Olá, é um prazer conhecer-te.",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "你好很高興認識你"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.854,
+      "voz_s": 4.711,
+      "utterance_id": "KJZAV-3",
+      "download_s": 0.03,
+      "audio_s": 4.741,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.715,
+        "audio_sent": 4.834,
+        "text_sent": 1.977,
+        "translation_done": 1.976,
+        "tts_done": 4.834
+      },
+      "servidor_audio_enviado_s": 4.834,
+      "erro_fim_da_fala_s": -0.124
+    },
+    {
+      "id": "pt-02",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 1.35,
+      "texto": "Vocês conseguem me ouvir bem?",
+      "fim_da_fala_epoch": 1795300404.459,
+      "transcrito": "Vocês conseguem me ouvir bem.",
+      "traduzido": "您能听清楚我吗？",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Vocês conseguem me ouvir bem."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.733,
+      "voz_s": 1.802,
+      "utterance_id": "KJZAV-6",
+      "download_s": 0.011,
+      "audio_s": 1.813,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.466,
+        "audio_sent": 1.801,
+        "text_sent": 1.731,
+        "translation_done": 1.731,
+        "tts_done": 1.801
+      },
+      "servidor_audio_enviado_s": 1.801,
+      "erro_fim_da_fala_s": 0.001
+    },
+    {
+      "id": "zh-02",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 1.75,
+      "texto": "请问洗手间在哪里？",
+      "fim_da_fala_epoch": 1795300410.015,
+      "transcrito": "请问洗手间在哪里?",
+      "traduzido": "Onde é que fica o banheiro?",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "请问洗手间在哪里?"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.91,
+      "voz_s": 2.386,
+      "utterance_id": "KJZAV-8",
+      "download_s": 0.013,
+      "audio_s": 2.399,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.665,
+        "audio_sent": 2.383,
+        "text_sent": 1.908,
+        "translation_done": 1.907,
+        "tts_done": 2.383
+      },
+      "servidor_audio_enviado_s": 2.383,
+      "erro_fim_da_fala_s": 0.002
+    },
+    {
+      "id": "pt-03",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 2.51,
+      "texto": "Podemos começar pela apresentação do novo produto.",
+      "fim_da_fala_epoch": 1795300416.88,
+      "transcrito": "Podemos começar pela apresentação do novo produto.",
+      "traduzido": "我们可以先介绍一下新产品。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Podemos começar pela apresentação do novo produto."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.632,
+      "voz_s": 3.423,
+      "utterance_id": "KJZAV-10",
+      "download_s": 0.013,
+      "audio_s": 3.436,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.413,
+        "audio_sent": 3.419,
+        "text_sent": 1.631,
+        "translation_done": 1.631,
+        "tts_done": 3.419
+      },
+      "servidor_audio_enviado_s": 3.419,
+      "erro_fim_da_fala_s": 0.001
+    },
+    {
+      "id": "zh-03",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.66,
+      "texto": "这个价格有点贵，能便宜一点吗？",
+      "fim_da_fala_epoch": 1795300424.989,
+      "transcrito": "这个价格有点归能便宜一点吗?",
+      "traduzido": "Será que este preço poderia ser um pouco mais baixo?",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "这个价格有点归能便宜一点吗?"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.9,
+      "voz_s": 2.704,
+      "utterance_id": "KJZAV-12",
+      "download_s": 0.021,
+      "audio_s": 2.725,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.596,
+        "audio_sent": 2.701,
+        "text_sent": 1.898,
+        "translation_done": 1.898,
+        "tts_done": 2.701
+      },
+      "servidor_audio_enviado_s": 2.701,
+      "erro_fim_da_fala_s": 0.001
+    },
+    {
+      "id": "pt-04",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 3.06,
+      "texto": "O preço por unidade é de doze reais e cinquenta centavos.",
+      "fim_da_fala_epoch": 1795300432.747,
+      "transcrito": "O preço por unidade é de R$ 12,50.",
+      "traduzido": "单价为 12.50 巴西雷亚尔。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "O preço por unidade é de R$ 12,50."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.998,
+      "voz_s": 2.155,
+      "utterance_id": "KJZAV-13",
+      "download_s": 0.013,
+      "audio_s": 2.168,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.649,
+        "audio_sent": 2.153,
+        "text_sent": 1.997,
+        "translation_done": 1.996,
+        "tts_done": 2.153
+      },
+      "servidor_audio_enviado_s": 2.153,
+      "erro_fim_da_fala_s": 0.0
+    },
+    {
+      "id": "zh-04",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.65,
+      "texto": "我们公司在上海，有两百多名员工。",
+      "fim_da_fala_epoch": 1795300439.585,
+      "transcrito": "我们公司在上海有200多名员工。",
+      "traduzido": "Nossa empresa tem mais de 200 funcionários em Xangai.",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "我们公司在上海有两百多名员工。"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 2.157,
+      "voz_s": 3.142,
+      "utterance_id": "KJZAV-16",
+      "download_s": 0.026,
+      "audio_s": 3.168,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.769,
+        "audio_sent": 3.14,
+        "text_sent": 2.155,
+        "translation_done": 2.155,
+        "tts_done": 3.139
+      },
+      "servidor_audio_enviado_s": 3.14,
+      "erro_fim_da_fala_s": 0.002
+    },
+    {
+      "id": "pt-05",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 4.14,
+      "texto": "Precisamos entregar a primeira remessa até o dia quinze de março.",
+      "fim_da_fala_epoch": 1795300448.885,
+      "transcrito": "Precisamos entregar a primeira remessa até o dia 15 de março.",
+      "traduzido": "我们需要在3月15日之前交付第一批货物。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Precisamos entregar a primeira remessa até o dia 15 de março."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.814,
+      "voz_s": 1.982,
+      "utterance_id": "KJZAV-17",
+      "download_s": 0.011,
+      "audio_s": 1.993,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.634,
+        "audio_sent": 2.119,
+        "text_sent": 1.951,
+        "translation_done": 1.95,
+        "tts_done": 2.119
+      },
+      "servidor_audio_enviado_s": 2.119,
+      "erro_fim_da_fala_s": -0.138
+    },
+    {
+      "id": "zh-05",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 3.21,
+      "texto": "下个星期三下午三点可以开会吗？",
+      "fim_da_fala_epoch": 1795300456.094,
+      "transcrito": "下個星期散下午3點,可以開會嗎?",
+      "traduzido": "Seria possível marcar uma reunião para a próxima semana, por volta das 15h?",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "下個星期散下午三點,可以開會嗎?"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.898,
+      "voz_s": 3.296,
+      "utterance_id": "KJZAV-19",
+      "download_s": 0.033,
+      "audio_s": 3.329,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.604,
+        "audio_sent": 3.418,
+        "text_sent": 2.02,
+        "translation_done": 2.02,
+        "tts_done": 3.417
+      },
+      "servidor_audio_enviado_s": 3.418,
+      "erro_fim_da_fala_s": -0.123
+    },
+    {
+      "id": "pt-06",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 1.77,
+      "texto": "Você pode repetir mais devagar, por favor?",
+      "fim_da_fala_epoch": 1795300463.218,
+      "transcrito": "Você pode repetir mais devagar, por favor.",
+      "traduzido": "请您再说一遍，慢一点。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Você pode repetir mais devagar, por favor."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.725,
+      "voz_s": 1.833,
+      "utterance_id": "KJZAV-22",
+      "download_s": 0.025,
+      "audio_s": 1.858,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.497,
+        "audio_sent": 1.831,
+        "text_sent": 1.723,
+        "translation_done": 1.723,
+        "tts_done": 1.83
+      },
+      "servidor_audio_enviado_s": 1.831,
+      "erro_fim_da_fala_s": 0.0
+    },
+    {
+      "id": "zh-06",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.92,
+      "texto": "对不起，我没听懂，请再说一遍。",
+      "fim_da_fala_epoch": 1795300469.922,
+      "transcrito": "对不起,我没听懂请再说,一遍。",
+      "traduzido": "Desculpe, não entendi. Poderia repetir, por favor?",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "对不起,我没听懂请再说,一遍。"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.959,
+      "voz_s": 2.725,
+      "utterance_id": "KJZAV-23",
+      "download_s": 0.017,
+      "audio_s": 2.742,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.615,
+        "audio_sent": 2.724,
+        "text_sent": 1.958,
+        "translation_done": 1.957,
+        "tts_done": 2.723
+      },
+      "servidor_audio_enviado_s": 2.724,
+      "erro_fim_da_fala_s": 0.0
+    },
+    {
+      "id": "pt-07",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 2.11,
+      "texto": "Onde fica a estação de metrô mais próxima?",
+      "fim_da_fala_epoch": 1795300476.786,
+      "transcrito": "Onde fica a estação de metrô mais próxima?",
+      "traduzido": "最近的地铁站距离我有多远？",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Onde fica a estação de metrô mais próxima?"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.774,
+      "voz_s": 3.682,
+      "utterance_id": "KJZAV-26",
+      "download_s": 0.03,
+      "audio_s": 3.712,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.524,
+        "audio_sent": 3.678,
+        "text_sent": 1.771,
+        "translation_done": 1.771,
+        "tts_done": 3.678
+      },
+      "servidor_audio_enviado_s": 3.678,
+      "erro_fim_da_fala_s": 0.002
+    },
+    {
+      "id": "zh-07",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.47,
+      "texto": "我们需要先看一下合同的细节。",
+      "fim_da_fala_epoch": 1795300485.023,
+      "transcrito": "我们需要先看一下合同的细节。",
+      "traduzido": "Precisamos primeiro analisar os detalhes do contrato.",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "我们需要先看一下合同的细节。"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.753,
+      "voz_s": 2.625,
+      "utterance_id": "KJZAV-28",
+      "download_s": 0.023,
+      "audio_s": 2.648,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.637,
+        "audio_sent": 2.745,
+        "text_sent": 1.873,
+        "translation_done": 1.873,
+        "tts_done": 2.744
+      },
+      "servidor_audio_enviado_s": 2.745,
+      "erro_fim_da_fala_s": -0.121
+    },
+    {
+      "id": "pt-08",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 3.36,
+      "texto": "Eu concordo com a proposta, mas o prazo está muito curto.",
+      "fim_da_fala_epoch": 1795300493.038,
+      "transcrito": "Eu concordo com a proposta, mas o prazo está muito curto.",
+      "traduzido": "我赞同这个方案，但时间安排太紧凑了。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Eu concordo com a proposta, mas o prazo está muito curto."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.891,
+      "voz_s": 2.091,
+      "utterance_id": "KJZAV-29",
+      "download_s": 0.014,
+      "audio_s": 2.105,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.669,
+        "audio_sent": 2.213,
+        "text_sent": 2.014,
+        "translation_done": 2.014,
+        "tts_done": 2.212
+      },
+      "servidor_audio_enviado_s": 2.213,
+      "erro_fim_da_fala_s": -0.124
+    },
+    {
+      "id": "zh-08",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.57,
+      "texto": "样品已经寄出了，大概五天能到。",
+      "fim_da_fala_epoch": 1795300499.744,
+      "transcrito": "样品已经寄出了大概五天能到。",
+      "traduzido": "A amostra já foi enviada e deve chegar em cerca de cinco dias.",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "样品已经寄出了大概五天能到。"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.959,
+      "voz_s": 2.987,
+      "utterance_id": "KJZAV-31",
+      "download_s": 0.034,
+      "audio_s": 3.021,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.7,
+        "audio_sent": 3.109,
+        "text_sent": 2.079,
+        "translation_done": 2.079,
+        "tts_done": 3.108
+      },
+      "servidor_audio_enviado_s": 3.109,
+      "erro_fim_da_fala_s": -0.122
+    },
+    {
+      "id": "pt-09",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 2.19,
+      "texto": "Vamos almoçar juntos depois da reunião?",
+      "fim_da_fala_epoch": 1795300506.986,
+      "transcrito": "Vamos almoçar juntos depois da reunião.",
+      "traduzido": "我们会在会议结束后一起吃午饭。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Vamos almoçar juntos depois da reunião."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.71,
+      "voz_s": 1.856,
+      "utterance_id": "KJZAV-33",
+      "download_s": 0.027,
+      "audio_s": 1.883,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.597,
+        "audio_sent": 1.979,
+        "text_sent": 1.833,
+        "translation_done": 1.833,
+        "tts_done": 1.978
+      },
+      "servidor_audio_enviado_s": 1.979,
+      "erro_fim_da_fala_s": -0.123
+    },
+    {
+      "id": "zh-09",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 1.72,
+      "texto": "你喜欢吃中国菜吗？",
+      "fim_da_fala_epoch": 1795300512.666,
+      "transcrito": "你喜歡吃中國菜嗎?",
+      "traduzido": "Você gosta de comer comida chinesa?",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "你喜歡吃中國菜嗎?"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.65,
+      "voz_s": 2.45,
+      "utterance_id": "KJZAV-36",
+      "download_s": 0.015,
+      "audio_s": 2.465,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.411,
+        "audio_sent": 2.447,
+        "text_sent": 1.648,
+        "translation_done": 1.647,
+        "tts_done": 2.447
+      },
+      "servidor_audio_enviado_s": 2.447,
+      "erro_fim_da_fala_s": 0.001
+    },
+    {
+      "id": "pt-10",
+      "idioma": "pt",
+      "rodada": 1,
+      "duracao_fala": 2.85,
+      "texto": "Muito obrigado, foi um prazer conhecer vocês.",
+      "fim_da_fala_epoch": 1795300520.053,
+      "transcrito": "Muito obrigado, foi um prazer conhecer vocês.",
+      "traduzido": "非常感谢，很高兴认识你们。",
+      "detectado": "pt",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "pt",
+          "Muito obrigado, foi um prazer conhecer vocês."
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.841,
+      "voz_s": 1.941,
+      "utterance_id": "KJZAV-38",
+      "download_s": 0.026,
+      "audio_s": 1.967,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.61,
+        "audio_sent": 1.937,
+        "text_sent": 1.838,
+        "translation_done": 1.838,
+        "tts_done": 1.936
+      },
+      "servidor_audio_enviado_s": 1.937,
+      "erro_fim_da_fala_s": 0.001
+    },
+    {
+      "id": "zh-10",
+      "idioma": "zh",
+      "rodada": 1,
+      "duracao_fala": 2.54,
+      "texto": "谢谢你的帮助，我们保持联系。",
+      "fim_da_fala_epoch": 1795300526.497,
+      "transcrito": "谢谢你的帮助,我们保持联系。",
+      "traduzido": "Obrigado pela sua ajuda, mantemos contacto.",
+      "detectado": "zh",
+      "n_texto_ouvinte": 1,
+      "n_audio_ouvinte": 1,
+      "n_traducao_para_quem_falou": 0,
+      "n_self_transcript": 1,
+      "n_cruzada_descartada": 1,
+      "cruzada_descartada": [
+        [
+          "zh",
+          "謝謝你的幫助,我們保持聯繫。"
+        ]
+      ],
+      "erros": [],
+      "texto_s": 1.877,
+      "voz_s": 2.593,
+      "utterance_id": "KJZAV-39",
+      "download_s": 0.029,
+      "audio_s": 2.622,
+      "ok": true,
+      "servidor": {
+        "stt_s": 1.598,
+        "audio_sent": 2.591,
+        "text_sent": 1.876,
+        "translation_done": 1.875,
+        "tts_done": 2.59
+      },
+      "servidor_audio_enviado_s": 2.591,
+      "erro_fim_da_fala_s": 0.0
+    }
+  ]
+}

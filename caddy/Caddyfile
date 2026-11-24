@@ -1,0 +1,44 @@
+# translator-room (Etapa 4): HTTPS na rede local, na frente do app.
+#
+# - Autoridade certificadora local do próprio Caddy (`local_certs`): nada sai
+#   para a internet. A raiz fica no volume `caddy_data` e vale ~10 anos, então
+#   cada celular instala o certificado uma vez só.
+# - O certificado do site vale para o IP do notebook na Wi-Fi (ROOM_LAN_IP) e
+#   para `localhost`. Não há site em `https://127.0.0.1`: sem SNI, quem chega por
+#   um IP recebe o certificado de `default_sni` (o da Wi-Fi), que não serviria.
+# - Porta 80 do contêiner (9080 no notebook, HTTP simples): página com o passo a
+#   passo e o download do certificado raiz, para o celular baixá-lo antes de
+#   confiar no HTTPS.
+{
+	local_certs
+	skip_install_trust
+	auto_https disable_redirects
+	admin off
+	# Navegadores não mandam SNI quando o endereço é um IP; sem isto o Caddy
+	# não saberia qual certificado entregar.
+	default_sni {$ROOM_LAN_IP:127.0.0.1}
+}
+
+https://{$ROOM_LAN_IP:127.0.0.1}, https://localhost {
+	tls internal
+	encode gzip
+	# Repassa também os WebSockets (/api/ws/...). O app lê X-Forwarded-Proto
+	# (FORWARDED_ALLOW_IPS=*) para montar o link https do QR code.
+	reverse_proxy polytalk:8000
+}
+
+http:// {
+	handle /certificado.crt {
+		root * /data/caddy/pki/authorities/local
+		rewrite * /root.crt
+		header Content-Type application/x-x509-ca-cert
+		header Content-Disposition "attachment; filename=translator-room-ca.crt"
+		file_server
+	}
+	handle {
+		root * /srv
+		rewrite * /index.html
+		templates
+		file_server
+	}
+}
