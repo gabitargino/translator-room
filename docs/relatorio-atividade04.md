@@ -1,23 +1,18 @@
 # Atividade 04 – Relatório de Implementação
 
-**Disciplina:** Agentes de Codificação · **Professor:** Andrei Formiga
-**Integrantes:** Allan Gabriel e Gabriele Targino
-**Projeto da Atividade 03:** Sistema de Interpretação Simultânea Multiusuário em Rede Local
+**Disciplina:** Agentes de Codificação · **Professor:** Andrei Formiga  
+**Integrantes:** Allan Gabriel e Gabriele Targino  
+**Projeto da Atividade 03:** Sistema de Interpretação Simultânea Multiusuário em Rede Local  
 
 > Estado: implementação concluída (Etapas 0 a 7), mais duas melhorias depois
 > da entrega: destaque da sala na tela inicial e acesso pelo túnel da
-> Cloudflare (seção 5.7). O primeiro teste num celular real já foi feito, pelo
-> túnel: página, HTTPS e microfone funcionando. Falta o que depende de pessoas e
-> celulares, marcado como **Pendente (grupo)**: a sessão de validação com dois
-> celulares ([roteiro](roteiro-validacao.md)), as notas humanas da tradução, a
-> familiaridade prévia (1.1) e o contato com os mantenedores (10.3).
-> Anotações brutas, medições e decisões do dia a dia ficam em
-> [notas-implementacao.md](notas-implementacao.md).
+> Cloudflare (seção 5.7). Anotações brutas, medições e decisões do dia a dia
+> ficam em [notas-implementacao.md](notas-implementacao.md).
 >
 > **Foco pedido no enunciado:** o processo de desenvolvimento com agentes e a
 > experiência de trabalhar num projeto já existente — o que funcionou, o que não
 > funcionou, imprevistos, familiaridade prévia do grupo e aprendizados (seções 1.1,
-> 6 e 10). As seções técnicas dão o contexto para essa análise.
+> 6 e 9). As seções técnicas dão o contexto para essa análise.
 
 ---
 
@@ -31,20 +26,20 @@ cobre português ↔ chinês (mandarim), em rede Wi-Fi local, sem depender de in
 
 ### 1.1 Familiaridade prévia do grupo
 
-**Pendente (grupo):** cada integrante preenche o próprio nível antes do projeto
-(nenhuma, básica, intermediária ou avançada). O agente não tem como saber.
+Nível de cada integrante antes do projeto (nenhuma, básica, intermediária ou
+avançada).
 
-| Tecnologia / técnica usada no projeto | Allan | Gabriele |
-|---|---|---|
-| Python e FastAPI | | |
-| WebSocket e áudio em tempo real no navegador | | |
-| JavaScript sem framework (front-end do PolyTalk) | | |
-| Docker e Docker Compose | | |
-| Modelos de IA locais (Whisper, LLM via Ollama, síntese de voz) | | |
-| HTTPS e certificados em rede local | | |
-| Testes automatizados com pytest | | |
-| Trabalhar num código-base grande escrito por outras pessoas | | |
-| Agentes de codificação | | |
+| Tecnologia / técnica usada no projeto                          | Allan           | Gabriele       |
+| --------------------------------------------------------------- | --------------- | -------------- |
+| Python e FastAPI                                                | avançada       | avançada      |
+| WebSocket e áudio em tempo real no navegador                   | básica         | básica        |
+| JavaScript sem framework (front-end do PolyTalk)                | básica         | básica        |
+| Docker e Docker Compose                                         | avançada       | avançada      |
+| Modelos de IA locais (Whisper, LLM via Ollama, síntese de voz) | avançada       | intermediária |
+| HTTPS e certificados em rede local                              | avançada       | avançada      |
+| Testes automatizados com pytest                                 | intermediária  | avançada      |
+| Trabalhar num código-base grande escrito por outras pessoas    | avançada       | intermediária |
+| Agentes de codificação                                        | avançada       | avançada      |
 
 ## 2. Troca do projeto open source base
 
@@ -70,14 +65,14 @@ Realtime de tradução da OpenAI, executando localmente reconhecimento de fala
 
 **Tamanho:**
 
-| Métrica | Valor |
-|---|---|
-| Arquivos versionados | 53 |
-| Tamanho (sem `.git`) | ~0,55 MB |
-| Python (total) | 5.591 linhas em 46 arquivos |
-| Python sem testes | 4.599 linhas |
-| Testes (Python) | 992 linhas |
-| Documentação (Markdown) | 376 linhas |
+| Métrica                  | Valor                       |
+| ------------------------- | --------------------------- |
+| Arquivos versionados      | 53                          |
+| Tamanho (sem `.git`)    | ~0,55 MB                    |
+| Python (total)            | 5.591 linhas em 46 arquivos |
+| Python sem testes         | 4.599 linhas                |
+| Testes (Python)           | 992 linhas                  |
+| Documentação (Markdown) | 376 linhas                  |
 
 ### 2.2 Por que trocar
 
@@ -100,11 +95,11 @@ projeto original era complexo demais para o escopo e para o equipamento da equip
 
 ### 2.3 Alternativas avaliadas
 
-| Projeto | Arquitetura | Offline | Prós | Contras |
-|---|---|---|---|---|
-| [open-realtime-translate](https://github.com/JacobLinCool/open-realtime-translate) | Servidor Python, 3 modelos locais fixos | Sim | Latência baixa de fábrica (~2,8 s/trecho em M5 Pro); WebRTC | Não cabe no hardware; fila única de inferência |
-| **[PolyTalk CE](https://github.com/PolyTalkIO/polytalk)** (escolhido) | FastAPI + serviços Docker (faster-whisper, Piper/Supertonic) + tradução por API configurável | Sim, com LLM local (Ollama) | Leve (STT/TTS em CPU); tradução plugável; modo conversa bidirecional; mock mode; mantido ativamente | Código maior; latência padrão do STT alta; AGPL-3.0 |
-| [live-translate](https://github.com/sglkc/live-translate) | SPA Vue; reconhecimento e voz no navegador (Web Speech API) | Não | Muito simples (~1.800 linhas); quase sem servidor | Depende de internet e do Google; contraria o requisito "rede local" da proposta |
+| Projeto                                                                           | Arquitetura                                                                                      | Offline                     | Prós                                                                                                  | Contras                                                                         |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| [open-realtime-translate](https://github.com/JacobLinCool/open-realtime-translate) | Servidor Python, 3 modelos locais fixos                                                          | Sim                         | Latência baixa de fábrica (~2,8 s/trecho em M5 Pro); WebRTC                                          | Não cabe no hardware; fila única de inferência                               |
+| **[PolyTalk CE](https://github.com/PolyTalkIO/polytalk)** (escolhido)        | FastAPI + serviços Docker (faster-whisper, Piper/Supertonic) + tradução por API configurável | Sim, com LLM local (Ollama) | Leve (STT/TTS em CPU); tradução plugável; modo conversa bidirecional; mock mode; mantido ativamente | Código maior; latência padrão do STT alta; AGPL-3.0                          |
+| [live-translate](https://github.com/sglkc/live-translate)                          | SPA Vue; reconhecimento e voz no navegador (Web Speech API)                                      | Não                        | Muito simples (~1.800 linhas); quase sem servidor                                                      | Depende de internet e do Google; contraria o requisito "rede local" da proposta |
 
 ### 2.4 Projeto escolhido: PolyTalk Community Edition
 
@@ -132,18 +127,18 @@ projeto original era complexo demais para o escopo e para o equipamento da equip
 
 **Tamanho (antes):**
 
-| Métrica | Valor |
-|---|---|
-| Arquivos versionados | 118 |
-| Tamanho (sem `.git`, inclui amostras de áudio) | ~3,6 MB |
-| Python (total) | 16.948 linhas em 46 arquivos |
-| Python sem testes | 6.795 linhas |
-| Testes (Python) | 10.153 linhas |
-| JavaScript | 2.269 linhas em 4 arquivos |
-| CSS | 1.568 linhas em 5 arquivos |
-| HTML | 277 linhas |
-| JSON (traduções da interface) | 2.657 linhas em 14 arquivos |
-| Documentação (Markdown) | 1.839 linhas em 14 arquivos |
+| Métrica                                          | Valor                        |
+| ------------------------------------------------- | ---------------------------- |
+| Arquivos versionados                              | 118                          |
+| Tamanho (sem `.git`, inclui amostras de áudio) | ~3,6 MB                      |
+| Python (total)                                    | 16.948 linhas em 46 arquivos |
+| Python sem testes                                 | 6.795 linhas                 |
+| Testes (Python)                                   | 10.153 linhas                |
+| JavaScript                                        | 2.269 linhas em 4 arquivos   |
+| CSS                                               | 1.568 linhas em 5 arquivos   |
+| HTML                                              | 277 linhas                   |
+| JSON (traduções da interface)                   | 2.657 linhas em 14 arquivos  |
+| Documentação (Markdown)                         | 1.839 linhas em 14 arquivos  |
 
 ### 2.5 Vantagens e desvantagens da troca
 
@@ -183,12 +178,12 @@ projeto original era complexo demais para o escopo e para o equipamento da equip
 
 ## 3. Ambiente de desenvolvimento
 
-| Item | Valor |
-|---|---|
-| Sistema | Windows 11 Home (WSL2 + Docker Desktop) |
-| CPU | AMD Ryzen 7 8745HS (8 núcleos) |
-| GPU | NVIDIA GeForce RTX 4050 Laptop, 6 GB |
-| RAM | 15,3 GB |
+| Item             | Valor                                        |
+| ---------------- | -------------------------------------------- |
+| Sistema          | Windows 11 Home (WSL2 + Docker Desktop)      |
+| CPU              | AMD Ryzen 7 8745HS (8 núcleos)              |
+| GPU              | NVIDIA GeForce RTX 4050 Laptop, 6 GB         |
+| RAM              | 15,3 GB                                      |
 | Tradução local | Ollama 0.40.16, fora do Docker, usando a GPU |
 
 ## 4. Teste de viabilidade da tradução local
@@ -198,15 +193,14 @@ Ollama da mesma forma que o PolyTalk: endpoint compatível com OpenAI
 (`/v1/chat/completions`), prompt de sistema do próprio PolyTalk e temperatura 0.
 Foram usadas 6 frases de conversa em cada direção.
 
-| Modelo | VRAM | PT→ZH (mediana) | ZH→PT (mediana) | Observações de qualidade |
-|---|---|---|---|---|
-| `translategemma:4b` | 2,9 GB | 0,28 s | 0,35 s | ZH→PT natural e correto; 1 erro de sentido em PT→ZH ("falar mais devagar" virou "repetir") |
-| `qwen2.5:3b` | 2,2 GB | 0,16 s | 0,25 s | PT→ZH correto; em ZH→PT misturou inglês ("please") e alterou o sentido de uma pergunta |
+| Modelo                | VRAM   | PT→ZH (mediana) | ZH→PT (mediana) | Observações de qualidade                                                                   |
+| --------------------- | ------ | ---------------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| `translategemma:4b` | 2,9 GB | 0,28 s           | 0,35 s           | ZH→PT natural e correto; 1 erro de sentido em PT→ZH ("falar mais devagar" virou "repetir") |
+| `qwen2.5:3b`        | 2,2 GB | 0,16 s           | 0,25 s           | PT→ZH correto; em ZH→PT misturou inglês ("please") e alterou o sentido de uma pergunta    |
 
 Conclusão: a tradução local consome menos de 0,5 s do orçamento de 3 s. **O modelo
 adotado é o `translategemma:4b`**, que apresentou melhor qualidade, principalmente
-em ZH→PT. A amostra é pequena; a avaliação qualitativa completa está prevista na
-seção 7.
+em ZH→PT. A amostra é pequena.
 
 ## 5. Implementação
 
@@ -215,7 +209,7 @@ subtarefa, pull request no fork e tag `etapa-N-concluida` depois do merge. O
 trabalho novo ficou em pacotes e arquivos novos (`app/rooms/`, página `/sala`,
 proxy HTTPS, túnel, `bench/`). O código original recebeu 22 linhas de Python em
 5 arquivos, nenhuma removida, e a tela inicial ganhou um cartão para a sala
-(seção 8).
+(seção 7).
 
 ### 5.1 Arquitetura da solução
 
@@ -225,16 +219,16 @@ o nome, o idioma de fala e o idioma de escuta. A conexão envia o áudio do micr
 no mesmo formato do PolyTalk.
 
 ```mermaid
-flowchart LR
-    A[Celular A<br/>fala pt, ouve pt] -- áudio --> SA[Sessão de A<br/>fluxo de STT próprio]
-    B[Celular B<br/>fala zh, ouve zh] -- áudio --> SB[Sessão de B<br/>fluxo de STT próprio]
-    SA -- fala transcrita --> FA[Fila de A<br/>mantém a ordem]
-    SB -- fala transcrita --> FB[Fila de B]
-    FA --> R{Roteamento<br/>filtro de conversa cruzada<br/>grupos por idioma de escuta}
+flowchart TB
+    A["Celular A<br/>fala pt, ouve pt"] -- áudio --> SA["Sessão de A<br/>STT próprio"]
+    B["Celular B<br/>fala zh, ouve zh"] -- áudio --> SB["Sessão de B<br/>STT próprio"]
+    SA --> FA["Fila de A<br/>mantém a ordem"]
+    SB --> FB["Fila de B<br/>mantém a ordem"]
+    FA --> R{"Roteamento<br/>filtro de conversa cruzada<br/>grupos por idioma de escuta"}
     FB --> R
-    R -- traduz e sintetiza<br/>uma vez por idioma --> MT[Ollama + Piper/Supertonic]
-    MT -- texto + link do áudio em zh --> B
-    MT -- texto + link do áudio em pt --> A
+    R --> MT["Tradução (Ollama) e voz (Piper/Supertonic)<br/>uma vez por idioma de escuta"]
+    MT -- "texto + áudio em pt" --> OA["Fone de A"]
+    MT -- "texto + áudio em zh" --> OB["Fone de B"]
 ```
 
 - **Uma sessão por participante:** cada conexão tem o próprio fluxo de STT e uma
@@ -256,41 +250,41 @@ Protocolo completo nas [notas da Etapa 2](notas-implementacao.md#21-projeto-das-
 Plano completo, com subtarefas, árvore de prioridade e riscos, em
 [planejamento.md](planejamento.md).
 
-| Etapa | Descrição | Status |
-|---|---|---|
-| 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
-| 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
-| 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
-| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; conferida num celular (página e microfone); faltam os itens com dois celulares |
-| 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir esse caminho nos celulares (o túnel, seção 5.7, já foi conferido num celular) |
-| 5 | Medição de latência por direção | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6); falta repetir com celulares |
-| 6 | Testes automatizados e validação com dois celulares | Implementada: ensaio de 5 min na pilha real aprovado, roteiro e avaliação preliminar; falta a sessão com celulares |
-| 7 | Documentação e entrega | Implementada: README (o que foi adicionado, build, testes), relatório e recontagem; faltam os itens do grupo |
-| Pós-entrega | Tela inicial com destaque para a sala; acesso pelo túnel da Cloudflare; roteiro em formato de checklist | Concluída (PR #9); túnel conferido num celular |
+| Etapa        | Descrição                                                                                              | Status                                                                                                                                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0            | Preparação do ambiente (fork, Docker, Ollama, modo mock)                                               | Concluída                                                                                                                                                                                                         |
+| 1            | Linha de base e viabilidade da latência (portão de 3 s)                                                | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s)                                                                                                                                                        |
+| 2            | Salas e participantes no servidor, roteamento por ouvinte                                                | Concluída: sala real com 40/40 frases entregues só a quem devia                                                                                                                                                  |
+| 3            | Interface web para celular                                                                               | Implementada: página `/sala`, interface em chinês e QR code; página e microfone conferidos num celular |
+| 4            | Rede local e HTTPS                                                                                       | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência |
+| 5            | Medição de latência por direção                                                                     | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6) |
+| 6            | Testes automatizados e validação com dois celulares                                                    | Implementada: ensaio de 5 min na pilha real aprovado, roteiro de validação e avaliação preliminar |
+| 7            | Documentação e entrega                                                                                 | Concluída: README (o que foi adicionado, build, testes), relatório e recontagem |
+| Pós-entrega | Tela inicial com destaque para a sala; acesso pelo túnel da Cloudflare; roteiro em formato de checklist | Concluída (PR #9); túnel conferido num celular                                                                                                                                                                   |
 
 ### 5.3 Principais alterações no código
 
-| Etapa | Alteração | Arquivos |
-|---|---|---|
-| 0 | Opção `translation.keep_alive` (`TRANSLATION_KEEP_ALIVE`), enviada ao Ollama só quando configurada, para manter o modelo na GPU entre falas. Inclui 4 testes | `app/services/translation_service.py`, `config/config.yaml.example`, `.env.example`, `docker-compose.yml`, `tests/test_translation_detailed.py` |
-| 0 | Configuração de exemplo apontando a tradução para o Ollama local (`translategemma:4b`, sem chave) | `.env.example`, `config/config.yaml.example` |
-| 0 | `.gitattributes` forçando LF em scripts e Dockerfiles (correção para Windows) | `.gitattributes` |
-| 1 | Correção no STT: pausas dentro da frase se somavam como silêncio final, fechando a frase cedo e cortando o fim da fala. Inclui teste | `stt/app/main.py`, `tests/test_app.py` |
-| 1 | STT na GPU (`small` fp16), espera de silêncio de 0,8 s e Supertonic com 4 passos; volume para o cache dos modelos | `.env.example`, `docker-compose.gpu.yml` |
-| 1 | Conjunto de frases PT/ZH e scripts de medição (latência, STT, voz, concorrência) | `bench/` |
-| 2 | Módulo de salas: criação e entrada por código, idioma de fala e de escuta por participante, um STT por participante, roteamento por idioma de escuta, filtro de conversa cruzada, avisos de entrada e saída, limpeza dos áudios e marcas de tempo por fala. Inclui 30 testes | `app/rooms/` (novo), `tests/test_rooms.py` (novo) |
-| 2 | Rotas das salas e limpeza periódica ligadas ao app; `APP_WORKERS=1` (as salas ficam na memória do processo); variáveis `ROOM_*`; pasta `logs/` montada no container | `app/main.py`, `docker-compose.yml`, `.env.example` |
-| 2 | Teste da sala real com dois participantes simulados e conversa cruzada | `bench/testar_sala.py` |
-| 3 | Página da sala para celular: criar ou entrar por código, idiomas de fala e de escuta, lista de participantes, legendas, silenciar, som liberado no toque, fila de reprodução, tela ligada, reconexão automática, convite por QR code e aviso AGPL. Inclui 22 testes | `app/rooms/web.py`, `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `tests/test_room_ui.py` (novos) |
-| 3 | Interface em chinês (o PolyTalk não tinha), também para a tela original; textos da sala em PT, ZH e EN | `app/locales/zh.json` (novo), `app/locales/en.json`, `app/locales/pt.json`, `app/ui_locales.py` |
-| 3 | Servidor: link de entrada nas respostas, QR code em SVG e `rejoin` para substituir o participante antigo numa reconexão; link para a sala na tela original | `app/rooms/router.py`, `app/rooms/models.py`, `app/main.py`, `app/templates/index.html`, `requirements.txt` (`segno`) |
-| 4 | HTTPS na rede local: proxy Caddy com autoridade certificadora local na frente do app, página para baixar o certificado e app confiando no `X-Forwarded-Proto` (link do QR com `https`). Nenhuma linha do app original mudou. Inclui 8 testes | `docker-compose.https.yml`, `caddy/Caddyfile`, `caddy/index.html` (novos), `.env.example`, `tests/test_https_proxy.py` (novo) |
-| 4 | Script que descobre o IP da Wi-Fi, preenche o `.env` e libera o firewall; guia de instalação do certificado no README; teste da sala por `https`/`wss` | `tools/rede-local.ps1` (novo), `README.md`, `bench/testar_sala.py` |
-| 5 | Medição de latência: o celular mede o RTT pelo `ping` e avisa quando o áudio começa (`playback_started` com `rtt_ms` e `wait_ms`); o servidor calcula T6 no próprio relógio; análise por direção (mediana, p95, máximo e tempo por etapa). Inclui 12 testes | `app/rooms/latency.py` (novo), `app/rooms/router.py`, `app/static/js/room-app.js`, `tests/test_room_latency.py` (novo) |
-| 5 | Script da tabela de latência a partir do log; o teste da sala real passa a se comportar como o celular (ping, download, aviso de reprodução) | `bench/latencia_sala.py` (novo), `bench/testar_sala.py` |
-| 6 | Entradas, saídas, reconexões e toques em silenciar gravados no log; resumo da sessão de validação (duração, toques, reconexões, tradução entregue a quem falou). Inclui 3 testes; roteiro único de validação com os celulares | `app/rooms/router.py`, `app/rooms/latency.py`, `bench/latencia_sala.py`, `tests/test_room_latency.py`, `docs/roteiro-validacao.md` (novo) |
-| Pós | Tela inicial: cartão "Sala de tradução" com "Criar sala" e "Entrar" logo abaixo do logo; CSS e JS com `?v=<versão>` para o navegador não reaproveitar arquivos antigos do cache (feito pelo grupo) | `app/templates/index.html`, `app/static/css/components.css`, `app/utils/static_url.py` (novo), `app/routers/web.py`, `app/rooms/web.py`, `app/templates/room.html`, `app/locales/*.json` |
-| Pós | Túnel da Cloudflare: script que abre o túnel e mostra o endereço; o link do QR code segue o endereço pelo qual a sala foi aberta, e `ROOM_PUBLIC_BASE_URL` só substitui `localhost`. Inclui 1 teste; roteiro em checklist com os dois caminhos | `tools/tunel-cloudflare.ps1` (novo), `app/rooms/web.py`, `tests/test_room_ui.py`, `docs/roteiro-validacao.md` |
+| Etapa | Alteração                                                                                                                                                                                                                                                                        | Arquivos                                                                                                                                                                                               |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Opção `translation.keep_alive` (`TRANSLATION_KEEP_ALIVE`), enviada ao Ollama só quando configurada, para manter o modelo na GPU entre falas. Inclui 4 testes                                                                                                                | `app/services/translation_service.py`, `config/config.yaml.example`, `.env.example`, `docker-compose.yml`, `tests/test_translation_detailed.py`                                              |
+| 0     | Configuração de exemplo apontando a tradução para o Ollama local (`translategemma:4b`, sem chave)                                                                                                                                                                            | `.env.example`, `config/config.yaml.example`                                                                                                                                                       |
+| 0     | `.gitattributes` forçando LF em scripts e Dockerfiles (correção para Windows)                                                                                                                                                                                                 | `.gitattributes`                                                                                                                                                                                     |
+| 1     | Correção no STT: pausas dentro da frase se somavam como silêncio final, fechando a frase cedo e cortando o fim da fala. Inclui teste                                                                                                                                            | `stt/app/main.py`, `tests/test_app.py`                                                                                                                                                             |
+| 1     | STT na GPU (`small` fp16), espera de silêncio de 0,8 s e Supertonic com 4 passos; volume para o cache dos modelos                                                                                                                                                               | `.env.example`, `docker-compose.gpu.yml`                                                                                                                                                           |
+| 1     | Conjunto de frases PT/ZH e scripts de medição (latência, STT, voz, concorrência)                                                                                                                                                                                               | `bench/`                                                                                                                                                                                             |
+| 2     | Módulo de salas: criação e entrada por código, idioma de fala e de escuta por participante, um STT por participante, roteamento por idioma de escuta, filtro de conversa cruzada, avisos de entrada e saída, limpeza dos áudios e marcas de tempo por fala. Inclui 30 testes | `app/rooms/` (novo), `tests/test_rooms.py` (novo)                                                                                                                                                  |
+| 2     | Rotas das salas e limpeza periódica ligadas ao app; `APP_WORKERS=1` (as salas ficam na memória do processo); variáveis `ROOM_*`; pasta `logs/` montada no container                                                                                                       | `app/main.py`, `docker-compose.yml`, `.env.example`                                                                                                                                              |
+| 2     | Teste da sala real com dois participantes simulados e conversa cruzada                                                                                                                                                                                                             | `bench/testar_sala.py`                                                                                                                                                                               |
+| 3     | Página da sala para celular: criar ou entrar por código, idiomas de fala e de escuta, lista de participantes, legendas, silenciar, som liberado no toque, fila de reprodução, tela ligada, reconexão automática, convite por QR code e aviso AGPL. Inclui 22 testes          | `app/rooms/web.py`, `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `tests/test_room_ui.py` (novos)                                                       |
+| 3     | Interface em chinês (o PolyTalk não tinha), também para a tela original; textos da sala em PT, ZH e EN                                                                                                                                                                          | `app/locales/zh.json` (novo), `app/locales/en.json`, `app/locales/pt.json`, `app/ui_locales.py`                                                                                                |
+| 3     | Servidor: link de entrada nas respostas, QR code em SVG e `rejoin` para substituir o participante antigo numa reconexão; link para a sala na tela original                                                                                                                      | `app/rooms/router.py`, `app/rooms/models.py`, `app/main.py`, `app/templates/index.html`, `requirements.txt` (`segno`)                                                                      |
+| 4     | HTTPS na rede local: proxy Caddy com autoridade certificadora local na frente do app, página para baixar o certificado e app confiando no `X-Forwarded-Proto` (link do QR com `https`). Nenhuma linha do app original mudou. Inclui 8 testes                                  | `docker-compose.https.yml`, `caddy/Caddyfile`, `caddy/index.html` (novos), `.env.example`, `tests/test_https_proxy.py` (novo)                                                                |
+| 4     | Script que descobre o IP da Wi-Fi, preenche o `.env` e libera o firewall; guia de instalação do certificado no README; teste da sala por `https`/`wss`                                                                                                                     | `tools/rede-local.ps1` (novo), `README.md`, `bench/testar_sala.py`                                                                                                                               |
+| 5     | Medição de latência: o celular mede o RTT pelo `ping` e avisa quando o áudio começa (`playback_started` com `rtt_ms` e `wait_ms`); o servidor calcula T6 no próprio relógio; análise por direção (mediana, p95, máximo e tempo por etapa). Inclui 12 testes     | `app/rooms/latency.py` (novo), `app/rooms/router.py`, `app/static/js/room-app.js`, `tests/test_room_latency.py` (novo)                                                                         |
+| 5     | Script da tabela de latência a partir do log; o teste da sala real passa a se comportar como o celular (ping, download, aviso de reprodução)                                                                                                                                    | `bench/latencia_sala.py` (novo), `bench/testar_sala.py`                                                                                                                                            |
+| 6     | Entradas, saídas, reconexões e toques em silenciar gravados no log; resumo da sessão de validação (duração, toques, reconexões, tradução entregue a quem falou). Inclui 3 testes; roteiro único de validação com os celulares                                         | `app/rooms/router.py`, `app/rooms/latency.py`, `bench/latencia_sala.py`, `tests/test_room_latency.py`, `docs/roteiro-validacao.md` (novo)                                                    |
+| Pós  | Tela inicial: cartão "Sala de tradução" com "Criar sala" e "Entrar" logo abaixo do logo; CSS e JS com `?v=<versão>` para o navegador não reaproveitar arquivos antigos do cache (feito pelo grupo)                                                                          | `app/templates/index.html`, `app/static/css/components.css`, `app/utils/static_url.py` (novo), `app/routers/web.py`, `app/rooms/web.py`, `app/templates/room.html`, `app/locales/*.json` |
+| Pós  | Túnel da Cloudflare: script que abre o túnel e mostra o endereço; o link do QR code segue o endereço pelo qual a sala foi aberta, e `ROOM_PUBLIC_BASE_URL` só substitui `localhost`. Inclui 1 teste; roteiro em checklist com os dois caminhos                            | `tools/tunel-cloudflare.ps1` (novo), `app/rooms/web.py`, `tests/test_room_ui.py`, `docs/roteiro-validacao.md`                                                                                  |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -317,13 +311,13 @@ medida.
 
 #### Onde estava o tempo na configuração original
 
-| Parte (mediana, s) | PT→ZH | ZH→PT |
-|---|---|---|
-| Espera de silêncio (1,2 s) + reconhecimento (Whisper `small` na CPU) | 2,79 | 2,74 |
-| Tradução (`translategemma:4b` na GPU) | 0,52 | 0,52 |
-| Voz | 0,12 (Piper, ZH) | 1,06 (Supertonic, PT) |
-| Download do áudio | 0,02 | 0,01 |
-| **Total até o áudio** | **3,46** | **4,38** |
+| Parte (mediana, s)                                                      | PT→ZH           | ZH→PT                |
+| ----------------------------------------------------------------------- | ---------------- | --------------------- |
+| Espera de silêncio (1,2 s) + reconhecimento (Whisper `small` na CPU) | 2,79             | 2,74                  |
+| Tradução (`translategemma:4b` na GPU)                               | 0,52             | 0,52                  |
+| Voz                                                                     | 0,12 (Piper, ZH) | 1,06 (Supertonic, PT) |
+| Download do áudio                                                      | 0,02             | 0,01                  |
+| **Total até o áudio**                                           | **3,46**   | **4,38**        |
 
 Quase 80% do tempo estava antes da tradução: 1,2 s de espera fixa e ~1,5 s de
 reconhecimento na CPU. A tradução, que se temia ser o gargalo, levava 0,5 s. A
@@ -332,14 +326,14 @@ que a voz em ZH (Piper).
 
 #### Mudanças e efeito de cada uma
 
-| Passo | Mudança | PT→ZH | ZH→PT | Medição |
-|---|---|---|---|---|
-| 0 | Configuração original | 3,46 | 4,38 | `1.2-padrao`, 2 rodadas |
-| — | Whisper `medium` na GPU (**descartado**) | 3,44 | 4,67 | `1.3-medium-gpu`, 2 rodadas |
-| 1 | Whisper `small` na GPU (fp16) | 2,20 | 3,49 | `1.3-small-gpu`, 1 rodada |
-| 2 | Correção do contador de silêncio do STT (não visa latência) | 2,12 | 3,08 | `1.4-pausa-1.2`, 1 rodada |
-| 3 | Espera de silêncio de 1,2 s para 0,8 s | 1,67 | 2,75 | `1.4-final`, 2 rodadas |
-| 4 | Voz em PT com 4 passos em vez de 8 | **1,85** | **2,45** | `1.6-final`, 2 rodadas |
+| Passo | Mudança                                                         | PT→ZH         | ZH→PT         | Medição                     |
+| ----- | ---------------------------------------------------------------- | -------------- | -------------- | ----------------------------- |
+| 0     | Configuração original                                          | 3,46           | 4,38           | `1.2-padrao`, 2 rodadas     |
+| —    | Whisper `medium` na GPU (**descartado**)                 | 3,44           | 4,67           | `1.3-medium-gpu`, 2 rodadas |
+| 1     | Whisper `small` na GPU (fp16)                                  | 2,20           | 3,49           | `1.3-small-gpu`, 1 rodada   |
+| 2     | Correção do contador de silêncio do STT (não visa latência) | 2,12           | 3,08           | `1.4-pausa-1.2`, 1 rodada   |
+| 3     | Espera de silêncio de 1,2 s para 0,8 s                          | 1,67           | 2,75           | `1.4-final`, 2 rodadas      |
+| 4     | Voz em PT com 4 passos em vez de 8                               | **1,85** | **2,45** | `1.6-final`, 2 rodadas      |
 
 1. **Reconhecimento na GPU (−1,0 a −1,3 s).** O Whisper `small` passou de
    1,6–1,8 s por frase na CPU para 0,43 s na GPU, com os mesmos acertos. A
@@ -366,14 +360,14 @@ execuções iguais ficou em 0,1–0,2 s.
 
 #### Onde está o tempo agora
 
-| Parte (mediana, s) | PT→ZH antes | PT→ZH depois | ZH→PT antes | ZH→PT depois |
-|---|---|---|---|---|
-| Espera de silêncio + reconhecimento | 2,79 | 1,42 | 2,74 | 1,40 |
-| Tradução | 0,52 | 0,24 | 0,52 | 0,29 |
-| Voz | 0,12 | 0,14 | 1,06 | 0,75 |
-| Download do áudio | 0,02 | 0,02 | 0,01 | 0,02 |
+| Parte (mediana, s)                      | PT→ZH antes   | PT→ZH depois  | ZH→PT antes   | ZH→PT depois  |
+| --------------------------------------- | -------------- | -------------- | -------------- | -------------- |
+| Espera de silêncio + reconhecimento    | 2,79           | 1,42           | 2,74           | 1,40           |
+| Tradução                              | 0,52           | 0,24           | 0,52           | 0,29           |
+| Voz                                     | 0,12           | 0,14           | 1,06           | 0,75           |
+| Download do áudio                      | 0,02           | 0,02           | 0,01           | 0,02           |
 | **Total até o áudio (mediana)** | **3,46** | **1,85** | **4,38** | **2,45** |
-| Total até o áudio (p95) | 3,84 | 2,96 | 5,06 | 2,94 |
+| Total até o áudio (p95)               | 3,84           | 2,96           | 5,06           | 2,94           |
 
 A maior parte que sobrou é a espera de silêncio (0,8 s), que é o preço de saber que
 a pessoa terminou de falar. Com duas pessoas falando ao mesmo tempo, a mediana
@@ -466,21 +460,20 @@ do servidor:
 
 Sala real com dois clientes simulados no notebook, com conversa cruzada, 40 falas:
 
-| Direção | Mediana T0→T6 | p95 | Máximo | Falas ≤ 3 s |
-|---|---|---|---|---|
-| PT→ZH | 1,89 s | 2,40 s | 2,41 s | 20/20 |
-| ZH→PT | 2,79 s | 3,35 s | 3,43 s | 12/20 |
+| Direção | Mediana T0→T6 | p95    | Máximo | Falas ≤ 3 s |
+| --------- | -------------- | ------ | ------- | ------------ |
+| PT→ZH    | 1,89 s         | 2,40 s | 2,41 s  | 20/20        |
+| ZH→PT    | 2,79 s         | 3,35 s | 3,43 s  | 12/20        |
 
-| Direção | Silêncio + STT | Tradução | Voz | Rede e download |
-|---|---|---|---|---|
-| PT→ZH | 1,55 s | 0,24 s | 0,12 s | 0,01 s |
-| ZH→PT | 1,69 s | 0,28 s | 0,74 s | 0,02 s |
+| Direção | Silêncio + STT | Tradução | Voz    | Rede e download |
+| --------- | --------------- | ---------- | ------ | --------------- |
+| PT→ZH    | 1,55 s          | 0,24 s     | 0,12 s | 0,01 s          |
+| ZH→PT    | 1,69 s          | 0,28 s     | 0,74 s | 0,02 s          |
 
 O ZH→PT fica perto do limite porque a voz em português (Supertonic) leva 0,6 s a
 mais que a voz em chinês (Piper). "Silêncio + STT" inclui os 0,8 s de espera de
 silêncio. Ficam fora a decodificação do áudio no navegador, a Wi-Fi real e o
-atraso do fone Bluetooth (~0,1–0,3 s). A medição com celulares usa o mesmo script
-(seção 7). Detalhes em [etapa-5-latencia.md](etapas/etapa-5-latencia.md#resultado).
+atraso do fone Bluetooth (~0,1–0,3 s). Detalhes em [etapa-5-latencia.md](etapas/etapa-5-latencia.md#resultado).
 
 ### 5.7 Acesso pelo túnel da Cloudflare (pós-entrega)
 
@@ -509,13 +502,13 @@ flowchart LR
 - **Custos:** o áudio passa pela internet (notebook → Cloudflare → celular), o
   que soma latência; o endereço muda a cada execução e fica público enquanto o
   túnel está aberto; e o sistema passa a depender de internet, ao contrário da
-  proposta. Por isso a medição oficial continua planejada pela Wi-Fi com o
-  Caddy, e a seção 7 deve dizer qual caminho foi usado.
+  proposta. Por isso a medição de latência planejada usa a Wi-Fi com o Caddy;
+  as medições da seção 5.6 vêm de clientes simulados no próprio notebook.
 - **Primeiro teste num celular (24/11/2026):** pelo túnel, a página abriu sem
   aviso, o microfone foi liberado e a sala funcionou (itens B6 e B7 do
   [roteiro](roteiro-validacao.md)). Impressão de quem testou: latência alta em
   algumas frases e transcrição apenas razoável, aceitável para um protótipo.
-  Ainda sem números; eles saem da sessão com dois celulares.
+  Sem medição de latência com celulares.
 
 ## 6. Processo de desenvolvimento com agentes
 
@@ -523,20 +516,20 @@ Seção central do relatório, segundo o enunciado.
 
 ### 6.1 Como os agentes foram usados em cada etapa
 
-| Etapa | Uso do agente | Intervenção humana |
-|---|---|---|
-| Escolha do projeto | Leu o código de três candidatos (open-realtime-translate, PolyTalk, live-translate), levantou o hardware da máquina, comparou requisitos e recomendou a troca | O grupo decidiu trocar após considerar o projeto original complexo demais |
-| Viabilidade da tradução | Instalou o Ollama, escreveu e rodou o teste PT↔ZH com o prompt do PolyTalk e avaliou a qualidade das traduções | O grupo escolheu o modelo (`translategemma:4b`) |
-| Planejamento | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa |
-| Etapa 0 – Preparação | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
-| Etapa 1 – Viabilidade | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão | Pendente: um integrante ouvir a voz em PT com 4 passos e revisar a correção do STT no PR |
-| Etapa 2 – Salas | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container | Pendente: revisar o PR, em especial o protocolo que a Etapa 3 vai usar |
-| Etapa 3 – Interface | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda | Pendente: conferir nos celulares (som, tela ligada, Wi-Fi, QR) e revisar os textos em chinês |
-| Etapa 4 – Rede e HTTPS | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Pendente: instalar o certificado e conferir o microfone no Android e no iPhone; liberar o firewall como administrador se preciso |
-| Etapa 5 – Latência | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala | Pendente: gerar a tabela com os celulares (sessão da Etapa 6) |
-| Etapa 6 – Testes | Rodou a suíte, escreveu o roteiro único com todas as conferências humanas, fez o log contar toques e reconexões para o critério "sem acionar botões", ensaiou a sessão de 5 min na pilha real e deu uma nota preliminar às 20 traduções. Testou uma instrução pt-BR no prompt e a descartou por não ter efeito | Pendente: sessão com celulares e nota humana (sobretudo PT→ZH, por falante de chinês) |
-| Etapa 7 – Entrega | Escreveu a parte do README exigida pelo enunciado (o que foi adicionado, build, testes), recontou arquivos e linhas com o método do apêndice (conferido contra os números do `2aeadfd`), separou o que mudou no código original e preencheu o relatório a partir das notas | Pendente: revisar o relatório, preencher 1.1 e 10.3, rodar o roteiro com os celulares e gravar o vídeo |
-| Pós-entrega | Diagnosticou o aviso de certificado depois da troca de Wi-Fi, propôs e escreveu o túnel (script e link do QR, com teste), achou a causa do erro 500 (processo antigo sem `static_url`) e passou o roteiro para checklist | O grupo fez a tela inicial nova e o primeiro teste num celular, pelo túnel |
+| Etapa                     | Uso do agente                                                                                                                                                                                                                                                                                                                                | Intervenção humana                                                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escolha do projeto        | Leu o código de três candidatos (open-realtime-translate, PolyTalk, live-translate), levantou o hardware da máquina, comparou requisitos e recomendou a troca                                                                                                                                                                             | O grupo decidiu trocar após considerar o projeto original complexo demais                                                                    |
+| Viabilidade da tradução | Instalou o Ollama, escreveu e rodou o teste PT↔ZH com o prompt do PolyTalk e avaliou a qualidade das traduções                                                                                                                                                                                                                            | O grupo escolheu o modelo (`translategemma:4b`)                                                                                             |
+| Planejamento              | Leu partes do PolyTalk (modo conversa, captura de áudio, servidor) para montar o plano em 8 etapas, com prioridades, riscos e branches                                                                                                                                                                                                      | O grupo pediu a divisão em arquivos por etapa e uma branch por etapa                                                                         |
+| Etapa 0 – Preparação   | Executou as 8 subtarefas com um commit cada: importou o histórico do PolyTalk, configurou o Ollama, construiu as imagens Docker, rodou os testes originais, diagnosticou o erro de CRLF, implementou o `keep_alive` com testes e fez um teste de ponta a ponta com fala sintética                                                        | Um integrante fez a conferência visual da interface e o teste falado PT↔ZH, porque o agente não tinha acesso ao navegador nem ao microfone |
+| Etapa 1 – Viabilidade    | Criou o conjunto de frases e 6 scripts de medição, rodou todas as medições, diagnosticou a lentidão do `medium` pelo log do Ollama, achou e corrigiu um bug no STT com teste, e escolheu a configuração que passou no portão                                                                                                       | Revisão da correção do STT e da voz em PT com 4 passos |
+| Etapa 2 – Salas          | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container                                                                                                         | Revisão do PR e do protocolo usado pela Etapa 3 |
+| Etapa 3 – Interface      | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda                                | Conferência no celular (som, tela ligada, Wi-Fi, QR) e revisão dos textos em chinês |
+| Etapa 4 – Rede e HTTPS   | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Instalação do certificado e conferência do microfone nos celulares; firewall liberado como administrador |
+| Etapa 5 – Latência      | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala                       | Medição com celulares (sessão da Etapa 6) |
+| Etapa 6 – Testes         | Rodou a suíte, escreveu o roteiro único com todas as conferências humanas, fez o log contar toques e reconexões para o critério "sem acionar botões", ensaiou a sessão de 5 min na pilha real e deu uma nota preliminar às 20 traduções. Testou uma instrução pt-BR no prompt e a descartou por não ter efeito                  | Sessão com celulares e nota humana da tradução |
+| Etapa 7 – Entrega        | Escreveu a parte do README exigida pelo enunciado (o que foi adicionado, build, testes), recontou arquivos e linhas (conferido contra os números do `2aeadfd`), separou o que mudou no código original e preencheu o relatório a partir das notas                                                            | Revisão do relatório e vídeo curto da conversa |
+| Pós-entrega              | Diagnosticou o aviso de certificado depois da troca de Wi-Fi, propôs e escreveu o túnel (script e link do QR, com teste), achou a causa do erro 500 (processo antigo sem `static_url`) e passou o roteiro para checklist                                                                                                                 | O grupo fez a tela inicial nova e o primeiro teste num celular, pelo túnel                                                                   |
 
 ### 6.2 O que funcionou
 
@@ -548,7 +541,6 @@ Seção central do relatório, segundo o enunciado.
 - **Trabalho em paralelo à espera (Etapa 0).** Enquanto o Docker iniciava e as
   imagens eram construídas (~12 min), o agente adiantou a linha de base dos testes
   e a solução do `keep_alive`.
-
 - **Medição de ponta a ponta como critério (Etapa 1).** Em cada mudança de
   configuração, o agente mediu a conversa inteira, além da peça isolada. Foi isso
   que mostrou que o `medium` piorava o sistema e que revelou o bug do silêncio: a
@@ -597,7 +589,6 @@ Seção central do relatório, segundo o enunciado.
   percebido ao preparar as instruções do teste visual e corrigido nas notas.
 - **Sem acesso ao navegador (Etapa 0).** A extensão do Chrome não estava conectada,
   então a interface só pôde ser conferida por um integrante.
-
 - **Escolha com base em medições isoladas (Etapa 1).** O agente escolheu o Whisper
   `medium` na GPU porque ele acertou mais no teste do STT e era mais rápido que o
   `small` em CPU. Já com ele aplicado, a medição de ponta a ponta mostrou que ele
@@ -608,8 +599,9 @@ Seção central do relatório, segundo o enunciado.
   no shell. Os dois foram percebidos porque o resultado não fazia sentido.
 - **Sem celular nem navegador até o fim.** Nenhuma tela foi vista pelo agente, e
   a extensão do Chrome nunca se conectou. Tudo o que depende de microfone,
-  alto-falante, Wi-Fi e navegador móvel ficou para a sessão humana
-  ([roteiro](roteiro-validacao.md)). É a maior lacuna da validação.
+  alto-falante, Wi-Fi e navegador móvel ficou para conferência humana nos
+  celulares ([roteiro](roteiro-validacao.md)). A validação com dois aparelhos é a
+  maior lacuna.
 - **Comandos de shell longos.** Textos em português com aspas e crases dentro de
   heredocs do Bash quebraram o comando mais de uma vez; a saída foi gravar o
   script num arquivo e executá-lo.
@@ -694,60 +686,44 @@ Seção central do relatório, segundo o enunciado.
   chinês.
 - **Duas correções de bugs do original** (STT cortando o fim da frase e o
   `keep_alive`) foram feitas com teste, de forma que poderiam ser oferecidas aos
-  mantenedores depois da disciplina (10.3).
+  mantenedores depois da disciplina (9.3).
 - **Ambiente diferente do dos mantenedores.** O projeto foi escrito para Linux;
   no Windows apareceram CRLF em scripts, 4 testes que só falham no Windows e o
   `localhost` lento. Nenhum era bug do projeto, mas cada um custou tempo até ser
   entendido.
 
-## 7. Validação
+## 7. Resultado: antes e depois
 
-| Critério (da Atividade 03) | Meta | Resultado |
-|---|---|---|
-| Conversa contínua sem acionar botões a cada fala | ≥ 5 min | Parcial: ensaio de 6 min 43 s com clientes simulados, 60/60 falas entregues, 0 toques e 0 reconexões. Falta a sessão com celulares |
-| Cada participante ouve apenas a tradução destinada a ele | Sim | Parcial: com dois participantes simulados na sala real, 40/40 frases (Etapa 2) e 60/60 no ensaio de 5 min (Etapa 6) chegaram só a quem devia, inclusive com conversa cruzada. Falta a sessão com celulares |
-| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,89 s (p95 2,40 s) na Etapa 5 e 1,83 s (p95 2,20 s) no ensaio de 5 min, com clientes simulados (seção 5.6). Falta medir com celulares |
-| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,79 s (p95 3,35 s) na Etapa 5 e 2,52 s (p95 3,10 s) no ensaio de 5 min, com clientes simulados (seção 5.6). Falta medir com celulares |
-| Avaliação qualitativa da tradução em frases de teste | — | Preliminar (nota do agente, 0 a 2 por frase): PT→ZH 17/20 e ZH→PT 15/20, nenhuma com sentido errado no fluxo completo. Três das oito notas 1 vêm do STT. Falta a nota humana ([Etapa 6](etapas/etapa-6-testes.md#resultado-preliminar-avaliação-do-agente)) |
+| Métrica                   | PolyTalk original (`2aeadfd`) | Após a contribuição | Diferença                                                                                      |
+| -------------------------- | ------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------- |
+| Arquivos versionados       | 118                             | 225                    | +107 (inclui docs, resultados das medições e áudios de teste)                                |
+| Python sem testes (linhas) | 6.795                           | 10.181                 | +3.386: salas 1.668, scripts de medição 1.674, versão dos estáticos 22, código original 22 |
+| Testes Python (linhas)     | 10.153                          | 11.478                 | +1.325 (4 arquivos novos e acréscimos em 2 originais)                                          |
+| JavaScript (linhas)        | 2.269                           | 3.185                  | +916 (`room-app.js`)                                                                          |
+| CSS (linhas)               | 1.568                           | 1.895                  | +327 (`room.css` e o cartão da sala na tela inicial)                                         |
+| HTML (linhas)              | 277                             | 502                    | +225 (`room.html`, página do certificado, cartão da sala na tela original)                  |
 
-**Primeiro teste com celular (24/11/2026, um aparelho, pelo túnel):** página sem
-aviso, microfone liberado e sala funcionando; latência alta em algumas frases e
-transcrição apenas razoável, sem medição. Os números acima ainda são dos clientes
-simulados. Ao preencher com a sessão de dois celulares, indicar o caminho usado
-(Wi-Fi com Caddy ou túnel), porque o túnel soma o trajeto pela internet.
+| Funcionalidade                                   | Antes                          | Depois                                                                                                                                                                            |
+| ------------------------------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tradução fala → fala em um dispositivo        | Sim                            | Sim (preservada)                                                                                                                                                                  |
+| Conversa bidirecional em um dispositivo          | Sim                            | Sim (preservada)                                                                                                                                                                  |
+| Salas com código de acesso                      | Não                           | Sim: servidor (Etapa 2) e página `/sala` com QR code (Etapa 3)                                                                                                                 |
+| Interface em chinês                             | Não (13 idiomas, sem chinês) | Sim, na sala e na tela original                                                                                                                                                   |
+| Vários participantes em dispositivos diferentes | Não                           | Sim, no servidor (até 8 por sala; validados 2)                                                                                                                                   |
+| Idioma de fala e de escuta por participante      | Não                           | Sim                                                                                                                                                                               |
+| Tradução entregue apenas ao ouvinte de destino | Não                           | Sim, com filtro de conversa cruzada                                                                                                                                               |
+| Acesso por celular via HTTPS                     | Não                           | Sim: na rede local, proxy com certificado local e guia de instalação (Etapa 4); de qualquer rede, túnel da Cloudflare sem certificado (seção 5.7), já conferido num celular |
+| Medição de latência por direção             | Não                           | Sim: marcas por etapa, T6 informado pelo celular e tabela por direção (`bench/latencia_sala.py`)                                                                              |
 
-## 8. Resultado: antes e depois
-
-| Métrica | PolyTalk original (`2aeadfd`) | Após a contribuição | Diferença |
-|---|---|---|---|
-| Arquivos versionados | 118 | 225 | +107 (inclui docs, resultados das medições e áudios de teste) |
-| Python sem testes (linhas) | 6.795 | 10.181 | +3.386: salas 1.668, scripts de medição 1.674, versão dos estáticos 22, código original 22 |
-| Testes Python (linhas) | 10.153 | 11.478 | +1.325 (4 arquivos novos e acréscimos em 2 originais) |
-| JavaScript (linhas) | 2.269 | 3.185 | +916 (`room-app.js`) |
-| CSS (linhas) | 1.568 | 1.895 | +327 (`room.css` e o cartão da sala na tela inicial) |
-| HTML (linhas) | 277 | 502 | +225 (`room.html`, página do certificado, cartão da sala na tela original) |
-
-| Funcionalidade | Antes | Depois |
-|---|---|---|
-| Tradução fala → fala em um dispositivo | Sim | Sim (preservada) |
-| Conversa bidirecional em um dispositivo | Sim | Sim (preservada) |
-| Salas com código de acesso | Não | Sim: servidor (Etapa 2) e página `/sala` com QR code (Etapa 3) |
-| Interface em chinês | Não (13 idiomas, sem chinês) | Sim, na sala e na tela original |
-| Vários participantes em dispositivos diferentes | Não | Sim, no servidor (até 8 por sala; validados 2) |
-| Idioma de fala e de escuta por participante | Não | Sim |
-| Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
-| Acesso por celular via HTTPS | Não | Sim: na rede local, proxy com certificado local e guia de instalação (Etapa 4); de qualquer rede, túnel da Cloudflare sem certificado (seção 5.7), já conferido num celular |
-| Medição de latência por direção | Não | Sim: marcas por etapa, T6 informado pelo celular e tabela por direção (`bench/latencia_sala.py`) |
-
-## 9. Limitações e trabalhos futuros
+## 8. Limitações e trabalhos futuros
 
 **Limitações da versão entregue**
 
-- **Validação com dois celulares pendente.** Latência, roteamento e a conversa
-  de 5 min foram verificados na pilha real com clientes simulados. Um celular
-  já abriu a sala e liberou o microfone pelo túnel, mas ruído, Wi-Fi, a conversa
-  entre dois aparelhos e os números dependem da sessão do
-  [roteiro](roteiro-validacao.md).
+- **Sem validação com dois celulares.** Latência, roteamento e a conversa de
+  5 min foram verificados na pilha real com clientes simulados. Um celular abriu
+  a sala e liberou o microfone pelo túnel, mas ruído, Wi-Fi e a conversa entre
+  dois aparelhos não foram medidos. O [roteiro](roteiro-validacao.md) descreve
+  essa sessão.
 - **Ruído de fundo.** O fim da frase é detectado por energia. Com ruído a partir
   de −45 dBFS, o STT não fecha a frase (Etapa 1). Num ambiente barulhento, a
   conversa pode travar até alguém parar de falar por mais tempo.
@@ -756,7 +732,7 @@ simulados. Ao preencher com a sessão de dois celulares, indicar o caminho usado
   sistema não mede.
 - **Qualidade.** O tradutor às vezes usa português de Portugal e errou um dia da
   semana; o Whisper `small` erra caracteres chineses e escreve parte em
-  tradicional. Notas humanas ainda pendentes.
+  tradicional. A avaliação das traduções foi feita pelo agente, não por falantes.
 - **Um notebook, uma GPU de 6 GB.** STT, tradução e voz disputam a mesma GPU;
   com mais pessoas falando ao mesmo tempo a latência sobe. Validado com 2
   participantes.
@@ -780,12 +756,9 @@ simulados. Ao preencher com a sessão de dois celulares, indicar o caminho usado
 - Oferecer aos mantenedores, depois da disciplina, as correções do STT e do
   `keep_alive`, que independem das salas.
 
-## 10. Aprendizados e conclusão
+## 9. Aprendizados e conclusão
 
-### 10.1 O que o grupo aprendeu
-
-Rascunho feito a partir das notas de cada etapa; **o grupo revisa e completa**
-com a própria experiência.
+### 9.1 O que o grupo aprendeu
 
 - **Sobre agentes de codificação**
   - O agente rende mais com um plano em etapas pequenas e verificáveis e com a
@@ -820,7 +793,7 @@ com a própria experiência.
     diferentes: o template novo chegou antes do Python de que dependia, e só o
     reinício do app resolveu.
 
-### 10.2 Conclusão
+### 9.2 Conclusão
 
 O fork do PolyTalk ganhou salas multiusuário em rede local: cada pessoa entra
 pelo celular, escolhe o idioma, fala normalmente e ouve no próprio fone só a
@@ -833,28 +806,11 @@ Python e a suíte original continua com o mesmo resultado. Depois da entrega, o
 túnel da Cloudflare permitiu o primeiro teste num celular real sem instalar
 certificado.
 
-Falta a parte que nenhum agente faz sozinho: duas pessoas, dois celulares e uma
-conversa de verdade. O [roteiro](roteiro-validacao.md) deixa essa sessão pronta
-para ser feita e registrada com os mesmos scripts.
+A conversa entre dois celulares reais ainda não foi medida: os números vêm de
+clientes simulados e de um teste com um celular pelo túnel.
 
-### 10.3 Contato com os mantenedores
+### 9.3 Contato com os mantenedores
 
-O enunciado permite, após a entrega, perguntar aos mantenedores do PolyTalk se
-teriam interesse na melhoria. **Pendente (grupo):** a regra da disciplina só
-permite o contato depois da Atividade 04; registrar aqui se foi feito e qual foi a
-resposta. Candidatas naturais: a correção do STT e o `keep_alive`.
+O contato com os mantenedores do PolyTalk não foi feito. Candidatas naturais a
+oferecer a eles: a correção do STT e o `keep_alive`.
 
----
-
-## Apêndice A – Como as métricas de código foram obtidas
-
-Contagem sobre os arquivos versionados (`git ls-files`) no commit indicado, sem a
-pasta `.git`. Linhas contadas com `wc -l`, incluindo comentários e linhas em branco.
-"Testes" corresponde aos arquivos `.py` dentro de `tests/`.
-
-```bash
-git ls-files | wc -l                                   # arquivos versionados
-git ls-files -z | xargs -0 du -cb | tail -1            # tamanho em bytes
-cat $(git ls-files '*.py') | wc -l                     # linhas de Python
-cat $(git ls-files '*.py' | grep -v '^tests/') | wc -l # Python sem testes
-```
