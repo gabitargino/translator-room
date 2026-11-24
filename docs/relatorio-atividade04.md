@@ -4,10 +4,13 @@
 **Integrantes:** Allan Gabriel e Gabriele Targino
 **Projeto da Atividade 03:** Sistema de Interpretação Simultânea Multiusuário em Rede Local
 
-> Estado: implementação concluída (Etapas 0 a 7). Falta só o que depende de
-> pessoas e celulares, marcado como **Pendente (grupo)**: a sessão de validação
-> com dois celulares ([roteiro](roteiro-validacao.md)), as notas humanas da
-> tradução, a familiaridade prévia (1.1) e o contato com os mantenedores (10.3).
+> Estado: implementação concluída (Etapas 0 a 7), mais duas melhorias depois
+> da entrega: destaque da sala na tela inicial e acesso pelo túnel da
+> Cloudflare (seção 5.7). O primeiro teste num celular real já foi feito, pelo
+> túnel: página, HTTPS e microfone funcionando. Falta o que depende de pessoas e
+> celulares, marcado como **Pendente (grupo)**: a sessão de validação com dois
+> celulares ([roteiro](roteiro-validacao.md)), as notas humanas da tradução, a
+> familiaridade prévia (1.1) e o contato com os mantenedores (10.3).
 > Anotações brutas, medições e decisões do dia a dia ficam em
 > [notas-implementacao.md](notas-implementacao.md).
 >
@@ -210,8 +213,9 @@ seção 7.
 A implementação seguiu 8 etapas, cada uma numa branch própria, com um commit por
 subtarefa, pull request no fork e tag `etapa-N-concluida` depois do merge. O
 trabalho novo ficou em pacotes e arquivos novos (`app/rooms/`, página `/sala`,
-proxy HTTPS, `bench/`). O código original recebeu 20 linhas de Python em 4
-arquivos, nenhuma removida (seção 8).
+proxy HTTPS, túnel, `bench/`). O código original recebeu 22 linhas de Python em
+5 arquivos, nenhuma removida, e a tela inicial ganhou um cartão para a sala
+(seção 8).
 
 ### 5.1 Arquitetura da solução
 
@@ -257,11 +261,12 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 0 | Preparação do ambiente (fork, Docker, Ollama, modo mock) | Concluída |
 | 1 | Linha de base e viabilidade da latência (portão de 3 s) | Concluída: portão aprovado (PT→ZH 1,85 s, ZH→PT 2,45 s) |
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
-| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares |
-| 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir o microfone nos celulares |
+| 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; conferida num celular (página e microfone); faltam os itens com dois celulares |
+| 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir esse caminho nos celulares (o túnel, seção 5.7, já foi conferido num celular) |
 | 5 | Medição de latência por direção | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6); falta repetir com celulares |
 | 6 | Testes automatizados e validação com dois celulares | Implementada: ensaio de 5 min na pilha real aprovado, roteiro e avaliação preliminar; falta a sessão com celulares |
 | 7 | Documentação e entrega | Implementada: README (o que foi adicionado, build, testes), relatório e recontagem; faltam os itens do grupo |
+| Pós-entrega | Tela inicial com destaque para a sala; acesso pelo túnel da Cloudflare; roteiro em formato de checklist | Concluída (PR #9); túnel conferido num celular |
 
 ### 5.3 Principais alterações no código
 
@@ -284,6 +289,8 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 5 | Medição de latência: o celular mede o RTT pelo `ping` e avisa quando o áudio começa (`playback_started` com `rtt_ms` e `wait_ms`); o servidor calcula T6 no próprio relógio; análise por direção (mediana, p95, máximo e tempo por etapa). Inclui 12 testes | `app/rooms/latency.py` (novo), `app/rooms/router.py`, `app/static/js/room-app.js`, `tests/test_room_latency.py` (novo) |
 | 5 | Script da tabela de latência a partir do log; o teste da sala real passa a se comportar como o celular (ping, download, aviso de reprodução) | `bench/latencia_sala.py` (novo), `bench/testar_sala.py` |
 | 6 | Entradas, saídas, reconexões e toques em silenciar gravados no log; resumo da sessão de validação (duração, toques, reconexões, tradução entregue a quem falou). Inclui 3 testes; roteiro único de validação com os celulares | `app/rooms/router.py`, `app/rooms/latency.py`, `bench/latencia_sala.py`, `tests/test_room_latency.py`, `docs/roteiro-validacao.md` (novo) |
+| Pós | Tela inicial: cartão "Sala de tradução" com "Criar sala" e "Entrar" logo abaixo do logo; CSS e JS com `?v=<versão>` para o navegador não reaproveitar arquivos antigos do cache (feito pelo grupo) | `app/templates/index.html`, `app/static/css/components.css`, `app/utils/static_url.py` (novo), `app/routers/web.py`, `app/rooms/web.py`, `app/templates/room.html`, `app/locales/*.json` |
+| Pós | Túnel da Cloudflare: script que abre o túnel e mostra o endereço; o link do QR code segue o endereço pelo qual a sala foi aberta, e `ROOM_PUBLIC_BASE_URL` só substitui `localhost`. Inclui 1 teste; roteiro em checklist com os dois caminhos | `tools/tunel-cloudflare.ps1` (novo), `app/rooms/web.py`, `tests/test_room_ui.py`, `docs/roteiro-validacao.md` |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -428,6 +435,16 @@ sintéticas disputam a CPU, e o reconhecimento quase não sofre.
   servidor no TLS quando o endereço é um IP, e o proxy não saberia qual
   certificado entregar. Resolvido com um certificado padrão (`default_sni`) no IP
   da Wi-Fi.
+- **Troca de Wi-Fi invalida o acesso (pós-entrega).** O certificado do Caddy é
+  emitido para o IP do notebook. Numa rede nova o IP muda, e sem rodar o script
+  de novo o Chrome mostrava "Sua conexão não é particular". A correção é rodar o
+  `rede-local.ps1` a cada rede, mas essa fricção (certificado em cada celular,
+  script a cada rede, Wi-Fi que isola aparelhos) motivou o túnel (seção 5.7).
+- **Erro 500 depois de atualizar o código (pós-entrega).** A pasta `app/` é
+  montada no container: templates e estáticos valem na hora, mas o Python só é
+  relido quando o app reinicia. O template novo da tela inicial chamava
+  `static_url`, que o processo antigo não conhecia, e `/` respondia "Internal
+  Server Error". Resolvido com `docker restart polytalk`.
 
 ### 5.6 Medição de latência na sala (Etapa 5)
 
@@ -465,6 +482,41 @@ silêncio. Ficam fora a decodificação do áudio no navegador, a Wi-Fi real e o
 atraso do fone Bluetooth (~0,1–0,3 s). A medição com celulares usa o mesmo script
 (seção 7). Detalhes em [etapa-5-latencia.md](etapas/etapa-5-latencia.md#resultado).
 
+### 5.7 Acesso pelo túnel da Cloudflare (pós-entrega)
+
+O caminho da Etapa 4 exige instalar um certificado em cada celular, rodar o
+script a cada rede e uma Wi-Fi em que os aparelhos se enxerguem. Para destravar o
+primeiro teste com celular, foi adicionada uma alternativa: um *Quick Tunnel* da
+Cloudflare (`cloudflared`, sem conta), que publica o app num endereço com
+certificado público.
+
+```mermaid
+flowchart LR
+    C[Celular<br/>qualquer rede] -- HTTPS / WSS<br/>certificado público --> CF[Cloudflare<br/>nome.trycloudflare.com]
+    CF -- túnel aberto pelo notebook --> CL[cloudflared]
+    CL -- HTTP --> APP[app :9000]
+    W[Celular<br/>mesma Wi-Fi] -- HTTPS / WSS<br/>certificado local --> CA[Caddy :9443]
+    CA -- HTTP --> APP
+```
+
+- **Uso:** `tools\tunel-cloudflare.ps1` confere se o app responde, abre o túnel
+  e mostra `https://<nome>.trycloudflare.com/sala`. O celular abre sem aviso e
+  libera o microfone, em qualquer rede.
+- **QR code:** o link de convite passou a usar o endereço pelo qual quem criou a
+  sala abriu a página. Antes, `ROOM_PUBLIC_BASE_URL` (o IP da Wi-Fi) sempre
+  vencia, e o QR de uma sala criada pelo túnel mandaria o segundo celular para o
+  IP local. Agora ele só substitui `localhost`, que o celular não alcança.
+- **Custos:** o áudio passa pela internet (notebook → Cloudflare → celular), o
+  que soma latência; o endereço muda a cada execução e fica público enquanto o
+  túnel está aberto; e o sistema passa a depender de internet, ao contrário da
+  proposta. Por isso a medição oficial continua planejada pela Wi-Fi com o
+  Caddy, e a seção 7 deve dizer qual caminho foi usado.
+- **Primeiro teste num celular (24/11/2026):** pelo túnel, a página abriu sem
+  aviso, o microfone foi liberado e a sala funcionou (itens B6 e B7 do
+  [roteiro](roteiro-validacao.md)). Impressão de quem testou: latência alta em
+  algumas frases e transcrição apenas razoável, aceitável para um protótipo.
+  Ainda sem números; eles saem da sessão com dois celulares.
+
 ## 6. Processo de desenvolvimento com agentes
 
 Seção central do relatório, segundo o enunciado.
@@ -484,6 +536,7 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 5 – Latência | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala | Pendente: gerar a tabela com os celulares (sessão da Etapa 6) |
 | Etapa 6 – Testes | Rodou a suíte, escreveu o roteiro único com todas as conferências humanas, fez o log contar toques e reconexões para o critério "sem acionar botões", ensaiou a sessão de 5 min na pilha real e deu uma nota preliminar às 20 traduções. Testou uma instrução pt-BR no prompt e a descartou por não ter efeito | Pendente: sessão com celulares e nota humana (sobretudo PT→ZH, por falante de chinês) |
 | Etapa 7 – Entrega | Escreveu a parte do README exigida pelo enunciado (o que foi adicionado, build, testes), recontou arquivos e linhas com o método do apêndice (conferido contra os números do `2aeadfd`), separou o que mudou no código original e preencheu o relatório a partir das notas | Pendente: revisar o relatório, preencher 1.1 e 10.3, rodar o roteiro com os celulares e gravar o vídeo |
+| Pós-entrega | Diagnosticou o aviso de certificado depois da troca de Wi-Fi, propôs e escreveu o túnel (script e link do QR, com teste), achou a causa do erro 500 (processo antigo sem `static_url`) e passou o roteiro para checklist | O grupo fez a tela inicial nova e o primeiro teste num celular, pelo túnel |
 
 ### 6.2 O que funcionou
 
@@ -525,6 +578,10 @@ Seção central do relatório, segundo o enunciado.
   comparado com o fim real da fala que o cliente simulado conhecia (1 ms de
   diferença), e o T6 do servidor com o tempo medido pelo cliente. Sem essa
   conferência, a tabela de latência seria só uma afirmação.
+- **Uma alternativa em vez de insistir (pós-entrega).** Quando o certificado
+  local virou obstáculo para o primeiro teste, o agente propôs o túnel, que
+  destravou o teste com celular no mesmo dia, e ajustou o link do QR para não
+  quebrar o caminho pela Wi-Fi.
 - **Transformar critérios humanos em números (Etapa 6).** "Sem acionar botões" e
   "cada um ouve só o seu" viraram contagens no log (toques, reconexões, tradução
   entregue a quem falou), além da anotação dos participantes.
@@ -610,6 +667,9 @@ Seção central do relatório, segundo o enunciado.
   prompt rodou contra o Ollama enquanto o ensaio de 5 min usava a mesma GPU, e uma
   frase subiu para 3,6 s. O agente percebeu, interrompeu e repetiu o ensaio sem
   outra carga.
+- **O primeiro obstáculo com celular foi a rede, não o código (pós-entrega).**
+  Bastou trocar de Wi-Fi para o certificado do IP antigo deixar de valer. O
+  túnel, que não estava no plano, virou o caminho do primeiro teste.
 
 ### 6.5 Trabalhar num projeto já existente
 
@@ -624,9 +684,10 @@ Seção central do relatório, segundo o enunciado.
   voz) pelas mesmas interfaces da tela original. O que não servia como estava
   (captura de áudio no Safari) virou uma subclasse, não uma cópia alterada.
 - **Mudar o mínimo no original.** Tudo o que é novo está em arquivos novos. No
-  código original: 20 linhas de Python em 4 arquivos (registrar as rotas das
-  salas, `keep_alive` da tradução, idioma chinês na interface e a correção do
-  STT), 1 linha de HTML (link para a sala) e configuração.
+  código original: 22 linhas de Python em 5 arquivos (registrar as rotas das
+  salas, `keep_alive` da tradução, idioma chinês na interface, a correção do
+  STT e a versão nos endereços de CSS e JS), o cartão da sala na tela inicial
+  e configuração.
 - **Compatibilidade verificada a cada etapa.** A suíte original rodou em todas
   as etapas com o mesmo resultado da linha de base, e os testes originais só
   receberam acréscimos. A tela original continua funcionando, agora também em
@@ -649,16 +710,22 @@ Seção central do relatório, segundo o enunciado.
 | Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,79 s (p95 3,35 s) na Etapa 5 e 2,52 s (p95 3,10 s) no ensaio de 5 min, com clientes simulados (seção 5.6). Falta medir com celulares |
 | Avaliação qualitativa da tradução em frases de teste | — | Preliminar (nota do agente, 0 a 2 por frase): PT→ZH 17/20 e ZH→PT 15/20, nenhuma com sentido errado no fluxo completo. Três das oito notas 1 vêm do STT. Falta a nota humana ([Etapa 6](etapas/etapa-6-testes.md#resultado-preliminar-avaliação-do-agente)) |
 
+**Primeiro teste com celular (24/11/2026, um aparelho, pelo túnel):** página sem
+aviso, microfone liberado e sala funcionando; latência alta em algumas frases e
+transcrição apenas razoável, sem medição. Os números acima ainda são dos clientes
+simulados. Ao preencher com a sessão de dois celulares, indicar o caminho usado
+(Wi-Fi com Caddy ou túnel), porque o túnel soma o trajeto pela internet.
+
 ## 8. Resultado: antes e depois
 
 | Métrica | PolyTalk original (`2aeadfd`) | Após a contribuição | Diferença |
 |---|---|---|---|
-| Arquivos versionados | 118 | 223 | +105 (inclui docs, resultados das medições e áudios de teste) |
-| Python sem testes (linhas) | 6.795 | 10.151 | +3.356: salas 1.662, scripts de medição 1.674, código original 20 |
-| Testes Python (linhas) | 10.153 | 11.467 | +1.314 (4 arquivos novos e acréscimos em 2 originais) |
+| Arquivos versionados | 118 | 225 | +107 (inclui docs, resultados das medições e áudios de teste) |
+| Python sem testes (linhas) | 6.795 | 10.181 | +3.386: salas 1.668, scripts de medição 1.674, versão dos estáticos 22, código original 22 |
+| Testes Python (linhas) | 10.153 | 11.478 | +1.325 (4 arquivos novos e acréscimos em 2 originais) |
 | JavaScript (linhas) | 2.269 | 3.185 | +916 (`room-app.js`) |
-| CSS (linhas) | 1.568 | 1.808 | +240 (`room.css`) |
-| HTML (linhas) | 277 | 483 | +206 (`room.html`, página do certificado, 1 linha na tela original) |
+| CSS (linhas) | 1.568 | 1.895 | +327 (`room.css` e o cartão da sala na tela inicial) |
+| HTML (linhas) | 277 | 502 | +225 (`room.html`, página do certificado, cartão da sala na tela original) |
 
 | Funcionalidade | Antes | Depois |
 |---|---|---|
@@ -669,16 +736,17 @@ Seção central do relatório, segundo o enunciado.
 | Vários participantes em dispositivos diferentes | Não | Sim, no servidor (até 8 por sala; validados 2) |
 | Idioma de fala e de escuta por participante | Não | Sim |
 | Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
-| Acesso por celular na rede local via HTTPS | Não | Sim: proxy com certificado local e guia de instalação (Etapa 4); falta conferir nos celulares |
+| Acesso por celular via HTTPS | Não | Sim: na rede local, proxy com certificado local e guia de instalação (Etapa 4); de qualquer rede, túnel da Cloudflare sem certificado (seção 5.7), já conferido num celular |
 | Medição de latência por direção | Não | Sim: marcas por etapa, T6 informado pelo celular e tabela por direção (`bench/latencia_sala.py`) |
 
 ## 9. Limitações e trabalhos futuros
 
 **Limitações da versão entregue**
 
-- **Validação com celulares pendente.** Latência, roteamento e a conversa de
-  5 min foram verificados na pilha real com clientes simulados. Microfone real,
-  ruído, Wi-Fi e navegador móvel dependem da sessão do
+- **Validação com dois celulares pendente.** Latência, roteamento e a conversa
+  de 5 min foram verificados na pilha real com clientes simulados. Um celular
+  já abriu a sala e liberou o microfone pelo túnel, mas ruído, Wi-Fi, a conversa
+  entre dois aparelhos e os números dependem da sessão do
   [roteiro](roteiro-validacao.md).
 - **Ruído de fundo.** O fim da frase é detectado por energia. Com ruído a partir
   de −45 dBFS, o STT não fecha a frase (Etapa 1). Num ambiente barulhento, a
@@ -695,7 +763,8 @@ Seção central do relatório, segundo o enunciado.
 - **Salas em memória.** Um único processo do app (`APP_WORKERS=1`); reiniciar o
   app encerra as salas.
 - **Certificado instalado à mão** em cada celular, e o IP do notebook muda com a
-  rede.
+  rede. O túnel evita as duas coisas, mas depende de internet, soma latência,
+  muda de endereço a cada execução e fica público enquanto está aberto.
 
 **Trabalhos futuros**
 
@@ -747,6 +816,9 @@ com a própria experiência.
     toque, tela que apaga) que moldam a arquitetura tanto quanto o servidor.
   - Uma GPU de 6 GB comporta STT, tradução e voz, mas cada modelo maior afeta os
     outros.
+  - Com o código montado no container, template e Python mudam em momentos
+    diferentes: o template novo chegou antes do Python de que dependia, e só o
+    reinício do app resolveu.
 
 ### 10.2 Conclusão
 
@@ -756,8 +828,10 @@ tradução da fala dos outros, com tudo rodando num notebook. Na pilha real, com
 dois participantes simulados e conversa cruzada, o sistema entregou 60 de 60
 falas só a quem devia numa conversa de quase 7 min, sem nenhum toque, com
 mediana de 1,8 s (PT→ZH) e 2,5 s (ZH→PT) do fim da fala ao início do áudio
-traduzido, dentro da meta de 3 s. O código original mudou em 20 linhas de
-Python e a suíte original continua com o mesmo resultado.
+traduzido, dentro da meta de 3 s. O código original mudou em 22 linhas de
+Python e a suíte original continua com o mesmo resultado. Depois da entrega, o
+túnel da Cloudflare permitiu o primeiro teste num celular real sem instalar
+certificado.
 
 Falta a parte que nenhum agente faz sozinho: duas pessoas, dois celulares e uma
 conversa de verdade. O [roteiro](roteiro-validacao.md) deixa essa sessão pronta

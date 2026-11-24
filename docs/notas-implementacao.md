@@ -1387,3 +1387,47 @@ A Etapa 2 já gravava as marcas T0–T5 por fala, e a Etapa 3 já mandava o avis
 - **Pendências humanas:** revisar o relatório (sobretudo 10.1), preencher 1.1 e
   10.3, rodar o [roteiro](roteiro-validacao.md) com os celulares, atualizar a
   seção 7 do relatório com os números da sessão e gravar o vídeo (7.5).
+
+## 2026-11-24 – Depois da entrega (branch `tunel-cloudflare`, PR #9)
+
+### Troca de Wi-Fi e certificado
+
+- Numa rede nova, o Chrome do celular mostrou "Sua conexão não é particular": o
+  certificado do Caddy estava emitido para o IP da rede anterior. Rodar
+  `tools\rede-local.ps1` de novo resolve, mas o certificado em cada celular e a
+  Wi-Fi que isola aparelhos continuam sendo obstáculo.
+
+### Túnel da Cloudflare
+
+- `tools/tunel-cloudflare.ps1`: Quick Tunnel (`cloudflared`, sem conta) até
+  `http://127.0.0.1:9000`; mostra o endereço `https://….trycloudflare.com/sala`.
+- `join_url`: antes, `ROOM_PUBLIC_BASE_URL` sempre vencia, e o QR de uma sala
+  criada pelo túnel apontaria para o IP da Wi-Fi. Agora ele só substitui
+  `localhost`/`127.0.0.1`/`::1`; nos outros casos vale o endereço da requisição.
+  Teste novo `test_join_url_keeps_tunnel_host`.
+- Ao trocar o endereço do túnel: abrir o novo nos celulares, criar a sala de
+  novo e permitir o microfone de novo (permissão e dados de reconexão são por
+  origem). O `.env` não muda.
+- Primeiro teste num celular (B6 e B7 do roteiro): sem aviso, microfone ok;
+  latência alta em algumas frases e transcrição razoável.
+
+### Erro 500 na tela inicial
+
+- Depois do commit da tela inicial (`static_url` nos templates), `/` dava
+  `UndefinedError: 'static_url' is undefined`: os templates montados no
+  container já eram os novos, mas o processo Python era o antigo.
+  `docker restart polytalk` resolveu; `/` e `/sala` voltaram a responder 200.
+
+### Roteiro
+
+- `roteiro-validacao.md` virou checklist (`- [ ]` com Esperado / Se falhar /
+  Resultado), com dois caminhos na Parte B (Caddy ou túnel) e o caminho usado
+  anotado em D6 e F3.
+
+### Recontagem (método do apêndice A, `main` em `51b2bd3`)
+
+- 225 arquivos; Python sem testes 10.181 (+3.386 = `app/rooms/` 1.668 +
+  `bench/` 1.674 + `app/utils/static_url.py` 22 + original 22); testes 11.478;
+  JS 3.185; CSS 1.895; HTML 502.
+- Original modificado em Python: `app/main.py` +7, `app/routers/web.py` +2,
+  `translation_service.py` +5, `ui_locales.py` +2, `stt/app/main.py` +6.
