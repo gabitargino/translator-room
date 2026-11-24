@@ -18,25 +18,23 @@ Marque `[x]` em cada item conferido e anote o resultado na linha
 
 ## Parte A – Notebook (5 min)
 
-- [ ] **A1.** Notebook na tomada; programas pesados fechados (o Docker de
-      outros projetos também, porque disputa a memória).
-- [ ] **A2.** Notebook na Wi-Fi da sessão; no PowerShell, na pasta do projeto:
+- [X] **A1.** Notebook na tomada; programas pesados fechados (o Docker de
+  outros projetos também, porque disputa a memória).
+- [X] **A2.** Notebook na Wi-Fi da sessão; no PowerShell, na pasta do projeto:
 
   ```powershell
   powershell -ExecutionPolicy Bypass -File tools\rede-local.ps1
   docker compose up -d
   ```
-
-- [ ] **A3.** Pilha aquecida: logo depois de subir, a primeira frase pode
-      levar 10 s ou se perder (modelos frios). No notebook, abra
-      `http://127.0.0.1:9000/sala`, crie uma sala, fale uma frase em cada
-      idioma e saia. Ou, no Git Bash:
+- [X] **A3.** Pilha aquecida: logo depois de subir, a primeira frase pode
+  levar 10 s ou se perder (modelos frios). No notebook, abra
+  `http://127.0.0.1:9000/sala`, crie uma sala, fale uma frase em cada
+  idioma e saia. Ou, no Git Bash:
 
   ```bash
   cd bench && PYTHONUTF8=1 ../.venv/Scripts/python testar_sala.py --rotulo aquecimento --so pt-01,zh-01
   ```
-
-- [ ] **A4.** IP mostrado pelo script anotado: `________________`
+- [X] **A4.** IP mostrado pelo script anotado: `________________`
 
 ## Parte B – Rede e HTTPS (Etapa 4)
 
@@ -53,8 +51,8 @@ latência sobe. Anote no relatório qual caminho foi usado.
     administrador**.
   - Resultado – Android: ______ · iPhone: ______
 - [ ] **B2.** Instalar o certificado
-      ([README, passo 2](../README.md#2-instalar-o-certificado-uma-vez-em-cada-celular));
-      no iPhone, ativar a confiança total.
+  ([README, passo 2](../README.md#2-instalar-o-certificado-uma-vez-em-cada-celular));
+  no iPhone, ativar a confiança total.
   - Esperado: instalado sem erro.
   - Se falhar: iPhone, abrir no **Safari**; Android, procurar "certificado de
     CA" nas Configurações.
@@ -75,10 +73,10 @@ latência sobe. Anote no relatório qual caminho foi usado.
   - Esperado: o script mostra `https://….trycloudflare.com/sala`.
   - Se falhar: `cloudflared` ausente (`winget install --id Cloudflare.cloudflared`)
     ou pilha fora do ar (`docker compose up -d`).
-- [x] **B6.** Abrir o endereço do túnel no celular.
+- [X] **B6.** Abrir o endereço do túnel no celular.
   - Esperado: abre sem aviso de segurança, em qualquer rede.
   - Resultado: ok em 24/11/2026 (um celular).
-- [x] **B7.** Criar uma sala de teste e permitir o microfone.
+- [X] **B7.** Criar uma sala de teste e permitir o microfone.
   - Esperado: o navegador pede o microfone; o nível se mexe ao falar.
   - Resultado: ok em 24/11/2026; latência alta em algumas frases e
     transcrição apenas razoável.
@@ -121,13 +119,14 @@ Celular A cria a sala (fala **PT**, ouve **PT**); celular B entra pelo QR code
 ## Parte D – Sessão de validação de 5 minutos (6.6)
 
 - [ ] **D1.** Sala **nova** criada (A em PT, B em ZH, com fones). Código:
-      `________`
+  `________`
 - [ ] **D2.** Pessoas frente a frente, a ~1 m, falando em volume normal.
-      Ninguém toca na tela depois de entrar.
+  Ninguém toca na tela depois de entrar.
 - [ ] **D3.** **5 min** de conversa livre cronometrados (sugestão de assunto:
-      combinar uma reunião, um almoço, um preço). Frases curtas, uma pessoa de
-      cada vez.
+  combinar uma reunião, um almoço, um preço). Frases curtas, uma pessoa de
+  cada vez.
 - [ ] **D4.** Durante a conversa, cada pessoa anotou:
+
   - frases que não chegaram ao outro;
   - traduções com sentido errado;
   - qualquer áudio que tocou no celular errado (deve ser zero);
@@ -143,7 +142,7 @@ Celular A cria a sala (fala **PT**, ouve **PT**); celular B entra pelo QR code
   a quem falou).
 - [ ] **D6.** Caminho usado (Parte B): ☐ Wi-Fi com Caddy · ☐ túnel
 - [ ] **D7.** (Opcional) Repetir trocando os celulares (rótulo
-      `6-sessao-5min-b`).
+  `6-sessao-5min-b`).
 
 Critérios (preencha com os números do script e das anotações):
 
@@ -168,16 +167,16 @@ Critérios (preencha com os números do script e das anotações):
 ## Parte E – Qualidade da tradução (6.7)
 
 - [ ] **E1.** Na [Etapa 6](etapas/etapa-6-testes.md#avaliação-qualitativa-67),
-      coluna **Nota humana** preenchida para as 20 frases (2 = correto e
-      natural, 1 = correto mas estranho, 0 = errado).
+  coluna **Nota humana** preenchida para as 20 frases (2 = correto e
+  natural, 1 = correto mas estranho, 0 = errado).
 - [ ] **E2.** Quem fala chinês avaliou a coluna PT→ZH.
 - [ ] **E3.** (Opcional) Frases faladas nos celulares em vez do áudio
-      sintético; anotado se a transcrição mudou.
+  sintético; anotado se a transcrição mudou.
 
 ## Parte F – Depois
 
 - [ ] **F1.** Resultados das Partes B a E preenchidos aqui e na Etapa 6.
 - [ ] **F2.** Commit de `bench/resultados/6-sessao-5min.*`.
 - [ ] **F3.** Relatório, seção 7: trocar "Parcial" pelos números da sessão e
-      dizer o caminho usado (Wi-Fi ou túnel).
+  dizer o caminho usado (Wi-Fi ou túnel).
 - [ ] **F4.** (Desejável, 7.5) Vídeo curto da conversa gravado.
