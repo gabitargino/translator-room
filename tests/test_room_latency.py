@@ -125,8 +125,8 @@ class TestAnalysis:
 class TestRoomWebSocketLatency:
     def test_pong_echoes_client_clock_and_playback_is_logged(
         self,
-        room_client,
-        tmp_path,  # noqa: F811
+        room_client,  # noqa: F811
+        tmp_path,
     ):
         client, _, _ = room_client
         code = client.post("/api/rooms").json()["room"]
