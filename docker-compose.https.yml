@@ -1,0 +1,39 @@
+# translator-room (Etapa 4): HTTPS na rede local para os celulares.
+#
+# Liga um proxy Caddy na frente do app, sem mexer no app original:
+#   https://<ROOM_LAN_IP>:<ROOM_HTTPS_PORT>  -> app (com WebSockets)
+#   http://<ROOM_LAN_IP>:<ROOM_CERT_PORT>    -> página para baixar o certificado
+# Ative incluindo este arquivo em COMPOSE_FILE (veja .env.example) e rode
+# tools/rede-local.ps1 para descobrir o IP e preencher o .env.
+services:
+  https-proxy:
+    image: caddy:2.8.4-alpine
+    container_name: polytalk-https
+    restart: unless-stopped
+    ports:
+      - "${ROOM_HTTPS_PORT:-9443}:443"
+      - "${ROOM_CERT_PORT:-9080}:80"
+    environment:
+      - ROOM_LAN_IP=${ROOM_LAN_IP:-127.0.0.1}
+      - ROOM_HTTPS_PORT=${ROOM_HTTPS_PORT:-9443}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/index.html:/srv/index.html:ro
+      # Autoridade local e certificados: manter entre recriações, senão cada
+      # celular teria de instalar um certificado novo.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - polytalk
+    networks:
+      - polytalk-network
+
+  polytalk:
+    environment:
+      # Confia no X-Forwarded-Proto do proxy: o app passa a enxergar "https"
+      # e o link do QR code (3.9) sai com https.
+      - FORWARDED_ALLOW_IPS=*
+
+volumes:
+  caddy_data:
+  caddy_config:

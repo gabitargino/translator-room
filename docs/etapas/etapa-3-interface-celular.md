@@ -9,7 +9,7 @@
 | **Libera** | Etapa 6 (validação com dois celulares) |
 | **Branch** | `etapa-3-interface-celular` (a partir da `main`, após o merge das Etapas 2 e 4) |
 | **Esforço** | 7P · 3M |
-| **Status** | Implementada; falta a conferência em celulares, que depende do HTTPS da Etapa 4 |
+| **Status** | Implementada; falta a conferência em celulares (o HTTPS da [Etapa 4](etapa-4-rede-https.md) já está pronto: ver o guia no README) |
 
 ## Subtarefas
 
