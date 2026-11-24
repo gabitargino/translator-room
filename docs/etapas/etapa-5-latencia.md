@@ -15,7 +15,7 @@
 
 | ID | Subtarefa | Tam. | Prioridade | Pronto quando | Status |
 |---|---|---|---|---|---|
-| 5.1 | Definir exatamente "fim da fala" e "início do áudio traduzido" e onde cada um é medido | P | Obrigatório | Definição escrita no relatório | Concluída: `app/rooms/latency.py` e relatório, seção 5.6 |
+| 5.1 | Definir exatamente "fim da fala" e "início do áudio traduzido" e onde cada um é medido | P | Obrigatório | Definição escrita no relatório | Concluída: `app/rooms/latency.py` e relatório, seção 4.6 |
 | 5.2 | O celular de quem ouve informa ao servidor o momento em que o áudio começou a tocar | P | Obrigatório | Evento registrado no log | Concluída: `playback_started` com `rtt_ms` e `wait_ms` |
 | 5.3 | Compensar a diferença de relógio entre celular e notebook (ou medir tudo pelo relógio do servidor) | P | Obrigatório | Método documentado | Concluída: tudo no relógio do servidor, T6 = chegada do aviso − RTT/2 |
 | 5.4 | Rotina que lê o log e calcula mediana e p95 por direção, exportando uma tabela | P | Obrigatório | Tabela gerada a partir de uma sessão real | Concluída: `bench/latencia_sala.py`; sala real com clientes simulados. A sessão com celulares é a 6.6 |
