@@ -18,7 +18,8 @@
   - ``room_error``/``error``.
 
   Mensagens de controle aceitas: ``mute``/``pause``, ``unmute``/``resume``,
-  ``end``, ``ping`` e ``playback_started`` (com ``utterance_id``).
+  ``end``, ``ping`` (com ``c``, devolvido no ``pong``) e ``playback_started``
+  (com ``utterance_id``, ``rtt_ms`` e ``wait_ms``; ver ``latency.py``).
 """
 
 import asyncio
@@ -30,6 +31,7 @@ from fastapi.responses import Response
 
 from ..routers import api as api_module
 from ..utils.logger import get_logger
+from .latency import playback_record
 from .models import RoomError, get_room_manager
 from .routing import RoomRouter
 from .session import ParticipantSession
@@ -180,16 +182,21 @@ async def room_websocket(
             elif kind in {"unmute", "resume"}:
                 await set_muted(False)
             elif kind == "ping":
-                await participant.send({"type": "pong", "t": time.time()})
+                # "c" é o relógio do celular; volta intacto para ele medir o
+                # tempo de ida e volta (5.3).
+                await participant.send(
+                    {"type": "pong", "t": time.time(), "c": data.get("c")}
+                )
             elif kind == "playback_started":
                 room_router.timing_log.write(
-                    {
-                        "event": "playback_started",
-                        "utterance_id": str(data.get("utterance_id") or ""),
-                        "room": room.code,
-                        "listener": participant.id,
-                        "t": round(time.time(), 3),
-                    }
+                    playback_record(
+                        str(data.get("utterance_id") or ""),
+                        room.code,
+                        participant.id,
+                        time.time(),
+                        rtt_ms=data.get("rtt_ms"),
+                        wait_ms=data.get("wait_ms"),
+                    )
                 )
     except WebSocketDisconnect:
         pass
