@@ -36,13 +36,14 @@ outros. Tudo roda no notebook, na rede local, sem internet.
 | Salas no servidor | Criar e entrar por código; idioma de fala e de escuta por participante; um STT por pessoa; tradução e voz uma vez por idioma de escuta; quem falou não recebe a própria tradução; filtro de conversa cruzada (o microfone de um capta a voz do outro); avisos de entrada e saída; limpeza dos áudios | `app/rooms/` |
 | Página do celular | `/sala`: criar ou entrar, QR code do convite, legendas, silenciar, som liberado no primeiro toque, fila de reprodução, tela sempre ligada, reconexão automática, interface em PT, ZH e EN, aviso AGPL | `app/templates/room.html`, `app/static/js/room-app.js`, `app/static/css/room.css`, `app/locales/zh.json` |
 | HTTPS na rede local | Proxy Caddy com autoridade certificadora local (o navegador só libera o microfone em HTTPS); página para baixar o certificado; script que descobre o IP da Wi-Fi e preenche o `.env` | `docker-compose.https.yml`, `caddy/`, `tools/rede-local.ps1` |
+| Túnel (alternativa ao HTTPS local) | Publica a sala num endereço `https://….trycloudflare.com` com certificado público: o celular abre de qualquer rede, sem instalar certificado; o QR code segue esse endereço | `tools/tunel-cloudflare.ps1`, `app/rooms/web.py` |
 | Latência | Marcas de tempo por fala, aviso do celular quando o áudio começa a tocar (com o RTT), tabela por direção e resumo da sessão | `app/rooms/timing.py`, `app/rooms/latency.py`, `bench/latencia_sala.py` |
 | Ajustes no PolyTalk | `keep_alive` do modelo de tradução; correção no STT (pausas no meio da frase cortavam o fim); STT na GPU com espera de silêncio de 0,8 s | `app/services/translation_service.py`, `stt/app/main.py`, `.env.example` |
 | Medições | Frases de teste PT/ZH, scripts de latência, STT, voz e concorrência, e a sala real com dois participantes simulados | `bench/` |
 
-O código original mudou pouco: 20 linhas de Python acrescentadas em 4 arquivos
-do app e do STT, nenhuma removida, mais 1 linha no HTML da tela original (link
-para a sala). Os testes originais só receberam acréscimos. Resultados, decisões e o
+O código original mudou pouco: 22 linhas de Python acrescentadas em 5 arquivos
+do app e do STT, nenhuma removida, mais o cartão "Sala de tradução" na tela
+original. Os testes originais só receberam acréscimos. Resultados, decisões e o
 processo com agentes estão no [relatório](docs/relatorio-atividade04.md).
 
 ## translator-room: build
@@ -115,7 +116,8 @@ cd bench
 Os navegadores só liberam o microfone em páginas HTTPS (ou em `localhost`). Por
 isso, um proxy [Caddy](https://caddyserver.com/) com uma autoridade certificadora
 local fica na frente do app (`docker-compose.https.yml`, sem mexer no app
-original). Notebook e celulares precisam estar na **mesma Wi-Fi**.
+original). Notebook e celulares precisam estar na **mesma Wi-Fi**. Sem
+certificado e de qualquer rede, use o [túnel](#alternativa-túnel-da-cloudflare-sem-certificado).
 
 ### 1. Preparar o notebook (a cada rede nova)
 
@@ -177,7 +179,28 @@ iPhone, Ajustes → Geral → VPN e Gerenciamento de Dispositivos.
 | Página abre, mas o microfone não é pedido | Página aberta por `http://`: use o endereço `https://` |
 | QR code aponta para `localhost` | Sala criada no notebook sem rodar o script: falta `ROOM_PUBLIC_BASE_URL` no `.env` |
 
-Detalhes e decisões: [Etapa 4](docs/etapas/etapa-4-rede-https.md).
+### Alternativa: túnel da Cloudflare (sem certificado)
+
+Publica o app num endereço com certificado público. O celular abre de qualquer
+rede (Wi-Fi ou 4G), sem instalar nada, e o microfone é liberado. Precisa de
+internet no notebook e do `cloudflared` (`winget install --id Cloudflare.cloudflared`).
+
+```powershell
+docker compose up -d
+powershell -ExecutionPolicy Bypass -File tools\tunel-cloudflare.ps1
+```
+
+- O script mostra `https://<nome>.trycloudflare.com/sala`. Crie a sala **por esse
+  endereço** (no notebook ou no celular): o QR code sai com o endereço pelo qual a
+  página foi aberta.
+- O endereço muda a cada execução. Ao reabrir o túnel, abra o endereço novo nos
+  celulares, crie uma sala nova (ou entre de novo com o código) e permita o
+  microfone outra vez. Nada no `.env` precisa mudar.
+- Enquanto o script roda, qualquer um com o link entra. Ctrl+C fecha o túnel.
+- O áudio passa pela internet, então a latência é maior que pela Wi-Fi local.
+
+Detalhes e decisões: [Etapa 4](docs/etapas/etapa-4-rede-https.md) e
+[relatório, seção 5.7](docs/relatorio-atividade04.md#57-acesso-pelo-túnel-da-cloudflare-pós-entrega).
 
 ---
 
