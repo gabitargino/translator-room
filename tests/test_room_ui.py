@@ -161,8 +161,19 @@ class TestInviteQr:
         client, _, _ = room_client
         monkeypatch.setenv("ROOM_PUBLIC_BASE_URL", "https://192.168.0.10:9443/")
         code = client.post("/api/rooms").json()["room"]
-        data = client.get(f"/api/rooms/{code}").json()
+        data = client.get(f"http://localhost:9000/api/rooms/{code}").json()
         assert data["join_url"] == f"https://192.168.0.10:9443/sala?code={code}"
+
+    def test_join_url_keeps_tunnel_host(self, room_client, monkeypatch):  # noqa: F811
+        """Aberta pelo túnel, o QR leva ao túnel, não ao IP da Wi-Fi."""
+        client, _, _ = room_client
+        monkeypatch.setenv("ROOM_PUBLIC_BASE_URL", "https://192.168.0.10:9443")
+        code = client.post("/api/rooms").json()["room"]
+        data = client.get(
+            f"http://app/api/rooms/{code}",
+            headers={"host": "abc.trycloudflare.com"},
+        ).json()
+        assert data["join_url"] == f"http://abc.trycloudflare.com/sala?code={code}"
 
     def test_qr_encodes_join_url(self):
         import segno

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t("app.title") }}</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/animations.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
+    <link rel="stylesheet" href="{{ static_url('css/variables.css') }}">
+    <link rel="stylesheet" href="{{ static_url('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ static_url('css/components.css') }}">
+    <link rel="stylesheet" href="{{ static_url('css/animations.css') }}">
+    <link rel="stylesheet" href="{{ static_url('css/responsive.css') }}">
     <script>
         window.POLYTALK_I18N = {
             locale: {{ ui_locale | tojson }},
@@ -25,6 +25,26 @@
             </div>
             <p class="subtitle">Real time Live speech-to-speech translations</p>
         </header>
+
+        <!-- translator-room: entrada em destaque para a sala de dois celulares -->
+        <section class="room-cta" aria-labelledby="room-cta-title">
+            <span class="room-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="9" width="17" height="30" rx="3.5"/>
+                    <rect x="27" y="9" width="17" height="30" rx="3.5"/>
+                    <path d="M10 35h5M33 35h5"/>
+                    <path d="M22 20h4m-1.6-2L26.4 20l-2 2M26 28h-4m1.6-2L21.6 28l2 2"/>
+                </svg>
+            </span>
+            <div class="room-cta-body">
+                <h2 id="room-cta-title">{{ t("room.cta_title") }}</h2>
+                <p>{{ t("room.cta_text") }}</p>
+            </div>
+            <div class="room-cta-actions">
+                <a class="btn btn-room" href="/sala">{{ t("room.create") }}</a>
+                <a class="room-cta-join" href="/sala">{{ t("room.cta_join") }}</a>
+            </div>
+        </section>
 
         <main>
             <section class="controls">
@@ -265,14 +285,13 @@
 
         <footer>
             <p>PolyTalk • Privacy-first Real-time Translation</p>
-            <p><a href="/sala">{{ t("room.open_room_link") }}</a></p>
             <p>&copy; 2026 <a href="https://www.bizzappdev.com?utm_source=polytalk-ce" target="_blank" rel="noopener noreferrer">BizzAppDev Systems Pvt. Ltd.</a> | <a href="https://github.com/PolyTalkIO/polytalk/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0</a> | <a href="https://github.com/PolyTalkIO/polytalk" target="_blank" rel="noopener noreferrer">Source</a></p>
         </footer>
     </div>
 
-    <script src="/static/js/i18n.js"></script>
-    <script src="/static/js/audio-recorder.js"></script>
-    <script src="/static/js/polytalk-app.js"></script>
-    <script src="/static/js/main.js"></script>
+    <script src="{{ static_url('js/i18n.js') }}"></script>
+    <script src="{{ static_url('js/audio-recorder.js') }}"></script>
+    <script src="{{ static_url('js/polytalk-app.js') }}"></script>
+    <script src="{{ static_url('js/main.js') }}"></script>
 </body>
 </html>

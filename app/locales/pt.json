@@ -246,5 +246,7 @@
   "room.license_note": "Software livre baseado no PolyTalk CE.",
   "room.ui_language": "Interface",
   "room.single_device": "Tradutor em um aparelho",
-  "room.open_room_link": "Sala de tradução (dois celulares)"
+  "room.cta_title": "Sala de tradução",
+  "room.cta_text": "Converse com outra pessoa, cada uma no seu celular e no seu idioma.",
+  "room.cta_join": "Já tem um código? Entrar"
 }

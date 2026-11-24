@@ -21,14 +21,18 @@ from fastapi.templating import Jinja2Templates
 from ..config import get_config
 from ..i18n import preferred_locale, public_catalog, t
 from .models import normalize_room_code
+from ..utils.static_url import static_url
 
 # Fork público, exigido pela AGPL para quem usa o serviço pela rede (3.10).
 DEFAULT_SOURCE_URL = "https://github.com/gabitargino/translator-room"
 ROOM_PAGE_LOCALES = ("pt", "zh", "en")
 ROOM_LANGUAGES = ("pt", "zh", "en", "es", "fr")
+# Endereços do próprio notebook: um link com eles não abre no celular.
+LOOPBACK_HOSTS = ("localhost", "127.0.0.1", "::1")
 
 router = APIRouter(tags=["rooms-web"])
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
+templates.env.globals["static_url"] = static_url
 
 
 def source_url() -> str:
@@ -38,13 +42,15 @@ def source_url() -> str:
 def join_url(request: Request, code: str) -> str:
     """Link que o segundo celular abre ao ler o QR code.
 
-    Usa o endereço pelo qual o criador abriu a página (o IP do notebook na
-    Wi-Fi). ``ROOM_PUBLIC_BASE_URL`` substitui esse endereço quando o servidor
-    está atrás de um proxy ou foi aberto por ``localhost``.
+    Usa o endereço pelo qual o criador abriu a página: o IP do notebook na
+    Wi-Fi (atrás do Caddy) ou o endereço público do túnel da Cloudflare. Só
+    quando a página foi aberta no próprio notebook (``localhost``), endereço
+    que o celular não alcança, ``ROOM_PUBLIC_BASE_URL`` entra no lugar.
     """
-    base = os.environ.get("ROOM_PUBLIC_BASE_URL", "").strip().rstrip("/")
-    if not base:
-        base = str(request.base_url).rstrip("/")
+    base = str(request.base_url).rstrip("/")
+    public_base = os.environ.get("ROOM_PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if public_base and request.url.hostname in LOOPBACK_HOSTS:
+        base = public_base
     return f"{base}/sala?code={normalize_room_code(code)}"
 
 
