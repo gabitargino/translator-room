@@ -21,6 +21,7 @@ from fastapi.templating import Jinja2Templates
 from ..config import get_config
 from ..i18n import preferred_locale, public_catalog, t
 from .models import normalize_room_code
+from ..utils.static_url import static_url
 
 # Fork público, exigido pela AGPL para quem usa o serviço pela rede (3.10).
 DEFAULT_SOURCE_URL = "https://github.com/gabitargino/translator-room"
@@ -31,6 +32,7 @@ router = APIRouter(tags=["rooms-web"])
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
 
 
+templates.env.globals["static_url"] = static_url
 def source_url() -> str:
     return os.environ.get("ROOM_SOURCE_URL", "").strip() or DEFAULT_SOURCE_URL
 
