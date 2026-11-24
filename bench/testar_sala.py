@@ -18,6 +18,13 @@ E mede, a partir do envio do último bloco com fala (fim da fala), a chegada do
 texto traduzido e do link do áudio no celular de quem ouve. As marcas que o
 servidor gravou em logs/room-timing.jsonl entram no resultado para comparação.
 
+Etapa 5: cada cliente se comporta como o celular para a medição de latência.
+Ele mede o RTT com ``ping``, baixa o áudio assim que chega o ``room_tts`` e
+avisa ``playback_started`` (com ``rtt_ms`` e ``wait_ms``). O áudio "começa a
+tocar" quando o download termina; o celular de verdade ainda decodifica o áudio
+antes de tocar, o que soma alguns milissegundos. Depois, a tabela por direção
+sai de ``python bench/latencia_sala.py --sala <código>``.
+
 Uso:
     python bench/testar_sala.py --rotulo 2-sala [--rodadas 1] [--cruzada 0.3]
     # pelo proxy HTTPS da Etapa 4, validando o certificado como um celular:
@@ -64,12 +71,15 @@ class Cliente:
         self.fim_da_fala: tuple[float, float] | None = None  # perf, epoch
         self.ws = None
         self.id = None
+        self.base_http = ""
+        self.rtts: list[float] = []
 
     async def conectar(self, app: str, sala: str, tls=None) -> None:
         url = (
             f"{'wss' if tls else 'ws'}://{app}/api/ws/rooms/{sala}?name={self.nome}"
             f"&speak={self.idioma}&listen={self.idioma}"
         )
+        self.base_http = f"{'https' if tls else 'http'}://{app}"
         self.ws = await websockets.connect(url, max_size=None, ssl=tls)
         self.tarefas = [
             asyncio.create_task(self._enviar()),
@@ -89,6 +99,10 @@ class Cliente:
             await self.ws.send(bloco)
             if ultimo:
                 self.fim_da_fala = (time.perf_counter(), time.time())
+            if n % 40 == 0:  # ~5 s, como o PING_INTERVAL_MS do celular
+                await self.ws.send(
+                    json.dumps({"type": "ping", "c": time.perf_counter() * 1000})
+                )
             n += 1
             await asyncio.sleep(max(0.0, inicio + n * BLOCO_S - time.perf_counter()))
 
@@ -101,10 +115,36 @@ class Cliente:
                 d["_t"] = time.perf_counter()
                 if d.get("type") == "joined":
                     self.id = d["participant"]["id"]
+                elif d.get("type") == "pong" and isinstance(d.get("c"), (int, float)):
+                    self.rtts = (self.rtts + [d["_t"] * 1000 - d["c"]])[-5:]
+                elif d.get("type") == "room_tts":
+                    asyncio.create_task(self._reproduzir(d))
                 self.eventos.append(d)
                 self.novo.set()
         except websockets.ConnectionClosed:
             pass
+
+    async def _reproduzir(self, d: dict) -> None:
+        """Baixa o áudio e avisa o início da reprodução, como o celular."""
+        try:
+            d["_download_s"] = await asyncio.to_thread(
+                baixar, self.base_http + d["audio_url"]
+            )
+        except Exception as exc:  # o teste de vazamento continua valendo
+            d["_download_erro"] = str(exc)
+            return
+        rtt = sorted(self.rtts)[len(self.rtts) // 2] if self.rtts else None
+        await self.ws.send(
+            json.dumps(
+                {
+                    "type": "playback_started",
+                    "utterance_id": d.get("utterance_id"),
+                    "rtt_ms": rtt,
+                    "wait_ms": round((time.perf_counter() - d["_t"]) * 1000),
+                }
+            )
+        )
+        d["_tocou"] = time.perf_counter()
 
     def falar(self, pcm: bytes, marcar_fim: bool = True) -> None:
         blocos = [pcm[i : i + BLOCO] for i in range(0, len(pcm), BLOCO)]
@@ -218,10 +258,13 @@ async def testar(args: argparse.Namespace) -> dict:
                 "utterance_id": vozes[0]["utterance_id"] if vozes else None,
             }
             if vozes:
-                med["download_s"] = round(
-                    baixar(f"{http}://{args.app}{vozes[0]['audio_url']}"), 3
-                )
-                med["audio_s"] = round(med["voz_s"] + med["download_s"], 3)
+                for _ in range(100):  # o download corre em paralelo
+                    if "_tocou" in vozes[0] or "_download_erro" in vozes[0]:
+                        break
+                    await asyncio.sleep(0.05)
+                if "_download_s" in vozes[0]:
+                    med["download_s"] = round(vozes[0]["_download_s"], 3)
+                    med["audio_s"] = round(med["voz_s"] + med["download_s"], 3)
             ok = (
                 med["n_audio_ouvinte"] == 1
                 and med["n_traducao_para_quem_falou"] == 0
@@ -252,7 +295,8 @@ def ler_marcas_servidor(sala: str) -> dict[str, dict]:
             r = json.loads(linha)
         except json.JSONDecodeError:
             continue
-        if r.get("room") == sala and r.get("utterance_id"):
+        # linhas com "event" são avisos do celular (playback_started), não falas
+        if r.get("room") == sala and r.get("utterance_id") and "event" not in r:
             marcas[r["utterance_id"]] = r
     return marcas
 
