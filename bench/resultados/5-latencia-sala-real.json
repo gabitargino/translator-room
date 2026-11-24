@@ -1,0 +1,1064 @@
+{
+  "gerado_em": "2026-11-23T23:07:02",
+  "log": "C:\\Users\\gabri\\GLab\\translator-room\\logs\\room-timing.jsonl",
+  "sala": "2R5K5",
+  "definicoes": {
+    "T0": "fim da fala estimado no servidor (último bloco com voz antes da pausa)",
+    "T5": "link do áudio enviado ao celular de quem ouve",
+    "T6": "aviso playback_started do celular: chegada no servidor − RTT/2"
+  },
+  "resumo": {
+    "pt→zh": {
+      "falas": 20,
+      "fim_da_fala_estimado": 20,
+      "ate_inicio_do_audio_s": {
+        "n": 20,
+        "mediana": 1.893,
+        "p95": 2.402,
+        "max": 2.409
+      },
+      "ate_link_enviado_s": {
+        "n": 20,
+        "mediana": 1.879,
+        "p95": 2.383,
+        "max": 2.399
+      },
+      "dentro_da_meta_3s": 20,
+      "etapas_mediana_s": {
+        "silencio_e_stt": 1.55,
+        "traducao": 0.241,
+        "voz": 0.117,
+        "envio": 0.0,
+        "celular": 0.012
+      },
+      "rtt_ms_mediana": 1.5
+    },
+    "zh→pt": {
+      "falas": 20,
+      "fim_da_fala_estimado": 20,
+      "ate_inicio_do_audio_s": {
+        "n": 20,
+        "mediana": 2.789,
+        "p95": 3.354,
+        "max": 3.431
+      },
+      "ate_link_enviado_s": {
+        "n": 20,
+        "mediana": 2.771,
+        "p95": 3.33,
+        "max": 3.412
+      },
+      "dentro_da_meta_3s": 12,
+      "etapas_mediana_s": {
+        "silencio_e_stt": 1.692,
+        "traducao": 0.282,
+        "voz": 0.742,
+        "envio": 0.0,
+        "celular": 0.018
+      },
+      "rtt_ms_mediana": 1.8
+    }
+  },
+  "falas": [
+    {
+      "utterance_id": "2R5K5-10",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.4,
+      "wait_ms": 10.0,
+      "since_speech_end": {
+        "stt_done": 1.323,
+        "audio_sent": 1.632,
+        "text_sent": 1.524,
+        "translation_done": 1.524,
+        "tts_done": 1.632,
+        "playback": 1.642
+      },
+      "stages": {
+        "silencio_e_stt": 1.323,
+        "traducao": 0.201,
+        "voz": 0.108,
+        "envio": 0.0,
+        "celular": 0.01
+      }
+    },
+    {
+      "utterance_id": "2R5K5-11",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 17.0,
+      "since_speech_end": {
+        "stt_done": 1.721,
+        "audio_sent": 2.77,
+        "text_sent": 2.005,
+        "translation_done": 2.005,
+        "tts_done": 2.77,
+        "playback": 2.788
+      },
+      "stages": {
+        "silencio_e_stt": 1.721,
+        "traducao": 0.284,
+        "voz": 0.765,
+        "envio": 0.0,
+        "celular": 0.018
+      }
+    },
+    {
+      "utterance_id": "2R5K5-13",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.4,
+      "wait_ms": 14.0,
+      "since_speech_end": {
+        "stt_done": 1.747,
+        "audio_sent": 2.265,
+        "text_sent": 2.088,
+        "translation_done": 2.088,
+        "tts_done": 2.265,
+        "playback": 2.28
+      },
+      "stages": {
+        "silencio_e_stt": 1.747,
+        "traducao": 0.341,
+        "voz": 0.177,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-15",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 21.0,
+      "since_speech_end": {
+        "stt_done": 1.754,
+        "audio_sent": 3.089,
+        "text_sent": 2.103,
+        "translation_done": 2.103,
+        "tts_done": 3.089,
+        "playback": 3.11
+      },
+      "stages": {
+        "silencio_e_stt": 1.754,
+        "traducao": 0.349,
+        "voz": 0.986,
+        "envio": 0.0,
+        "celular": 0.021
+      }
+    },
+    {
+      "utterance_id": "2R5K5-17",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.9,
+      "wait_ms": 13.0,
+      "since_speech_end": {
+        "stt_done": 1.685,
+        "audio_sent": 2.17,
+        "text_sent": 2.0,
+        "translation_done": 2.0,
+        "tts_done": 2.17,
+        "playback": 2.185
+      },
+      "stages": {
+        "silencio_e_stt": 1.685,
+        "traducao": 0.315,
+        "voz": 0.17,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-2",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.2,
+      "wait_ms": 17.0,
+      "since_speech_end": {
+        "stt_done": 1.477,
+        "audio_sent": 1.86,
+        "text_sent": 1.722,
+        "translation_done": 1.721,
+        "tts_done": 1.86,
+        "playback": 1.877
+      },
+      "stages": {
+        "silencio_e_stt": 1.477,
+        "traducao": 0.244,
+        "voz": 0.139,
+        "envio": 0.0,
+        "celular": 0.017
+      }
+    },
+    {
+      "utterance_id": "2R5K5-20",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 24.0,
+      "since_speech_end": {
+        "stt_done": 1.788,
+        "audio_sent": 3.326,
+        "text_sent": 2.2,
+        "translation_done": 2.199,
+        "tts_done": 3.326,
+        "playback": 3.35
+      },
+      "stages": {
+        "silencio_e_stt": 1.788,
+        "traducao": 0.411,
+        "voz": 1.127,
+        "envio": 0.0,
+        "celular": 0.024
+      }
+    },
+    {
+      "utterance_id": "2R5K5-21",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.589,
+        "audio_sent": 1.897,
+        "text_sent": 1.816,
+        "translation_done": 1.816,
+        "tts_done": 1.897,
+        "playback": 1.909
+      },
+      "stages": {
+        "silencio_e_stt": 1.589,
+        "traducao": 0.227,
+        "voz": 0.081,
+        "envio": 0.0,
+        "celular": 0.012
+      }
+    },
+    {
+      "utterance_id": "2R5K5-24",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 15.0,
+      "since_speech_end": {
+        "stt_done": 1.664,
+        "audio_sent": 3.026,
+        "text_sent": 2.008,
+        "translation_done": 2.008,
+        "tts_done": 3.026,
+        "playback": 3.042
+      },
+      "stages": {
+        "silencio_e_stt": 1.664,
+        "traducao": 0.344,
+        "voz": 1.018,
+        "envio": 0.0,
+        "celular": 0.016
+      }
+    },
+    {
+      "utterance_id": "2R5K5-26",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.6,
+      "wait_ms": 8.0,
+      "since_speech_end": {
+        "stt_done": 1.468,
+        "audio_sent": 1.835,
+        "text_sent": 1.706,
+        "translation_done": 1.705,
+        "tts_done": 1.835,
+        "playback": 1.843
+      },
+      "stages": {
+        "silencio_e_stt": 1.468,
+        "traducao": 0.237,
+        "voz": 0.13,
+        "envio": 0.0,
+        "celular": 0.008
+      }
+    },
+    {
+      "utterance_id": "2R5K5-28",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.6,
+      "wait_ms": 16.0,
+      "since_speech_end": {
+        "stt_done": 1.692,
+        "audio_sent": 2.77,
+        "text_sent": 1.936,
+        "translation_done": 1.936,
+        "tts_done": 2.769,
+        "playback": 2.786
+      },
+      "stages": {
+        "silencio_e_stt": 1.692,
+        "traducao": 0.244,
+        "voz": 0.833,
+        "envio": 0.001,
+        "celular": 0.016
+      }
+    },
+    {
+      "utterance_id": "2R5K5-30",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.6,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.685,
+        "audio_sent": 2.145,
+        "text_sent": 2.01,
+        "translation_done": 2.01,
+        "tts_done": 2.145,
+        "playback": 2.158
+      },
+      "stages": {
+        "silencio_e_stt": 1.685,
+        "traducao": 0.325,
+        "voz": 0.135,
+        "envio": 0.0,
+        "celular": 0.013
+      }
+    },
+    {
+      "utterance_id": "2R5K5-32",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 2.0,
+      "wait_ms": 20.0,
+      "since_speech_end": {
+        "stt_done": 1.632,
+        "audio_sent": 3.074,
+        "text_sent": 1.997,
+        "translation_done": 1.997,
+        "tts_done": 3.074,
+        "playback": 3.097
+      },
+      "stages": {
+        "silencio_e_stt": 1.632,
+        "traducao": 0.365,
+        "voz": 1.077,
+        "envio": 0.0,
+        "celular": 0.023
+      }
+    },
+    {
+      "utterance_id": "2R5K5-33",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.6,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.584,
+        "audio_sent": 1.943,
+        "text_sent": 1.829,
+        "translation_done": 1.828,
+        "tts_done": 1.943,
+        "playback": 1.955
+      },
+      "stages": {
+        "silencio_e_stt": 1.584,
+        "traducao": 0.244,
+        "voz": 0.115,
+        "envio": 0.0,
+        "celular": 0.012
+      }
+    },
+    {
+      "utterance_id": "2R5K5-36",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 2.0,
+      "wait_ms": 13.0,
+      "since_speech_end": {
+        "stt_done": 1.368,
+        "audio_sent": 2.2,
+        "text_sent": 1.596,
+        "translation_done": 1.596,
+        "tts_done": 2.2,
+        "playback": 2.214
+      },
+      "stages": {
+        "silencio_e_stt": 1.368,
+        "traducao": 0.228,
+        "voz": 0.604,
+        "envio": 0.0,
+        "celular": 0.014
+      }
+    },
+    {
+      "utterance_id": "2R5K5-38",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.3,
+      "wait_ms": 22.0,
+      "since_speech_end": {
+        "stt_done": 1.522,
+        "audio_sent": 1.848,
+        "text_sent": 1.745,
+        "translation_done": 1.744,
+        "tts_done": 1.847,
+        "playback": 1.87
+      },
+      "stages": {
+        "silencio_e_stt": 1.522,
+        "traducao": 0.222,
+        "voz": 0.103,
+        "envio": 0.001,
+        "celular": 0.022
+      }
+    },
+    {
+      "utterance_id": "2R5K5-4",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 15.0,
+      "since_speech_end": {
+        "stt_done": 1.603,
+        "audio_sent": 2.445,
+        "text_sent": 1.864,
+        "translation_done": 1.863,
+        "tts_done": 2.444,
+        "playback": 2.46
+      },
+      "stages": {
+        "silencio_e_stt": 1.603,
+        "traducao": 0.26,
+        "voz": 0.581,
+        "envio": 0.001,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-40",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 15.0,
+      "since_speech_end": {
+        "stt_done": 1.779,
+        "audio_sent": 2.775,
+        "text_sent": 2.095,
+        "translation_done": 2.094,
+        "tts_done": 2.775,
+        "playback": 2.79
+      },
+      "stages": {
+        "silencio_e_stt": 1.779,
+        "traducao": 0.315,
+        "voz": 0.681,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-42",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.3,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.457,
+        "audio_sent": 1.845,
+        "text_sent": 1.698,
+        "translation_done": 1.698,
+        "tts_done": 1.844,
+        "playback": 1.857
+      },
+      "stages": {
+        "silencio_e_stt": 1.457,
+        "traducao": 0.241,
+        "voz": 0.146,
+        "envio": 0.001,
+        "celular": 0.012
+      }
+    },
+    {
+      "utterance_id": "2R5K5-43",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 14.0,
+      "since_speech_end": {
+        "stt_done": 1.641,
+        "audio_sent": 2.499,
+        "text_sent": 1.9,
+        "translation_done": 1.9,
+        "tts_done": 2.499,
+        "playback": 2.514
+      },
+      "stages": {
+        "silencio_e_stt": 1.641,
+        "traducao": 0.259,
+        "voz": 0.599,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-46",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 7.0,
+      "since_speech_end": {
+        "stt_done": 1.461,
+        "audio_sent": 1.761,
+        "text_sent": 1.683,
+        "translation_done": 1.683,
+        "tts_done": 1.76,
+        "playback": 1.77
+      },
+      "stages": {
+        "silencio_e_stt": 1.461,
+        "traducao": 0.222,
+        "voz": 0.077,
+        "envio": 0.001,
+        "celular": 0.009
+      }
+    },
+    {
+      "utterance_id": "2R5K5-47",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 2.1,
+      "wait_ms": 17.0,
+      "since_speech_end": {
+        "stt_done": 1.638,
+        "audio_sent": 2.435,
+        "text_sent": 1.913,
+        "translation_done": 1.912,
+        "tts_done": 2.433,
+        "playback": 2.451
+      },
+      "stages": {
+        "silencio_e_stt": 1.638,
+        "traducao": 0.274,
+        "voz": 0.521,
+        "envio": 0.002,
+        "celular": 0.016
+      }
+    },
+    {
+      "utterance_id": "2R5K5-50",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 15.0,
+      "since_speech_end": {
+        "stt_done": 1.32,
+        "audio_sent": 1.64,
+        "text_sent": 1.521,
+        "translation_done": 1.521,
+        "tts_done": 1.64,
+        "playback": 1.655
+      },
+      "stages": {
+        "silencio_e_stt": 1.32,
+        "traducao": 0.201,
+        "voz": 0.119,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-52",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 2.1,
+      "wait_ms": 19.0,
+      "since_speech_end": {
+        "stt_done": 1.716,
+        "audio_sent": 2.708,
+        "text_sent": 1.998,
+        "translation_done": 1.997,
+        "tts_done": 2.707,
+        "playback": 2.726
+      },
+      "stages": {
+        "silencio_e_stt": 1.716,
+        "traducao": 0.281,
+        "voz": 0.71,
+        "envio": 0.001,
+        "celular": 0.018
+      }
+    },
+    {
+      "utterance_id": "2R5K5-53",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 19.0,
+      "since_speech_end": {
+        "stt_done": 1.858,
+        "audio_sent": 2.382,
+        "text_sent": 2.261,
+        "translation_done": 2.261,
+        "tts_done": 2.381,
+        "playback": 2.402
+      },
+      "stages": {
+        "silencio_e_stt": 1.858,
+        "traducao": 0.403,
+        "voz": 0.12,
+        "envio": 0.001,
+        "celular": 0.02
+      }
+    },
+    {
+      "utterance_id": "2R5K5-56",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.6,
+      "wait_ms": 16.0,
+      "since_speech_end": {
+        "stt_done": 1.755,
+        "audio_sent": 3.044,
+        "text_sent": 2.116,
+        "translation_done": 2.116,
+        "tts_done": 3.044,
+        "playback": 3.062
+      },
+      "stages": {
+        "silencio_e_stt": 1.755,
+        "traducao": 0.361,
+        "voz": 0.928,
+        "envio": 0.0,
+        "celular": 0.018
+      }
+    },
+    {
+      "utterance_id": "2R5K5-57",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 9.0,
+      "since_speech_end": {
+        "stt_done": 1.697,
+        "audio_sent": 2.177,
+        "text_sent": 2.017,
+        "translation_done": 2.017,
+        "tts_done": 2.177,
+        "playback": 2.187
+      },
+      "stages": {
+        "silencio_e_stt": 1.697,
+        "traducao": 0.32,
+        "voz": 0.16,
+        "envio": 0.0,
+        "celular": 0.01
+      }
+    },
+    {
+      "utterance_id": "2R5K5-6",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.4,
+      "wait_ms": 8.0,
+      "since_speech_end": {
+        "stt_done": 1.419,
+        "audio_sent": 1.733,
+        "text_sent": 1.638,
+        "translation_done": 1.637,
+        "tts_done": 1.732,
+        "playback": 1.742
+      },
+      "stages": {
+        "silencio_e_stt": 1.419,
+        "traducao": 0.218,
+        "voz": 0.095,
+        "envio": 0.001,
+        "celular": 0.009
+      }
+    },
+    {
+      "utterance_id": "2R5K5-60",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 2.0,
+      "wait_ms": 19.0,
+      "since_speech_end": {
+        "stt_done": 1.796,
+        "audio_sent": 3.412,
+        "text_sent": 2.21,
+        "translation_done": 2.21,
+        "tts_done": 3.412,
+        "playback": 3.431
+      },
+      "stages": {
+        "silencio_e_stt": 1.796,
+        "traducao": 0.414,
+        "voz": 1.202,
+        "envio": 0.0,
+        "celular": 0.019
+      }
+    },
+    {
+      "utterance_id": "2R5K5-61",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.579,
+        "audio_sent": 1.911,
+        "text_sent": 1.811,
+        "translation_done": 1.811,
+        "tts_done": 1.91,
+        "playback": 1.922
+      },
+      "stages": {
+        "silencio_e_stt": 1.579,
+        "traducao": 0.232,
+        "voz": 0.099,
+        "envio": 0.001,
+        "celular": 0.011
+      }
+    },
+    {
+      "utterance_id": "2R5K5-64",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.9,
+      "wait_ms": 20.0,
+      "since_speech_end": {
+        "stt_done": 1.906,
+        "audio_sent": 3.022,
+        "text_sent": 2.303,
+        "translation_done": 2.303,
+        "tts_done": 3.022,
+        "playback": 3.042
+      },
+      "stages": {
+        "silencio_e_stt": 1.906,
+        "traducao": 0.397,
+        "voz": 0.719,
+        "envio": 0.0,
+        "celular": 0.02
+      }
+    },
+    {
+      "utterance_id": "2R5K5-66",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.478,
+        "audio_sent": 1.82,
+        "text_sent": 1.721,
+        "translation_done": 1.72,
+        "tts_done": 1.82,
+        "playback": 1.832
+      },
+      "stages": {
+        "silencio_e_stt": 1.478,
+        "traducao": 0.242,
+        "voz": 0.1,
+        "envio": 0.0,
+        "celular": 0.012
+      }
+    },
+    {
+      "utterance_id": "2R5K5-68",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.7,
+      "wait_ms": 18.0,
+      "since_speech_end": {
+        "stt_done": 1.677,
+        "audio_sent": 2.628,
+        "text_sent": 1.914,
+        "translation_done": 1.914,
+        "tts_done": 2.628,
+        "playback": 2.649
+      },
+      "stages": {
+        "silencio_e_stt": 1.677,
+        "traducao": 0.237,
+        "voz": 0.714,
+        "envio": 0.0,
+        "celular": 0.021
+      }
+    },
+    {
+      "utterance_id": "2R5K5-69",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 9.0,
+      "since_speech_end": {
+        "stt_done": 1.857,
+        "audio_sent": 2.399,
+        "text_sent": 2.227,
+        "translation_done": 2.227,
+        "tts_done": 2.398,
+        "playback": 2.409
+      },
+      "stages": {
+        "silencio_e_stt": 1.857,
+        "traducao": 0.37,
+        "voz": 0.171,
+        "envio": 0.001,
+        "celular": 0.01
+      }
+    },
+    {
+      "utterance_id": "2R5K5-7",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 12.0,
+      "since_speech_end": {
+        "stt_done": 1.693,
+        "audio_sent": 2.463,
+        "text_sent": 1.934,
+        "translation_done": 1.934,
+        "tts_done": 2.463,
+        "playback": 2.476
+      },
+      "stages": {
+        "silencio_e_stt": 1.693,
+        "traducao": 0.241,
+        "voz": 0.529,
+        "envio": 0.0,
+        "celular": 0.013
+      }
+    },
+    {
+      "utterance_id": "2R5K5-71",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.8,
+      "wait_ms": 21.0,
+      "since_speech_end": {
+        "stt_done": 1.844,
+        "audio_sent": 3.161,
+        "text_sent": 2.264,
+        "translation_done": 2.264,
+        "tts_done": 3.16,
+        "playback": 3.182
+      },
+      "stages": {
+        "silencio_e_stt": 1.844,
+        "traducao": 0.42,
+        "voz": 0.896,
+        "envio": 0.001,
+        "celular": 0.021
+      }
+    },
+    {
+      "utterance_id": "2R5K5-74",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.7,
+      "wait_ms": 9.0,
+      "since_speech_end": {
+        "stt_done": 1.656,
+        "audio_sent": 2.014,
+        "text_sent": 1.898,
+        "translation_done": 1.898,
+        "tts_done": 2.014,
+        "playback": 2.023
+      },
+      "stages": {
+        "silencio_e_stt": 1.656,
+        "traducao": 0.242,
+        "voz": 0.116,
+        "envio": 0.0,
+        "celular": 0.009
+      }
+    },
+    {
+      "utterance_id": "2R5K5-76",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.9,
+      "wait_ms": 14.0,
+      "since_speech_end": {
+        "stt_done": 1.475,
+        "audio_sent": 2.276,
+        "text_sent": 1.714,
+        "translation_done": 1.714,
+        "tts_done": 2.276,
+        "playback": 2.291
+      },
+      "stages": {
+        "silencio_e_stt": 1.475,
+        "traducao": 0.239,
+        "voz": 0.562,
+        "envio": 0.0,
+        "celular": 0.015
+      }
+    },
+    {
+      "utterance_id": "2R5K5-78",
+      "room": "2R5K5",
+      "direction": "pt→zh",
+      "listener": "7383c8602a9e",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.3,
+      "wait_ms": 7.0,
+      "since_speech_end": {
+        "stt_done": 1.504,
+        "audio_sent": 1.825,
+        "text_sent": 1.732,
+        "translation_done": 1.731,
+        "tts_done": 1.824,
+        "playback": 1.833
+      },
+      "stages": {
+        "silencio_e_stt": 1.504,
+        "traducao": 0.227,
+        "voz": 0.093,
+        "envio": 0.001,
+        "celular": 0.008
+      }
+    },
+    {
+      "utterance_id": "2R5K5-79",
+      "room": "2R5K5",
+      "direction": "zh→pt",
+      "listener": "4b2421040519",
+      "speech_end_estimated": true,
+      "status": "delivered",
+      "rtt_ms": 1.5,
+      "wait_ms": 26.0,
+      "since_speech_end": {
+        "stt_done": 1.652,
+        "audio_sent": 2.772,
+        "text_sent": 1.93,
+        "translation_done": 1.929,
+        "tts_done": 2.771,
+        "playback": 2.798
+      },
+      "stages": {
+        "silencio_e_stt": 1.652,
+        "traducao": 0.277,
+        "voz": 0.842,
+        "envio": 0.001,
+        "celular": 0.026
+      }
+    }
+  ]
+}

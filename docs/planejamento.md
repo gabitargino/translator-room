@@ -136,7 +136,7 @@ Os IDs das subtarefas começam pelo número da etapa (ex.: 2.5 é a 5ª subtaref
 | 2 | [Salas e participantes no servidor](etapas/etapa-2-salas-servidor.md) | `etapa-2-salas-servidor` | Salas, um STT por participante e roteamento para o ouvinte certo | 11 | 6P · 4M · 1G | Concluída (sala real: 40/40, sem vazamentos) |
 | 3 | [Interface web para celular](etapas/etapa-3-interface-celular.md) | `etapa-3-interface-celular` | Telas para criar/entrar na sala e ouvir as traduções | 10 | 7P · 3M | Implementada (falta conferir nos celulares; HTTPS pronto) |
 | 4 | [Rede local e HTTPS](etapas/etapa-4-rede-https.md) | `etapa-4-rede-https` | Celulares acessando o notebook pela Wi-Fi com microfone liberado | 6 | 5P · 1M | Implementada (proxy Caddy; sala real por `wss://` 20/20; falta o microfone nos celulares) |
-| 5 | [Medição de latência](etapas/etapa-5-latencia.md) | `etapa-5-latencia` | Mediana e p95 por direção a partir de sessões reais | 4 | 4P | Pendente |
+| 5 | [Medição de latência](etapas/etapa-5-latencia.md) | `etapa-5-latencia` | Mediana e p95 por direção a partir de sessões reais | 4 | 4P | Concluída (PT→ZH 1,89 s, ZH→PT 2,79 s na sala real; falta repetir com celulares) |
 | 6 | [Testes e validação](etapas/etapa-6-testes.md) | `etapa-6-testes` | Testes automatizados e sessão de 5 min com dois celulares | 7 | 4P · 3M | Pendente |
 | 7 | [Documentação e entrega](etapas/etapa-7-entrega.md) | `etapa-7-entrega` | README, relatório completo, métricas e demonstração | 5 | 3P · 2M | Pendente |
 

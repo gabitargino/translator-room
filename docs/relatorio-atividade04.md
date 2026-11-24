@@ -252,7 +252,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 2 | Salas e participantes no servidor, roteamento por ouvinte | Concluída: sala real com 40/40 frases entregues só a quem devia |
 | 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares |
 | 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir o microfone nos celulares |
-| 5 | Medição de latência por direção | Pendente |
+| 5 | Medição de latência por direção | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6); falta repetir com celulares |
 | 6 | Testes automatizados e validação com dois celulares | Pendente |
 | 7 | Documentação e entrega | Pendente |
 
@@ -274,6 +274,8 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 3 | Servidor: link de entrada nas respostas, QR code em SVG e `rejoin` para substituir o participante antigo numa reconexão; link para a sala na tela original | `app/rooms/router.py`, `app/rooms/models.py`, `app/main.py`, `app/templates/index.html`, `requirements.txt` (`segno`) |
 | 4 | HTTPS na rede local: proxy Caddy com autoridade certificadora local na frente do app, página para baixar o certificado e app confiando no `X-Forwarded-Proto` (link do QR com `https`). Nenhuma linha do app original mudou. Inclui 8 testes | `docker-compose.https.yml`, `caddy/Caddyfile`, `caddy/index.html` (novos), `.env.example`, `tests/test_https_proxy.py` (novo) |
 | 4 | Script que descobre o IP da Wi-Fi, preenche o `.env` e libera o firewall; guia de instalação do certificado no README; teste da sala por `https`/`wss` | `tools/rede-local.ps1` (novo), `README.md`, `bench/testar_sala.py` |
+| 5 | Medição de latência: o celular mede o RTT pelo `ping` e avisa quando o áudio começa (`playback_started` com `rtt_ms` e `wait_ms`); o servidor calcula T6 no próprio relógio; análise por direção (mediana, p95, máximo e tempo por etapa). Inclui 12 testes | `app/rooms/latency.py` (novo), `app/rooms/router.py`, `app/static/js/room-app.js`, `tests/test_room_latency.py` (novo) |
+| 5 | Script da tabela de latência a partir do log; o teste da sala real passa a se comportar como o celular (ping, download, aviso de reprodução) | `bench/latencia_sala.py` (novo), `bench/testar_sala.py` |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -385,8 +387,8 @@ sintéticas disputam a CPU, e o reconhecimento quase não sofre.
 - O áudio de teste é sintético e o silêncio entre as falas é digital (zero). Com
   ruído de fundo de −45 dBFS, o STT não detectou o fim de nenhuma frase. Isso
   precisa ser medido com os celulares (seção 5.5).
-- O tempo de rede até os celulares e o início da reprodução no navegador ainda não
-  entram na conta. A medição na sala real é a Etapa 5.
+- O tempo de rede até os celulares e o início da reprodução no navegador não
+  entram nesta conta. A medição na sala real está na seção 5.6.
 
 ### 5.5 Dificuldades encontradas
 
@@ -419,6 +421,42 @@ sintéticas disputam a CPU, e o reconhecimento quase não sofre.
   certificado entregar. Resolvido com um certificado padrão (`default_sni`) no IP
   da Wi-Fi.
 
+### 5.6 Medição de latência na sala (Etapa 5)
+
+A latência medida é **T6 − T0**, por ouvinte, e todas as marcas usam o relógio
+do servidor:
+
+- **T0, fim da fala:** fim do último bloco de áudio com voz que chegou de quem
+  fala antes da pausa que fechou a frase. A voz é detectada com o mesmo limiar de
+  energia do STT (RMS ≥ 0,003). O plano previa T0 = T1 − espera de silêncio, mas o
+  detector de voz da sessão (Etapa 2) marca o fim real. No teste, o T0 do
+  servidor ficou a 1 ms do fim real que o cliente conhecia (mediana).
+- **T6, início do áudio traduzido:** evento `playing` do player no celular de
+  quem ouve. O celular avisa o servidor (`playback_started`), e o servidor usa a
+  hora de chegada menos metade do RTT, que o celular mede com o `ping` no próprio
+  relógio. O relógio do celular nunca é comparado com o do notebook. O erro
+  possível é a assimetria da rede, no máximo meio RTT.
+- `bench/latencia_sala.py` lê o log e gera a tabela por direção, com mediana,
+  p95, máximo e o tempo de cada etapa.
+
+Sala real com dois clientes simulados no notebook, com conversa cruzada, 40 falas:
+
+| Direção | Mediana T0→T6 | p95 | Máximo | Falas ≤ 3 s |
+|---|---|---|---|---|
+| PT→ZH | 1,89 s | 2,40 s | 2,41 s | 20/20 |
+| ZH→PT | 2,79 s | 3,35 s | 3,43 s | 12/20 |
+
+| Direção | Silêncio + STT | Tradução | Voz | Rede e download |
+|---|---|---|---|---|
+| PT→ZH | 1,55 s | 0,24 s | 0,12 s | 0,01 s |
+| ZH→PT | 1,69 s | 0,28 s | 0,74 s | 0,02 s |
+
+O ZH→PT fica perto do limite porque a voz em português (Supertonic) leva 0,6 s a
+mais que a voz em chinês (Piper). "Silêncio + STT" inclui os 0,8 s de espera de
+silêncio. Ficam fora a decodificação do áudio no navegador, a Wi-Fi real e o
+atraso do fone Bluetooth (~0,1–0,3 s). A medição com celulares usa o mesmo script
+(seção 7). Detalhes em [etapa-5-latencia.md](etapas/etapa-5-latencia.md#resultado).
+
 ## 6. Processo de desenvolvimento com agentes
 
 Seção central do relatório, segundo o enunciado.
@@ -435,7 +473,8 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 2 – Salas | Projetou e escreveu o módulo `app/rooms/` com 30 testes, notou que os 3 workers do PolyTalk quebrariam as salas, escreveu e rodou o teste da sala real (com e sem conversa cruzada) e conferiu a limpeza dos áudios no container | Pendente: revisar o PR, em especial o protocolo que a Etapa 3 vai usar |
 | Etapa 3 – Interface | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda | Pendente: conferir nos celulares (som, tela ligada, Wi-Fi, QR) e revisar os textos em chinês |
 | Etapa 4 – Rede e HTTPS | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Pendente: instalar o certificado e conferir o microfone no Android e no iPhone; liberar o firewall como administrador se preciso |
-| Etapas 5 a 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 5 – Latência | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala | Pendente: gerar a tabela com os celulares (sessão da Etapa 6) |
+| Etapas 6 e 7 | _(a preencher ao fim de cada etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -536,8 +575,8 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 |---|---|---|
 | Conversa contínua sem acionar botões a cada fala | ≥ 5 min | _(a preencher)_ |
 | Cada participante ouve apenas a tradução destinada a ele | Sim | Parcial: na sala real com dois participantes simulados, 40/40 frases chegaram só a quem devia, inclusive com conversa cruzada (Etapa 2). Falta a sessão com celulares |
-| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,85 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
-| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,45 s no notebook, com fala sintética (seção 5.4). Falta medir na sala com celulares |
+| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,89 s (p95 2,40 s) na sala real com clientes simulados (seção 5.6). Falta medir com celulares |
+| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,79 s (p95 3,35 s) na sala real com clientes simulados (seção 5.6). Falta medir com celulares |
 | Avaliação qualitativa da tradução em frases de teste | — | _(a preencher)_ |
 
 ## 8. Resultado: antes e depois
@@ -561,7 +600,7 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 | Idioma de fala e de escuta por participante | Não | Sim |
 | Tradução entregue apenas ao ouvinte de destino | Não | Sim, com filtro de conversa cruzada |
 | Acesso por celular na rede local via HTTPS | Não | Sim: proxy com certificado local e guia de instalação (Etapa 4); falta conferir nos celulares |
-| Medição de latência por direção | Não | _(a preencher)_ |
+| Medição de latência por direção | Não | Sim: marcas por etapa, T6 informado pelo celular e tabela por direção (`bench/latencia_sala.py`) |
 
 ## 9. Limitações e trabalhos futuros
 

@@ -247,10 +247,23 @@
             this.pingTimer = null;
             this.lastMessageAt = 0;
             this.fatal = null;
+            // Tempo de ida e volta dos últimos pings, no relógio do celular (5.3).
+            this.rttSamples = [];
             window.addEventListener('online', () => this.reconnectNow());
         }
 
         get open() { return Boolean(this.ws && this.ws.readyState === WebSocket.OPEN); }
+
+        /** Mediana dos últimos RTTs em ms (null antes do primeiro pong). */
+        get rttMs() {
+            if (this.rttSamples.length === 0) return null;
+            const sorted = [...this.rttSamples].sort((a, b) => a - b);
+            return sorted[Math.floor(sorted.length / 2)];
+        }
+
+        ping() {
+            this.sendJson({ type: 'ping', c: performance.now() });
+        }
 
         start(params) {
             this.params = params;
@@ -288,13 +301,20 @@
             this.ws = ws;
             ws.onopen = () => {
                 this.lastMessageAt = Date.now();
+                this.ping();
             };
             ws.onmessage = (event) => {
                 if (ws !== this.ws) return;
                 this.lastMessageAt = Date.now();
                 let data;
                 try { data = JSON.parse(event.data); } catch (e) { return; }
-                if (data.type === 'joined') {
+                if (data.type === 'pong' && typeof data.c === 'number') {
+                    const rtt = performance.now() - data.c;
+                    if (rtt >= 0 && rtt < 5000) {
+                        this.rttSamples.push(rtt);
+                        if (this.rttSamples.length > 5) this.rttSamples.shift();
+                    }
+                } else if (data.type === 'joined') {
                     const rejoined = Boolean(this.participantId);
                     this.participantId = data.participant?.id || null;
                     this.attempts = 0;
@@ -351,7 +371,7 @@
                     this.scheduleReconnect();
                     return;
                 }
-                this.sendJson({ type: 'ping' });
+                this.ping();
             }
         }
 
@@ -682,7 +702,8 @@
                 this.player.push({
                     url: data.audio_url,
                     utteranceId: data.utterance_id,
-                    speakerId: data.speaker_id
+                    speakerId: data.speaker_id,
+                    receivedAt: performance.now()
                 });
                 break;
             case 'room_error':
@@ -756,7 +777,14 @@
         onPlaybackStart(item) {
             this.playingSpeaker = item.speakerId;
             this.renderPeople();
-            this.conn.sendJson({ type: 'playback_started', utterance_id: item.utteranceId });
+            // Marca T6 da Etapa 5: o servidor usa a chegada deste aviso menos
+            // metade do RTT; wait_ms (relógio do celular) serve de conferência.
+            this.conn.sendJson({
+                type: 'playback_started',
+                utterance_id: item.utteranceId,
+                rtt_ms: this.conn.rttMs,
+                wait_ms: item.receivedAt ? Math.round(performance.now() - item.receivedAt) : null
+            });
         }
 
         onPlaybackEnd() {
