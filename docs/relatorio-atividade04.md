@@ -253,7 +253,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 3 | Interface web para celular | Implementada: página `/sala`, interface em chinês e QR code; falta conferir nos celulares |
 | 4 | Rede local e HTTPS | Implementada: proxy Caddy com autoridade local; sala real por `wss://` pelo IP da Wi-Fi sem perda de latência; falta conferir o microfone nos celulares |
 | 5 | Medição de latência por direção | Concluída: sala real, PT→ZH 1,89 s e ZH→PT 2,79 s de mediana até o áudio começar (seção 5.6); falta repetir com celulares |
-| 6 | Testes automatizados e validação com dois celulares | Pendente |
+| 6 | Testes automatizados e validação com dois celulares | Implementada: ensaio de 5 min na pilha real aprovado, roteiro e avaliação preliminar; falta a sessão com celulares |
 | 7 | Documentação e entrega | Pendente |
 
 ### 5.3 Principais alterações no código
@@ -276,6 +276,7 @@ Plano completo, com subtarefas, árvore de prioridade e riscos, em
 | 4 | Script que descobre o IP da Wi-Fi, preenche o `.env` e libera o firewall; guia de instalação do certificado no README; teste da sala por `https`/`wss` | `tools/rede-local.ps1` (novo), `README.md`, `bench/testar_sala.py` |
 | 5 | Medição de latência: o celular mede o RTT pelo `ping` e avisa quando o áudio começa (`playback_started` com `rtt_ms` e `wait_ms`); o servidor calcula T6 no próprio relógio; análise por direção (mediana, p95, máximo e tempo por etapa). Inclui 12 testes | `app/rooms/latency.py` (novo), `app/rooms/router.py`, `app/static/js/room-app.js`, `tests/test_room_latency.py` (novo) |
 | 5 | Script da tabela de latência a partir do log; o teste da sala real passa a se comportar como o celular (ping, download, aviso de reprodução) | `bench/latencia_sala.py` (novo), `bench/testar_sala.py` |
+| 6 | Entradas, saídas, reconexões e toques em silenciar gravados no log; resumo da sessão de validação (duração, toques, reconexões, tradução entregue a quem falou). Inclui 3 testes; roteiro único de validação com os celulares | `app/rooms/router.py`, `app/rooms/latency.py`, `bench/latencia_sala.py`, `tests/test_room_latency.py`, `docs/roteiro-validacao.md` (novo) |
 
 ### 5.4 Redução da latência (Etapa 1)
 
@@ -474,7 +475,8 @@ Seção central do relatório, segundo o enunciado.
 | Etapa 3 – Interface | Leu o `AudioRecorder` e o i18n do PolyTalk, escreveu as telas, o JS e o CSS, o catálogo completo em chinês, o QR code e a reconexão com 22 testes, e testou a reconexão no servidor real. Notou que o Safari pode deixar o microfone mudo, o eco sem fone e o participante fantasma depois de uma queda | Pendente: conferir nos celulares (som, tela ligada, Wi-Fi, QR) e revisar os textos em chinês |
 | Etapa 4 – Rede e HTTPS | Comparou as opções e registrou a decisão, escreveu o proxy, a página do certificado, o script do `.env` e do firewall, o guia e 8 testes, e verificou tudo pelo IP da Wi-Fi, inclusive uma sala real por `wss://`. Notou a falta de SNI com IP, o link do QR que sairia `http` e que `ALLOWED_ORIGINS` não bloquearia o celular | Pendente: instalar o certificado e conferir o microfone no Android e no iPhone; liberar o firewall como administrador se preciso |
 | Etapa 5 – Latência | Notou que boa parte já existia (marcas da Etapa 2 e o aviso do celular), propôs medir tudo no relógio do servidor com o RTT do `ping`, escreveu o módulo de análise, o script da tabela e 12 testes, fez o teste da sala real se comportar como o celular e conferiu o T0 do servidor contra o fim real da fala | Pendente: gerar a tabela com os celulares (sessão da Etapa 6) |
-| Etapas 6 e 7 | _(a preencher ao fim de cada etapa)_ | |
+| Etapa 6 – Testes | Rodou a suíte, escreveu o roteiro único com todas as conferências humanas, fez o log contar toques e reconexões para o critério "sem acionar botões", ensaiou a sessão de 5 min na pilha real e deu uma nota preliminar às 20 traduções. Testou uma instrução pt-BR no prompt e a descartou por não ter efeito | Pendente: sessão com celulares e nota humana (sobretudo PT→ZH, por falante de chinês) |
+| Etapa 7 – Entrega | _(a preencher ao fim da etapa)_ | |
 
 ### 6.2 O que funcionou
 
@@ -562,7 +564,14 @@ Seção central do relatório, segundo o enunciado.
   que a lista de origens do PolyTalk barraria o celular. Ao ler o código, o agente
   viu que ela só vale para CORS e que a sala é da mesma origem. O problema real,
   não previsto, era o link do QR code sair com `http` atrás do proxy.
-- _(a preencher com o que surgir na implementação)_
+- **Um erro de tradução escondido por um erro do STT (Etapa 6).** Na sala, o
+  STT ouviu 星期散 em vez de 星期三 (quarta-feira), e a tradução simplesmente
+  omitiu o dia. Traduzindo o texto correto, o modelo respondeu "terça-feira".
+  Avaliar só o fluxo completo teria escondido esse erro.
+- **Medição contaminada pelo próprio agente (Etapa 6).** Um teste rápido de
+  prompt rodou contra o Ollama enquanto o ensaio de 5 min usava a mesma GPU, e uma
+  frase subiu para 3,6 s. O agente percebeu, interrompeu e repetiu o ensaio sem
+  outra carga.
 
 ### 6.5 Trabalhar num projeto já existente
 
@@ -573,11 +582,11 @@ ajudou a navegar, o que foi preciso preservar e como se garantiu a compatibilida
 
 | Critério (da Atividade 03) | Meta | Resultado |
 |---|---|---|
-| Conversa contínua sem acionar botões a cada fala | ≥ 5 min | _(a preencher)_ |
-| Cada participante ouve apenas a tradução destinada a ele | Sim | Parcial: na sala real com dois participantes simulados, 40/40 frases chegaram só a quem devia, inclusive com conversa cruzada (Etapa 2). Falta a sessão com celulares |
-| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,89 s (p95 2,40 s) na sala real com clientes simulados (seção 5.6). Falta medir com celulares |
-| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,79 s (p95 3,35 s) na sala real com clientes simulados (seção 5.6). Falta medir com celulares |
-| Avaliação qualitativa da tradução em frases de teste | — | _(a preencher)_ |
+| Conversa contínua sem acionar botões a cada fala | ≥ 5 min | Parcial: ensaio de 6 min 43 s com clientes simulados, 60/60 falas entregues, 0 toques e 0 reconexões. Falta a sessão com celulares |
+| Cada participante ouve apenas a tradução destinada a ele | Sim | Parcial: com dois participantes simulados na sala real, 40/40 frases (Etapa 2) e 60/60 no ensaio de 5 min (Etapa 6) chegaram só a quem devia, inclusive com conversa cruzada. Falta a sessão com celulares |
+| Latência do fim da fala ao início do áudio traduzido, PT→ZH | mediana ≤ 3 s | Parcial: 1,89 s (p95 2,40 s) na Etapa 5 e 1,83 s (p95 2,20 s) no ensaio de 5 min, com clientes simulados (seção 5.6). Falta medir com celulares |
+| Latência do fim da fala ao início do áudio traduzido, ZH→PT | mediana ≤ 3 s | Parcial: 2,79 s (p95 3,35 s) na Etapa 5 e 2,52 s (p95 3,10 s) no ensaio de 5 min, com clientes simulados (seção 5.6). Falta medir com celulares |
+| Avaliação qualitativa da tradução em frases de teste | — | Preliminar (nota do agente, 0 a 2 por frase): PT→ZH 17/20 e ZH→PT 15/20, nenhuma com sentido errado no fluxo completo. Três das oito notas 1 vêm do STT. Falta a nota humana ([Etapa 6](etapas/etapa-6-testes.md#resultado-preliminar-avaliação-do-agente)) |
 
 ## 8. Resultado: antes e depois
 
